@@ -1,5 +1,16 @@
 # temporal-calendar TODO
 
+## Technical Debt
+
+### Fix Test Type Checking
+**Priority: MEDIUM**
+- Test files are currently excluded from TypeScript type checking (tsconfig exclude pattern)
+- calendar.test.ts has type inference issues with `createCalendar<T, Options>` generic parameters
+- Need to either:
+  - Fix the type inference so tests can use the function naturally without explicit type parameters
+  - Or properly annotate all test cases with correct type parameters
+- Location: packages/core/tsconfig.json excludes `**/*.test.ts` and `**/*.test.tsx`
+
 ## Pain Points from PostCalendar Demo Analysis
 
 ### Date Filtering & Grouping Utilities
