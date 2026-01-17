@@ -1,11 +1,11 @@
-# @temporal-calendar/react
+# @gobrand/react-calendar
 
 React hook for building calendars with the Temporal API.
 
 ## Installation
 
 ```bash
-pnpm add @temporal-calendar/react
+pnpm add @gobrand/react-calendar
 ```
 
 ## Philosophy
@@ -18,7 +18,7 @@ pnpm add @temporal-calendar/react
 ## Quick Start
 
 ```tsx
-import { useCalendar, createCalendarViews, createCalendarAccessor } from '@temporal-calendar/react';
+import { useCalendar, createCalendarViews, createCalendarAccessor } from '@gobrand/react-calendar';
 import { Temporal } from '@js-temporal/polyfill';
 
 type Event = {
@@ -81,7 +81,7 @@ function MyCalendar() {
 ## Multi-View Calendar
 
 ```tsx
-import { useCalendar, createCalendarViews } from '@temporal-calendar/react';
+import { useCalendar, createCalendarViews } from '@gobrand/react-calendar';
 
 const calendar = useCalendar({
   data: events,
@@ -185,7 +185,7 @@ const accessor = createCalendarAccessor<Event>({
 
 ### Utility Functions
 
-All utilities from `@temporal-calendar/core` are re-exported:
+All utilities from `@gobrand/calendar-core` are re-exported:
 
 **Formatting:**
 - `getWeekdays(weekStartsOn?)` - Localized weekday names
