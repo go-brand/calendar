@@ -91,13 +91,12 @@ export function createCalendar<
   } as Options;
 
   let _options = resolvedOptions;
-  const store = new Store<CalendarState>(
-    resolvedOptions.state || {
-      referenceDate: initialReferenceDate,
-      currentView: initialView,
-      dateRange: initialDateRange,
-    }
-  );
+  const store = new Store<CalendarState>({
+    referenceDate: initialReferenceDate,
+    currentView: initialView,
+    dateRange: initialDateRange,
+    ...resolvedOptions.state,
+  });
 
   const getMonthImpl = () => {
     const state = store.state;

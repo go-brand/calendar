@@ -99,7 +99,7 @@ export type CalendarOptions<T> = {
   data: T[];
   views: CalendarViewOptions<T>;
   timeZone?: 'UTC' | string; // Optional IANA timezone identifier (e.g., 'Europe/Madrid'). Defaults to system timezone.
-  state?: CalendarState;
+  state?: Partial<CalendarState>;
   onStateChange?: (updater: Updater<CalendarState>) => void;
 };
 
