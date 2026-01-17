@@ -33,14 +33,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build
+        run: pnpm build
+
       - name: Type check
         run: pnpm typecheck
 
       - name: Run tests
         run: pnpm test --run
-
-      - name: Build
-        run: pnpm build
 
   publish:
     needs: test
