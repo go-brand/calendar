@@ -108,9 +108,13 @@ git tag "v$NEW_VERSION"
 
 echo -e "${GREEN}Version bumped to v$NEW_VERSION${NC}"
 
-# Push with tags
-echo "Pushing to GitHub..."
-git push --follow-tags
+# Push commit first
+echo "Pushing commit to GitHub..."
+git push origin main
+
+# Then push tag separately to ensure it triggers CI
+echo "Pushing tag to GitHub..."
+git push origin "v$NEW_VERSION"
 
 echo ""
 echo -e "${GREEN}✓ Release complete!${NC}"
