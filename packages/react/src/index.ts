@@ -7,6 +7,7 @@ import {
   type Calendar,
   type CalendarOptions,
 } from '@gobrand/calendar-core';
+
 export function useCalendar<TOptions extends CalendarOptions<any>>(
   options: TOptions
 ): Calendar<
@@ -24,7 +25,8 @@ export function useCalendar<TOptions extends CalendarOptions<any>>(
   // By default, manage calendar state here using the calendar's initial state
   const [state, setState] = useState(() => calendarRef.current.getState());
 
-  // Compose the default state above with any user state
+  // Compose the default state above with any user state. This will allow the user
+  // to only control a subset of the state if desired.
   calendarRef.current.setOptions((prev) => ({
     ...prev,
     ...options,
@@ -32,6 +34,7 @@ export function useCalendar<TOptions extends CalendarOptions<any>>(
       ...state,
       ...options.state,
     },
+    // Similarly, we'll maintain both our internal state and any user-provided state.
     onStateChange: (updater) => {
       setState(updater);
       options.onStateChange?.(updater);

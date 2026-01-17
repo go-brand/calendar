@@ -67,7 +67,6 @@ export type CalendarState = {
   dateRange: DateRange; // Computed ZonedDateTime range for the calendar's timezone
 };
 
-
 // View options types
 export type MonthViewOptions<T> = {
   accessor: CalendarAccessor<T>;
@@ -169,7 +168,9 @@ type BaseCalendarMethods<Options> = {
 
   // State management
   getState(): CalendarState;
-  setState(updater: CalendarState | ((old: CalendarState) => Partial<CalendarState>)): void;
+  setState(
+    updater: CalendarState | ((old: CalendarState) => Partial<CalendarState>)
+  ): void;
 
   // Navigation - shared
   goToToday(): void;
@@ -223,7 +224,8 @@ export type Calendar<
       DayMethods<T, CalendarOptions<T>>;
 
 // createCalendarViews utility types
-export type InferViewNames<V extends CalendarViewOptions<unknown>> = keyof V & string;
+export type InferViewNames<V extends CalendarViewOptions<unknown>> = keyof V &
+  string;
 
 export type InferViewConfig<
   V extends CalendarViewOptions<unknown>,
