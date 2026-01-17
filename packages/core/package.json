@@ -1,0 +1,61 @@
+{
+  "name": "@gobrand/calendar-core",
+  "version": "0.0.1",
+  "description": "Lightweight utility library for building calendars using the Temporal API",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/go-brand/calendar.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/go-brand/calendar/issues"
+  },
+  "homepage": "https://github.com/go-brand/calendar#readme",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
+    "@tanstack/store": "^0.8.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.17",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "keywords": [
+    "temporal",
+    "calendar",
+    "date",
+    "datetime",
+    "time",
+    "temporal-api",
+    "month",
+    "week",
+    "year"
+  ]
+}

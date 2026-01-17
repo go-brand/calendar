@@ -1,0 +1,18 @@
+{
+  "name": "@gobrand/calendar",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r run build",
+    "test": "pnpm -r run test",
+    "typecheck": "pnpm -r run typecheck",
+    "release": "bash scripts/release.sh"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

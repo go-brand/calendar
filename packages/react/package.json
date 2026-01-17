@@ -1,0 +1,72 @@
+{
+  "name": "@gobrand/react-calendar",
+  "version": "0.0.1",
+  "description": "React hooks and components for building calendars using the Temporal API",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/go-brand/calendar.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/go-brand/calendar/issues"
+  },
+  "homepage": "https://github.com/go-brand/calendar#readme",
+  "scripts": {
+    "build": "tsup && tsc --emitDeclarationOnly --declaration --declarationMap",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@js-temporal/polyfill": "^0.5.1",
+    "@gobrand/calendar-core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitest/ui": "^2.1.8",
+    "jsdom": "^25.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "keywords": [
+    "react",
+    "hooks",
+    "temporal",
+    "calendar",
+    "date",
+    "datetime",
+    "time",
+    "temporal-api",
+    "react-hooks"
+  ]
+}
