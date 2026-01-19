@@ -4,6 +4,7 @@
 - **Testing**: Use `pnpm test --run` to run tests once and exit (instead of watch mode). For specific tests: `pnpm test <name> --run`
 - **`src/temporal.d.ts`** - TypeScript type declarations for Temporal API
 - **Release process**: Use `pnpm release <patch|minor|major>` to publish new versions. The script runs tests, type checks, builds, bumps version, and pushes to trigger automated npm publishing via GitHub Actions.
+  - **IMPORTANT**: After changing package.json dependencies, always run `pnpm install` to update pnpm-lock.yaml before releasing. CI uses frozen lockfile and will fail if lockfile is out of sync.
 - **Minimal API surface**
 - **Zero abstractions**: Direct use of Temporal API primitives.
 - **Type-safe**: Full TypeScript support with proper Temporal types
