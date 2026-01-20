@@ -1,24 +1,54 @@
 # @gobrand/react-calendar
 
-React hook for building calendars with the Temporal API.
+[![npm version](https://img.shields.io/npm/v/@gobrand/react-calendar.svg)](https://www.npmjs.com/package/@gobrand/react-calendar)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+React hook for building powerful calendar views with the [Temporal API](https://tc39.es/proposal-temporal/docs/). Built on [@gobrand/calendar-core](https://www.npmjs.com/package/@gobrand/calendar-core) with optimized state management using TanStack Store.
 
 ## Installation
 
 ```bash
+npm install @gobrand/react-calendar
+# or
 pnpm add @gobrand/react-calendar
 ```
 
-## Philosophy
+**Peer dependencies:**
+- `react ^18.0.0 || ^19.0.0`
 
-- **Data-agnostic**: Works with any data type (events, tasks, posts, etc.)
-- **Type-safe**: Full TypeScript support with TanStack-style type inference
-- **Zero abstractions**: Direct use of Temporal API primitives
-- **Minimal API surface**: Just a hook and utility functions
+## Why @gobrand/react-calendar?
+
+Building React calendar UIs is complex: state management, timezone handling, DST transitions, multi-view navigation, and data mapping. **@gobrand/react-calendar** provides a complete React solution:
+
+- **🪝 Simple React Hook** - Single `useCalendar()` hook with reactive state management
+- **📅 Multi-view support** - Month, week, and day views with type-safe view switching
+- **🌍 Timezone-aware** - Native timezone support with Temporal API primitives
+- **🎯 Data-agnostic** - Works with any data type through accessor pattern
+- **⚡️ Type-safe** - Full TypeScript support with conditional types based on configured views
+- **⚙️ TanStack Store** - Optimized state management with TanStack Store
+- **🔧 Zero config** - Sensible defaults, customize only what you need
+- **📦 Minimal** - Built on [@gobrand/calendar-core](https://www.npmjs.com/package/@gobrand/calendar-core) for framework-agnostic logic
+
+**Key features:**
+- ✅ Built exclusively on Temporal API (no Date objects, no moment.js, no date-fns)
+- ✅ Automatic DST handling and timezone conversions
+- ✅ Type-safe view methods (only available methods for configured views)
+- ✅ Calendar-aware arithmetic (leap years, month-end dates)
+- ✅ Flexible accessor pattern for any data structure
+- ✅ Polyfill included for browser compatibility
+- ✅ All core utilities re-exported for convenience
+
+**Perfect for:**
+- React event calendars and schedulers
+- Booking systems and appointment managers
+- Task management with due dates
+- Analytics dashboards with date ranges
+- Any React app that needs calendar navigation
 
 ## Quick Start
 
 ```tsx
-import { useCalendar, createCalendarViews, createCalendarAccessor } from '@gobrand/react-calendar';
+import { useCalendar, createCalendarViews, createCalendarAccessor, getWeekdays } from '@gobrand/react-calendar';
 import { Temporal } from '@js-temporal/polyfill';
 
 type Event = {
@@ -27,17 +57,23 @@ type Event = {
   start: Temporal.ZonedDateTime;
 };
 
-// Define how to extract dates from your data
+const events: Event[] = [
+  {
+    id: '1',
+    title: 'Team Meeting',
+    start: Temporal.ZonedDateTime.from('2025-01-20T14:00:00-05:00[America/New_York]')
+  }
+];
+
 const accessor = createCalendarAccessor<Event>({
   getDate: (event) => event.start.toPlainDate(),
   getStart: (event) => event.start,
-  getEnd: (event) => event.start,
 });
 
 function MyCalendar() {
   const calendar = useCalendar({
     data: events,
-    views: createCalendarViews({
+    views: createCalendarViews<Event>()({
       month: { weekStartsOn: 1, accessor },
     }),
   });
@@ -78,125 +114,335 @@ function MyCalendar() {
 }
 ```
 
-## Multi-View Calendar
-
-```tsx
-import { useCalendar, createCalendarViews } from '@gobrand/react-calendar';
-
-const calendar = useCalendar({
-  data: events,
-  views: createCalendarViews({
-    month: { weekStartsOn: 1, accessor: monthAccessor },
-    week: { weekStartsOn: 1, startHour: 8, endHour: 18, accessor: weekAccessor },
-    day: { startHour: 8, endHour: 18, slotDuration: 30, accessor: dayAccessor },
-  }),
-});
-
-// Switch views
-calendar.setCurrentView('week');
-
-// Get current view data
-const month = calendar.getMonth();  // Type-safe! Only available if month view configured
-const week = calendar.getWeek();    // Type-safe! Only available if week view configured
-const day = calendar.getDay();      // Type-safe! Only available if day view configured
-```
+> **Note:** For vanilla JavaScript/TypeScript usage, check out [@gobrand/calendar-core](https://www.npmjs.com/package/@gobrand/calendar-core) which provides the underlying framework-agnostic functions.
 
 ## API
 
-### `useCalendar<TOptions>(options)`
+### React Hooks
 
-Main hook for calendar state management.
+#### `useCalendar(options)`
 
-**Options:**
+Create a calendar instance with reactive state management. Returns a Calendar object with type-safe methods based on configured views.
+
+**Parameters:**
+- `options` (CalendarOptions): Configuration object
+  - `data` (TItem[]): Array of items to display in the calendar
+  - `views` (CalendarViewOptions): View configurations (month, week, day)
+  - `timeZone` (string, optional): IANA timezone identifier (defaults to system timezone)
+  - `state` (Partial<CalendarState>, optional): Initial state override
+  - `onStateChange` (function, optional): Callback when state changes
+
+**Returns:** `Calendar<TItem, TOptions>` - Calendar instance with conditional methods
+
+**Example:**
 ```tsx
-{
-  data: T[];                          // Your data array
-  views: CalendarViewOptions<T>;      // View configurations
-  timeZone?: string;                  // IANA timezone (default: system)
-  state?: CalendarState;              // External state (for controlled mode)
-  onStateChange?: (state) => void;    // State change callback
-}
-```
+import { useCalendar, createCalendarViews, createCalendarAccessor } from '@gobrand/react-calendar';
 
-**Returns:** `Calendar<T, TOptions>` with methods based on configured views
+type Event = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+  end?: Temporal.ZonedDateTime;
+};
 
-**Common methods:**
-- `getState()` - Get current state
-- `setState(updater)` - Update state
-- `goToToday()` - Navigate to today
-- `goToDate(date)` - Navigate to specific date
-- `getTitle(view)` - Get formatted title for view
-- `dateRange` - Current date range (for data fetching)
-- `currentView` - Current view name
-- `setCurrentView(view)` - Switch views
-
-**View-specific methods** (conditionally available based on configured views):
-
-**Month view:**
-- `getMonth()` - Returns `{ month: PlainYearMonth, weeks: CalendarWeek<T>[] }`
-- `nextMonth()` / `previousMonth()`
-- `goToMonth(year, month)`
-
-**Week view:**
-- `getWeek()` - Returns `{ weekStart, weekEnd, days: CalendarDay<T>[] }`
-- `nextWeek()` / `previousWeek()`
-
-**Day view:**
-- `getDay()` - Returns `{ date, timeSlots: { hour, minute, items: T[] }[] }`
-- `nextDay()` / `previousDay()`
-
-### `createCalendarViews<T>(config)`
-
-Type-safe builder for view configurations.
-
-```tsx
-const views = createCalendarViews<Event>({
-  month: {
-    weekStartsOn: 1,              // 0 (Sun) - 6 (Sat)
-    accessor: monthAccessor,       // CalendarAccessor<Event>
-  },
-  week: {
-    weekStartsOn: 1,
-    startHour: 8,                 // 0-23
-    endHour: 18,                  // 0-24
-    slotDuration: 30,             // Minutes
-    accessor: weekAccessor,
-  },
-  day: {
-    startHour: 8,
-    endHour: 18,
-    slotDuration: 30,
-    accessor: dayAccessor,
-  },
-});
-```
-
-### `createCalendarAccessor<T>(config)`
-
-Define how to extract date information from your data.
-
-```tsx
 const accessor = createCalendarAccessor<Event>({
-  getDate: (item) => Temporal.PlainDate,      // Required
-  getStart?: (item) => Temporal.ZonedDateTime, // For time-based views
-  getEnd?: (item) => Temporal.ZonedDateTime,   // For time-based views
+  getDate: (event) => event.start.toPlainDate(),
+  getStart: (event) => event.start,
+  getEnd: (event) => event.end,
+});
+
+const calendar = useCalendar({
+  data: events,
+  timeZone: 'America/New_York',
+  views: createCalendarViews<Event>()({
+    month: { weekStartsOn: 1, accessor },
+    week: { weekStartsOn: 1, startHour: 8, endHour: 18, accessor },
+    day: { startHour: 8, endHour: 18, slotDuration: 30, accessor },
+  }),
+});
+
+// Type-safe methods - only available if view is configured
+calendar.getMonth();  // ✓ Available (month view configured)
+calendar.getWeek();   // ✓ Available (week view configured)
+calendar.getDay();    // ✓ Available (day view configured)
+```
+
+### Core Calendar Methods
+
+#### View Methods
+
+##### `getMonth()`
+
+Get the current month view. Only available if month view is configured.
+
+**Returns:** `CalendarMonth<TItem>` - Month grid with weeks and days
+- `weeks` - Array of weeks, each containing 7 days
+- `month` - Temporal.PlainYearMonth for the current month
+
+**Example:**
+```tsx
+const month = calendar.getMonth();
+
+month.weeks.forEach(week => {
+  week.forEach(day => {
+    console.log(day.date, day.items, day.isToday, day.isCurrentMonth);
+  });
 });
 ```
 
-### Utility Functions
+##### `getWeek()`
 
-All utilities from `@gobrand/calendar-core` are re-exported:
+Get the current week view. Only available if week view is configured.
+
+**Returns:** `CalendarWeekView<TItem>` - Week with days and optional time slots
+- `days` - Array of 7 days in the week
+- `weekStart` - Temporal.PlainDate for the first day
+- `weekEnd` - Temporal.PlainDate for the last day
+
+**Example:**
+```tsx
+const week = calendar.getWeek();
+
+week.days.forEach(day => {
+  console.log(day.date, day.items);
+  day.timeSlots?.forEach(slot => {
+    console.log(slot.hour, slot.minute, slot.items);
+  });
+});
+```
+
+##### `getDay()`
+
+Get the current day view. Only available if day view is configured.
+
+**Returns:** `CalendarDayView<TItem>` - Day with time slots
+- `date` - Temporal.PlainDate for the day
+- `isToday` - Boolean indicating if this is today
+- `timeSlots` - Array of time slots with items
+- `items` - All items for this day
+
+**Example:**
+```tsx
+const day = calendar.getDay();
+
+console.log(day.date, day.isToday);
+day.timeSlots.forEach(slot => {
+  console.log(`${slot.hour}:${slot.minute}`, slot.items);
+});
+```
+
+#### Navigation Methods
+
+##### Month Navigation
+
+```tsx
+calendar.nextMonth();           // Go to next month
+calendar.previousMonth();       // Go to previous month
+calendar.goToMonth(2025, 6);    // Go to specific month (year, month)
+```
+
+##### Week Navigation
+
+```tsx
+calendar.nextWeek();       // Go to next week
+calendar.previousWeek();   // Go to previous week
+```
+
+##### Day Navigation
+
+```tsx
+calendar.nextDay();        // Go to next day
+calendar.previousDay();    // Go to previous day
+```
+
+##### Universal Navigation
+
+```tsx
+calendar.goToToday();      // Go to today (works for all views)
+```
+
+#### View Management
+
+##### `setCurrentView(view)`
+
+Switch between configured views.
+
+**Parameters:**
+- `view` (string): One of the configured view names ('month' | 'week' | 'day')
+
+**Example:**
+```tsx
+calendar.setCurrentView('week');  // Switch to week view
+calendar.setCurrentView('month'); // Switch to month view
+```
+
+##### `getTitle(view?, locales?, options?)`
+
+Get a formatted title for the current view or a specific view.
+
+**Parameters:**
+- `view` (string, optional): View name (defaults to current view)
+- `locales` (string | string[], optional): Locale(s) for formatting
+- `options` (Intl.DateTimeFormatOptions, optional): Formatting options
+
+**Returns:** `string` - Formatted title
+
+**Example:**
+```tsx
+calendar.getTitle('month');                    // "January 2025"
+calendar.getTitle('month', 'es-ES');           // "enero de 2025"
+calendar.getTitle('week');                     // "Jan 20 – 26, 2025"
+calendar.getTitle('day', 'en-US', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+}); // "Monday, January 20, 2025"
+```
+
+#### State Management
+
+##### `getState()`
+
+Get the current calendar state.
+
+**Returns:** `CalendarState` - Current state object
+- `currentView` - Active view name
+- `referenceDate` - Current reference date (PlainDate)
+
+##### `setState(updater)`
+
+Update the calendar state.
+
+**Parameters:**
+- `updater` (function | object): State update function or partial state object
+
+**Example:**
+```tsx
+// Function updater
+calendar.setState(state => ({
+  ...state,
+  referenceDate: Temporal.PlainDate.from('2025-12-25')
+}));
+
+// Object updater
+calendar.setState({ currentView: 'week' });
+```
+
+### Accessor Pattern
+
+#### `createCalendarAccessor(accessor)`
+
+Create a type-safe accessor for mapping your data to calendar dates. This is a type-identity function for TypeScript inference.
+
+**Parameters:**
+- `accessor` (CalendarAccessor<TItem>): Accessor configuration
+  - `getDate` (required): Extract PlainDate from item
+  - `getStart` (optional): Extract ZonedDateTime start time
+  - `getEnd` (optional): Extract ZonedDateTime end time
+
+**Returns:** Same accessor object with proper types
+
+**Example:**
+```tsx
+// Simple date-based items (tasks, posts)
+type Task = {
+  id: string;
+  name: string;
+  dueDate: Temporal.PlainDate;
+};
+
+const taskAccessor = createCalendarAccessor<Task>({
+  getDate: (task) => task.dueDate,
+});
+
+// Time-based items with start time (events, appointments)
+type Event = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+};
+
+const eventAccessor = createCalendarAccessor<Event>({
+  getDate: (event) => event.start.toPlainDate(),
+  getStart: (event) => event.start,
+});
+
+// Items with start and end times (meetings, bookings)
+type Meeting = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+};
+
+const meetingAccessor = createCalendarAccessor<Meeting>({
+  getDate: (meeting) => meeting.start.toPlainDate(),
+  getStart: (meeting) => meeting.start,
+  getEnd: (meeting) => meeting.end,
+});
+```
+
+### View Configuration
+
+#### `createCalendarViews()`
+
+Create type-safe view configurations. This is a curried function that requires a type parameter.
+
+**Usage:**
+```tsx
+const views = createCalendarViews<TItem>()({
+  month?: { ... },
+  week?: { ... },
+  day?: { ... }
+});
+```
+
+#### Month View Options
+
+```tsx
+type MonthViewOptions<TItem> = {
+  accessor: CalendarAccessor<TItem>;
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0 = Sunday, 1 = Monday, etc.
+};
+```
+
+#### Week View Options
+
+```tsx
+type WeekViewOptions<TItem> = {
+  accessor: CalendarAccessor<TItem>;
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  startHour?: number;      // Default: 0
+  endHour?: number;        // Default: 24
+  slotDuration?: number;   // Minutes per slot, default: 60
+};
+```
+
+#### Day View Options
+
+```tsx
+type DayViewOptions<TItem> = {
+  accessor: CalendarAccessor<TItem>;
+  startHour?: number;      // Default: 0
+  endHour?: number;        // Default: 24
+  slotDuration?: number;   // Minutes per slot, default: 60
+};
+```
+
+### Core Utilities (Re-exported)
+
+All utilities from [@gobrand/calendar-core](https://www.npmjs.com/package/@gobrand/calendar-core) are re-exported for convenience. For detailed documentation on these functions, see the [core package documentation](https://www.npmjs.com/package/@gobrand/calendar-core).
+
+**Building Functions:**
+- `buildMonth(year, month, options?)` - Build month grid
+- `buildWeek(date, options?)` - Build week view
+- `buildDay(date, options?)` - Build day view with time slots
 
 **Formatting:**
-- `getWeekdays(weekStartsOn?)` - Localized weekday names
+- `getWeekdays(weekStartsOn?, locale?, format?)` - Localized weekday names
 - `getMonthName(month, locale?)` - Localized month name
 - `formatTime(time, locale?)` - Format PlainTime
-
-**Navigation:**
-- `nextMonth(month)` / `previousMonth(month)`
-- `nextWeek(date)` / `previousWeek(date)`
-- `nextDay(date)` / `previousDay(date)`
-- `goToToday()` - Get current PlainDate
 
 **Timezone:**
 - `getMonthRange(timeZone?, weekStartsOn?)` - Week-aligned month range
@@ -206,98 +452,305 @@ All utilities from `@gobrand/calendar-core` are re-exported:
 - `convertToTimezone(zdt, timeZone)` - Convert between timezones
 - `createZonedDateTime(date, time, timeZone)` - Create ZonedDateTime
 
-**Layout:**
-- `getEventPosition(start, end, startHour, endHour, slotDuration)` - Calculate event positioning for time-based grids
+For detailed documentation and examples, see [@gobrand/calendar-core](https://www.npmjs.com/package/@gobrand/calendar-core).
 
-## Data Structures
+## Real World Examples
 
-### `CalendarDay<T>`
+### Example 1: Event Calendar with Multi-View Support
 
-```tsx
-{
-  date: Temporal.PlainDate;
-  isCurrentMonth: boolean;
-  isToday: boolean;
-  items: T[];  // Your data filtered to this day
-}
-```
-
-### `CalendarWeek<T>`
+A complete event calendar with month, week, and day views, timezone support, and type-safe view switching.
 
 ```tsx
-CalendarDay<T>[]  // Array of 7 days
-```
+import {
+  useCalendar,
+  createCalendarViews,
+  createCalendarAccessor,
+  getWeekdays
+} from '@gobrand/react-calendar';
+import { Temporal } from '@js-temporal/polyfill';
 
-### `CalendarMonth<T>`
+type Event = {
+  id: string;
+  title: string;
+  description?: string;
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+};
 
-```tsx
-{
-  month: Temporal.PlainYearMonth;
-  weeks: CalendarWeek<T>[];
-}
-```
+const events: Event[] = [
+  {
+    id: '1',
+    title: 'Team Standup',
+    start: Temporal.ZonedDateTime.from('2025-01-20T09:00:00-05:00[America/New_York]'),
+    end: Temporal.ZonedDateTime.from('2025-01-20T09:30:00-05:00[America/New_York]')
+  },
+  {
+    id: '2',
+    title: 'Client Meeting',
+    start: Temporal.ZonedDateTime.from('2025-01-20T14:00:00-05:00[America/New_York]'),
+    end: Temporal.ZonedDateTime.from('2025-01-20T15:00:00-05:00[America/New_York]')
+  }
+];
 
-### `CalendarWeekView<T>`
-
-```tsx
-{
-  weekStart: Temporal.PlainDate;
-  weekEnd: Temporal.PlainDate;
-  days: CalendarDay<T>[];
-}
-```
-
-### `CalendarDayView<T>`
-
-```tsx
-{
-  date: Temporal.PlainDate;
-  timeSlots: {
-    hour: number;
-    minute: number;
-    items: T[];  // Items overlapping this time slot
-  }[];
-}
-```
-
-## Type Safety
-
-The hook uses TanStack-style type inference to provide conditional types based on your configuration:
-
-```tsx
-// Only month view configured
-const calendar = useCalendar({
-  data: events,
-  views: createCalendarViews({ month: { ... } }),
+const accessor = createCalendarAccessor<Event>({
+  getDate: (event) => event.start.toPlainDate(),
+  getStart: (event) => event.start,
+  getEnd: (event) => event.end,
 });
 
-calendar.getMonth();     // ✅ Available
-calendar.nextMonth();    // ✅ Available
-calendar.getWeek();      // ❌ Type error - week view not configured
+function EventCalendar() {
+  const calendar = useCalendar({
+    data: events,
+    timeZone: 'America/New_York',
+    views: createCalendarViews<Event>()({
+      month: { weekStartsOn: 0, accessor },
+      week: { weekStartsOn: 0, startHour: 8, endHour: 18, slotDuration: 30, accessor },
+      day: { startHour: 8, endHour: 18, slotDuration: 30, accessor },
+    }),
+  });
 
-// All views configured
-const calendar = useCalendar({
-  data: events,
-  views: createCalendarViews({
-    month: { ... },
-    week: { ... },
-    day: { ... },
-  }),
-});
+  const currentView = calendar.getState().currentView;
 
-calendar.getMonth();     // ✅ Available
-calendar.getWeek();      // ✅ Available
-calendar.getDay();       // ✅ Available
+  return (
+    <div className="calendar">
+      {/* Header with view switcher */}
+      <header>
+        <div className="view-buttons">
+          <button
+            onClick={() => calendar.setCurrentView('month')}
+            className={currentView === 'month' ? 'active' : ''}
+          >
+            Month
+          </button>
+          <button
+            onClick={() => calendar.setCurrentView('week')}
+            className={currentView === 'week' ? 'active' : ''}
+          >
+            Week
+          </button>
+          <button
+            onClick={() => calendar.setCurrentView('day')}
+            className={currentView === 'day' ? 'active' : ''}
+          >
+            Day
+          </button>
+        </div>
+
+        <h2>{calendar.getTitle()}</h2>
+
+        <div className="nav-buttons">
+          {currentView === 'month' && (
+            <>
+              <button onClick={calendar.previousMonth}>←</button>
+              <button onClick={calendar.goToToday}>Today</button>
+              <button onClick={calendar.nextMonth}>→</button>
+            </>
+          )}
+          {currentView === 'week' && (
+            <>
+              <button onClick={calendar.previousWeek}>←</button>
+              <button onClick={calendar.goToToday}>Today</button>
+              <button onClick={calendar.nextWeek}>→</button>
+            </>
+          )}
+          {currentView === 'day' && (
+            <>
+              <button onClick={calendar.previousDay}>←</button>
+              <button onClick={calendar.goToToday}>Today</button>
+              <button onClick={calendar.nextDay}>→</button>
+            </>
+          )}
+        </div>
+      </header>
+
+      {/* Month View */}
+      {currentView === 'month' && (
+        <div className="month-view">
+          <div className="weekday-headers">
+            {getWeekdays(0).map(day => (
+              <div key={day} className="weekday">{day}</div>
+            ))}
+          </div>
+          <div className="month-grid">
+            {calendar.getMonth().weeks.flat().map(day => (
+              <div
+                key={day.date.toString()}
+                className={`day ${!day.isCurrentMonth ? 'other-month' : ''} ${day.isToday ? 'today' : ''}`}
+              >
+                <div className="day-number">{day.date.day}</div>
+                <div className="events">
+                  {day.items.map(event => (
+                    <div key={event.id} className="event">
+                      {event.title}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Week View */}
+      {currentView === 'week' && (
+        <div className="week-view">
+          <div className="weekday-headers">
+            {calendar.getWeek().days.map(day => (
+              <div key={day.date.toString()} className="weekday">
+                <div>{day.date.toLocaleString('en-US', { weekday: 'short' })}</div>
+                <div className={day.isToday ? 'today' : ''}>{day.date.day}</div>
+              </div>
+            ))}
+          </div>
+          <div className="week-grid">
+            {calendar.getWeek().days.map(day => (
+              <div key={day.date.toString()} className="day-column">
+                {day.timeSlots?.map((slot, i) => (
+                  <div key={i} className="time-slot">
+                    {slot.items.map(event => (
+                      <div key={event.id} className="event">
+                        {event.title}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Day View */}
+      {currentView === 'day' && (
+        <div className="day-view">
+          {calendar.getDay().timeSlots.map((slot, i) => (
+            <div key={i} className="time-slot">
+              <div className="time">{slot.hour}:{String(slot.minute).padStart(2, '0')}</div>
+              <div className="slot-events">
+                {slot.items.map(event => (
+                  <div key={event.id} className="event">
+                    <strong>{event.title}</strong>
+                    {event.description && <p>{event.description}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 ```
 
-## Examples
+### Example 2: Task Due Date Calendar
 
-See the [demo app](../../apps/demo) for complete examples:
-- **Month view**: [PostMonthlyView.tsx](../../apps/demo/src/components/PostMonthlyView.tsx)
-- **Week view**: [PostWeeklyView.tsx](../../apps/demo/src/components/PostWeeklyView.tsx)
-- **Day view**: [PostDailyView.tsx](../../apps/demo/src/components/PostDailyView.tsx)
-- **Custom view**: [PostAgendaView.tsx](../../apps/demo/src/components/PostAgendaView.tsx)
+Simple calendar showing task due dates without time information.
+
+```tsx
+import { useCalendar, createCalendarViews, createCalendarAccessor } from '@gobrand/react-calendar';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Task = {
+  id: string;
+  title: string;
+  dueDate: Temporal.PlainDate;
+  completed: boolean;
+};
+
+const tasks: Task[] = [
+  { id: '1', title: 'Review PR #42', dueDate: Temporal.PlainDate.from('2025-01-20'), completed: false },
+  { id: '2', title: 'Write documentation', dueDate: Temporal.PlainDate.from('2025-01-22'), completed: false },
+  { id: '3', title: 'Deploy to production', dueDate: Temporal.PlainDate.from('2025-01-25'), completed: true },
+];
+
+function TaskCalendar() {
+  const calendar = useCalendar({
+    data: tasks,
+    views: createCalendarViews<Task>()({
+      month: {
+        weekStartsOn: 1,
+        accessor: createCalendarAccessor({
+          getDate: (task) => task.dueDate,
+        })
+      },
+    }),
+  });
+
+  const month = calendar.getMonth();
+
+  return (
+    <div>
+      <header>
+        <button onClick={calendar.previousMonth}>Previous</button>
+        <h2>{calendar.getTitle('month')}</h2>
+        <button onClick={calendar.nextMonth}>Next</button>
+      </header>
+
+      <div className="calendar-grid">
+        {month.weeks.flat().map(day => (
+          <div
+            key={day.date.toString()}
+            className={!day.isCurrentMonth ? 'dimmed' : ''}
+          >
+            <div>{day.date.day}</div>
+            {day.items.map(task => (
+              <div
+                key={task.id}
+                className={task.completed ? 'completed' : 'pending'}
+              >
+                {task.title}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+> **For vanilla JavaScript examples:** Check out [@gobrand/calendar-core documentation](https://www.npmjs.com/package/@gobrand/calendar-core) for framework-agnostic usage examples.
+
+## Browser Support
+
+The Temporal API is a Stage 3 TC39 proposal. The polyfill `@js-temporal/polyfill` is included as a dependency, ensuring compatibility across all modern browsers.
+
+```typescript
+import { Temporal } from '@js-temporal/polyfill';
+```
+
+**Requirements:**
+- React 18+ or React 19+
+- Modern browsers with ES2015+ support
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Run tests
+pnpm test --run
+
+# Type check
+pnpm typecheck
+
+# Release new version
+pnpm release <patch|minor|major>
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
 MIT
+
+## Built by Go Brand
+
+temporal-calendar is built and maintained by [Go Brand](https://gobrand.app) - a modern social media management platform.
