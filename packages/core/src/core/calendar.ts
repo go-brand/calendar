@@ -57,10 +57,10 @@ function computeDateRange(
 }
 
 export function createCalendar<
-  T,
-  Options extends CalendarOptions<T>
->(options: Options): Calendar<T, Options> {
-  type ViewType = keyof Options['views'] & string;
+  TItem,
+  TOptions extends CalendarOptions<TItem>
+>(options: TOptions): Calendar<TItem, TOptions> {
+  type ViewType = keyof TOptions['views'] & string;
   const configuredViews = Object.keys(options.views) as ReadonlyArray<ViewType>;
   const defaultView = configuredViews[0];
 
@@ -88,7 +88,7 @@ export function createCalendar<
     },
     onStateChange: () => {},
     ...options,
-  } as Options;
+  } as TOptions;
 
   let _options = resolvedOptions;
   const store = new Store<CalendarState>({
@@ -348,12 +348,25 @@ export function createCalendar<
       return _options;
     },
 
-    setOptions(updater: (old: Options) => Options) {
+    setOptions(updater: (old: TOptions) => TOptions) {
       _options = functionalUpdate(updater, _options);
     },
 
+    // Type predicates for runtime view checking
+    hasMonthView() {
+      return 'month' in _options.views && _options.views.month !== undefined;
+    },
+
+    hasWeekView() {
+      return 'week' in _options.views && _options.views.week !== undefined;
+    },
+
+    hasDayView() {
+      return 'day' in _options.views && _options.views.day !== undefined;
+    },
+
     store,
-  } as unknown as Calendar<T, Options>;
+  } as unknown as Calendar<TItem, TOptions>;
 
   return calendar;
 }

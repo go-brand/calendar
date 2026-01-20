@@ -1,15 +1,15 @@
-import type { DayViewOptions, MonthViewOptions, WeekViewOptions } from './types';
+import type { CalendarViewOptions, DayViewOptions, MonthViewOptions, WeekViewOptions } from './types';
 
-export function createCalendarViews<T>() {
+export function createCalendarViews<TItem>() {
   return <
-    const V extends {
-      month?: MonthViewOptions<T>;
-      week?: WeekViewOptions<T>;
-      day?: DayViewOptions<T>;
+    const TViews extends {
+      month?: MonthViewOptions<TItem>;
+      week?: WeekViewOptions<TItem>;
+      day?: DayViewOptions<TItem>;
     }
   >(
-    views: V
-  ): V => {
+    views: TViews
+  ): TViews => {
     return views;
   };
 }

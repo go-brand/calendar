@@ -11,15 +11,15 @@ import {
 export function useCalendar<TOptions extends CalendarOptions<any>>(
   options: TOptions
 ): Calendar<
-  TOptions['data'] extends (infer T)[] ? T : never,
+  TOptions['data'] extends (infer TItem)[] ? TItem : never,
   TOptions
 > {
-  // Extract T from the options type
-  type T = TOptions['data'] extends (infer U)[] ? U : never;
+  // Extract TItem from the options type
+  type TItem = TOptions['data'] extends (infer U)[] ? U : never;
 
   // Create a new calendar and store it in state
   const [calendarRef] = useState(() => ({
-    current: createCalendar<T, TOptions>(options),
+    current: createCalendar<TItem, TOptions>(options),
   }));
 
   // By default, manage calendar state here using the calendar's initial state
@@ -41,5 +41,5 @@ export function useCalendar<TOptions extends CalendarOptions<any>>(
     },
   } as TOptions));
 
-  return calendarRef.current as Calendar<T, TOptions>;
+  return calendarRef.current as Calendar<TItem, TOptions>;
 }
