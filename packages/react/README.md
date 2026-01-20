@@ -74,7 +74,7 @@ function MyCalendar() {
   const calendar = useCalendar({
     data: events,
     views: createCalendarViews<Event>()({
-      month: { weekStartsOn: 1, accessor },
+      month: { accessor },
     }),
   });
 
@@ -155,8 +155,8 @@ const calendar = useCalendar({
   data: events,
   timeZone: 'America/New_York',
   views: createCalendarViews<Event>()({
-    month: { weekStartsOn: 1, accessor },
-    week: { weekStartsOn: 1, startHour: 8, endHour: 18, accessor },
+    month: { accessor },
+    week: { startHour: 8, endHour: 18, accessor },
     day: { startHour: 8, endHour: 18, slotDuration: 30, accessor },
   }),
 });
@@ -456,7 +456,120 @@ For detailed documentation and examples, see [@gobrand/calendar-core](https://ww
 
 ## Real World Examples
 
-### Example 1: Event Calendar with Multi-View Support
+### Example 1: Fetching Calendar Data with useQuery and Date-Range Pagination
+
+This is the most common real-world pattern: fetching data from an API based on the visible calendar date range. As users navigate the calendar (month/week/day), new data is automatically fetched for that time period.
+
+```tsx
+import { useQuery } from '@tanstack/react-query';
+import { toZonedTime, now } from '@gobrand/tiempo';
+import {
+  useCalendar,
+  createCalendarViews,
+  createCalendarAccessor,
+  type DateRange,
+  getMonthDateRange,
+} from '@gobrand/react-calendar';
+import { useState } from 'react';
+
+type Post = {
+  id: string;
+  title: string;
+  publishedAt: string; // UTC ISO 8601 string from API
+  status: 'draft' | 'scheduled' | 'published';
+};
+
+type PostWithDateTime = Post & {
+  zonedDateTime: Temporal.ZonedDateTime;
+};
+
+const TIME_ZONE = 'America/New_York';
+
+function PostCalendar() {
+  // Track the current visible date range
+  const [dateRange, setDateRange] = useState<DateRange>(() =>
+    getMonthDateRange(now(TIME_ZONE).toPlainDate(), TIME_ZONE)
+  );
+
+  // Fetch posts for the visible date range
+  const { data: posts = [], isLoading } = useQuery({
+    queryKey: ['posts', dateRange?.start.toString(), dateRange?.end.toString()],
+    queryFn: async () => {
+      if (!dateRange) return [];
+
+      // Convert date range to UTC ISO strings for API
+      const filters = {
+        dateRange: {
+          start: dateRange.start.toInstant().toString(),
+          end: dateRange.end.toInstant().toString(),
+        },
+      };
+
+      return getPosts(filters);
+    },
+    // Convert UTC strings to ZonedDateTime for calendar
+    select: (posts) =>
+      posts.map((post) => ({
+        ...post,
+        zonedDateTime: toZonedTime(post.publishedAt, TIME_ZONE),
+      })),
+    enabled: !!dateRange,
+  });
+
+  const calendar = useCalendar({
+    data: posts,
+    timeZone: TIME_ZONE,
+    views: createCalendarViews<PostWithDateTime>()({
+      month: {
+        accessor: createCalendarAccessor({
+          getDate: (post) => post.zonedDateTime.toPlainDate(),
+          getStart: (post) => post.zonedDateTime,
+        }),
+      },
+    }),
+    // Sync date range when calendar navigation changes
+    onStateChange: (updater) => {
+      const newState =
+        typeof updater === 'function' ? updater(calendar.getState()) : updater;
+      setDateRange(newState.dateRange);
+    },
+  });
+
+  const month = calendar.getMonth();
+
+  return (
+    <div>
+      <header>
+        <button onClick={calendar.previousMonth}>←</button>
+        <h2>{calendar.getTitle('month')}</h2>
+        <button onClick={calendar.nextMonth}>→</button>
+        {isLoading && <span>Loading...</span>}
+      </header>
+
+      <div className="calendar-grid">
+        {month.weeks.flat().map((day) => (
+          <div key={day.date.toString()}>
+            <div>{day.date.day}</div>
+            {day.items.map((post) => (
+              <div key={post.id}>{post.title}</div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+**Key points:**
+- `dateRange` state tracks the currently visible calendar period
+- `useQuery` automatically refetches when `dateRange` changes (navigation)
+- Date range is converted to UTC ISO strings for the API request
+- `select` transforms API responses (UTC ISO strings) to `ZonedDateTime` for the calendar
+- `onStateChange` syncs calendar navigation with the date range state
+- This pattern works for infinite scroll, cursor-based pagination, or any date-range filtering
+
+### Example 2: Event Calendar with Multi-View Support
 
 A complete event calendar with month, week, and day views, timezone support, and type-safe view switching.
 
@@ -669,7 +782,6 @@ function TaskCalendar() {
     data: tasks,
     views: createCalendarViews<Task>()({
       month: {
-        weekStartsOn: 1,
         accessor: createCalendarAccessor({
           getDate: (task) => task.dueDate,
         })
