@@ -258,6 +258,55 @@ describe('buildMonth', () => {
     }
   });
 
+  it('should not add an extra week after the month ends when last day completes the week (weekStartsOn: 0)', () => {
+    // January 2026 with Sunday start (weekStartsOn: 0)
+    // Jan 1, 2026 is Thursday - grid starts Sunday Dec 28, 2025
+    // Jan 31, 2026 is Saturday - this completes the 5th week
+    // Bug: code was adding a 6th week (Feb 1-7) unnecessarily
+    const result = buildMonth(2026, 1, { weekStartsOn: 0 });
+
+    // Should have exactly 5 weeks, not 6
+    expect(result.weeks.length).toBe(5);
+
+    // Verify all February days should NOT be in the grid
+    const allDays = result.weeks.flat();
+    const februaryDays = allDays.filter((day) => day.date.month === 2);
+    expect(februaryDays).toHaveLength(0);
+
+    // Verify Jan 31 is included
+    const jan31 = allDays.find((d) => d.date.day === 31 && d.date.month === 1);
+    expect(jan31).toBeDefined();
+
+    // Verify the last day in the grid is Jan 31
+    const lastDay = allDays[allDays.length - 1];
+    expect(lastDay.date.day).toBe(31);
+    expect(lastDay.date.month).toBe(1);
+  });
+
+  it('should correctly pad the final week when month ends mid-week (weekStartsOn: 1)', () => {
+    // January 2026 with Monday start (weekStartsOn: 1)
+    // Jan 1, 2026 is Thursday - grid starts Monday Dec 29, 2025
+    // Jan 31, 2026 is Saturday - NOT the last day of week (Sunday is)
+    // So Feb 1 (Sunday) should be added to complete the week
+    const result = buildMonth(2026, 1, { weekStartsOn: 1 });
+
+    const allDays = result.weeks.flat();
+
+    // Feb 1 should be in the grid to complete Jan 31's week
+    const feb1 = allDays.find((d) => d.date.day === 1 && d.date.month === 2);
+    expect(feb1).toBeDefined();
+    expect(feb1?.isCurrentMonth).toBe(false);
+
+    // But Feb 2 onwards should NOT be there (no extra week)
+    const feb2 = allDays.find((d) => d.date.day === 2 && d.date.month === 2);
+    expect(feb2).toBeUndefined();
+
+    // Verify the last day is Feb 1 (Sunday, completing the week)
+    const lastDay = allDays[allDays.length - 1];
+    expect(lastDay.date.day).toBe(1);
+    expect(lastDay.date.month).toBe(2);
+  });
+
   it('should group multiple events on same date', () => {
     const events: TestEvent[] = [
       { id: '1', date: '2024-01-15', title: 'Event 1' },

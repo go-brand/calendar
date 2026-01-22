@@ -40,13 +40,13 @@ export function buildMonth<T>(
   const weeks: CalendarWeek<T>[] = [];
   let currentDate = startDate;
 
-  while (
-    currentDate.month !== lastOfMonth.month ||
-    currentDate.day <= lastOfMonth.day ||
-    weeks.length === 0 ||
-    weeks[weeks.length - 1].length < 7
-  ) {
+  let passedLastDay = false;
+
+  while (true) {
     if (weeks.length === 0 || weeks[weeks.length - 1].length === 7) {
+      if (passedLastDay) {
+        break;
+      }
       weeks.push([]);
     }
 
@@ -58,9 +58,13 @@ export function buildMonth<T>(
       items: itemsByDate.get(dateKey) ?? [],
     });
 
+    if (Temporal.PlainDate.compare(currentDate, lastOfMonth) >= 0) {
+      passedLastDay = true;
+    }
+
     currentDate = currentDate.add({ days: 1 });
 
-    if (weeks.length >= 6 && weeks[weeks.length - 1].length === 7) {
+    if (passedLastDay && weeks[weeks.length - 1].length === 7) {
       break;
     }
   }
