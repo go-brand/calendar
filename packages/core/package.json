@@ -1,6 +1,6 @@
 {
   "name": "@gobrand/calendar-core",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Lightweight utility library for building calendars using the Temporal API",
   "private": false,
   "publishConfig": {
