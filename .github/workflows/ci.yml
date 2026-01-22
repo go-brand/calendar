@@ -69,11 +69,11 @@ jobs:
         run: pnpm build
 
       - name: Publish @gobrand/calendar-core to npm
-        run: cd packages/core && npm publish --access public
+        run: pnpm --filter @gobrand/calendar-core publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @gobrand/react-calendar to npm
-        run: cd packages/react && npm publish --access public
+        run: pnpm --filter @gobrand/react-calendar publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
