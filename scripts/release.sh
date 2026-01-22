@@ -96,6 +96,8 @@ fs.writeFileSync(corePath, JSON.stringify(core, null, 2) + '\n');
 const reactPath = './packages/react/package.json';
 const react = JSON.parse(fs.readFileSync(reactPath, 'utf8'));
 react.version = version;
+// Sync the dependency on calendar-core to the new version
+react.dependencies['@gobrand/calendar-core'] = '^' + version;
 fs.writeFileSync(reactPath, JSON.stringify(react, null, 2) + '\n');
 
 console.log('Updated packages to version ' + version);
