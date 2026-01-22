@@ -96,19 +96,14 @@ fs.writeFileSync(corePath, JSON.stringify(core, null, 2) + '\n');
 const reactPath = './packages/react/package.json';
 const react = JSON.parse(fs.readFileSync(reactPath, 'utf8'));
 react.version = version;
-// Sync the dependency on calendar-core to the new version
-react.dependencies['@gobrand/calendar-core'] = '^' + version;
+// Note: @gobrand/calendar-core uses workspace:^ which pnpm converts to ^version on publish
 fs.writeFileSync(reactPath, JSON.stringify(react, null, 2) + '\n');
 
 console.log('Updated packages to version ' + version);
 "
 
-# Update lockfile after dependency change
-echo "Updating lockfile..."
-pnpm install --ignore-scripts
-
-# Commit version bump
-git add packages/*/package.json pnpm-lock.yaml
+# Commit version bump (lockfile doesn't need updating since core is a workspace package)
+git add packages/*/package.json
 git commit -m "chore: release v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 

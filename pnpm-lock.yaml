@@ -37,8 +37,8 @@ importers:
   packages/react:
     dependencies:
       '@gobrand/calendar-core':
-        specifier: ^0.0.12
-        version: 0.0.12
+        specifier: workspace:^
+        version: link:../core
       '@js-temporal/polyfill':
         specifier: ^0.5.1
         version: 0.5.1
@@ -463,9 +463,6 @@ packages:
     peerDependenciesMeta:
       '@exodus/crypto':
         optional: true
-
-  '@gobrand/calendar-core@0.0.12':
-    resolution: {integrity: sha512-M4IskdoZgavru8YdfrH08CIJBu1X5ZEJTdMFD++hGFZ0Ua6gy9oopD2QsDsx6EzSPaKEpqqIwQMnYd3MsVfDFA==}
 
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
@@ -1789,11 +1786,6 @@ snapshots:
 
   '@exodus/bytes@1.8.0':
     optional: true
-
-  '@gobrand/calendar-core@0.0.12':
-    dependencies:
-      '@js-temporal/polyfill': 0.5.1
-      '@tanstack/store': 0.8.0
 
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
