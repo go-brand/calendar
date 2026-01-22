@@ -103,8 +103,12 @@ fs.writeFileSync(reactPath, JSON.stringify(react, null, 2) + '\n');
 console.log('Updated packages to version ' + version);
 "
 
+# Update lockfile after dependency change
+echo "Updating lockfile..."
+pnpm install --ignore-scripts
+
 # Commit version bump
-git add packages/*/package.json
+git add packages/*/package.json pnpm-lock.yaml
 git commit -m "chore: release v$NEW_VERSION"
 git tag "v$NEW_VERSION"
 
