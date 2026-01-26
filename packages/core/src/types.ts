@@ -160,8 +160,9 @@ type ValidViews<Options> = Options extends { views: infer V }
 // Base calendar methods that are always available
 type BaseCalendarMethods<Options> = {
   // View-aware title formatter (only for configured views)
+  // If view is omitted, formats title for currentView
   getTitle(
-    view: ValidViews<Options>,
+    view?: ValidViews<Options>,
     locales?: Temporal.LocalesArgument,
     options?: globalThis.Intl.DateTimeFormatOptions
   ): string;

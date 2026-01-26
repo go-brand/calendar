@@ -221,11 +221,12 @@ export function createCalendar<
     getDay: getDayImpl,
 
     getTitle(
-      view: 'month' | 'week' | 'day',
+      view?: 'month' | 'week' | 'day',
       locales?: Temporal.LocalesArgument,
       options?: globalThis.Intl.DateTimeFormatOptions
     ): string {
-      switch (view) {
+      const effectiveView = view ?? store.state.currentView ?? defaultView;
+      switch (effectiveView) {
         case 'month': {
           const month = getMonthImpl();
           const date = month.month.toPlainDate({ day: 1 });
@@ -262,6 +263,8 @@ export function createCalendar<
             ...options,
           });
         }
+        default:
+          throw new Error(`Unknown view: ${effectiveView}`);
       }
     },
 

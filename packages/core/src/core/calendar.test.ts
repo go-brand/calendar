@@ -283,6 +283,33 @@ describe('createCalendar', () => {
       expect(title).toContain('15');
       expect(title).toContain('2024');
     });
+
+    it('should return title using currentView when view is omitted', () => {
+      const calendar = createCalendar({
+        data: [],
+        views: {
+          month: { accessor: testAccessor },
+          week: { accessor: testAccessor },
+          day: { accessor: testAccessor },
+        },
+        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+      });
+
+      // Default view is 'month' (first configured view)
+      const monthTitle = calendar.getTitle(undefined, 'en-US');
+      expect(monthTitle).toContain('January');
+      expect(monthTitle).toContain('2024');
+
+      // Switch to week view
+      calendar.setCurrentView('week');
+      const weekTitle = calendar.getTitle(undefined, 'en-US');
+      expect(weekTitle).toContain('-');
+
+      // Switch to day view
+      calendar.setCurrentView('day');
+      const dayTitle = calendar.getTitle(undefined, 'en-US');
+      expect(dayTitle).toContain('Monday');
+    });
   });
 
   describe('shared navigation', () => {
