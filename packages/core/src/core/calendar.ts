@@ -297,8 +297,9 @@ export function createCalendar<
       }));
     },
 
-    next(view: 'month' | 'week' | 'day') {
-      switch (view) {
+    next(view?: 'month' | 'week' | 'day') {
+      const effectiveView = view ?? store.state.currentView ?? defaultView;
+      switch (effectiveView) {
         case 'month':
           nextMonthImpl();
           break;
@@ -311,8 +312,9 @@ export function createCalendar<
       }
     },
 
-    previous(view: 'month' | 'week' | 'day') {
-      switch (view) {
+    previous(view?: 'month' | 'week' | 'day') {
+      const effectiveView = view ?? store.state.currentView ?? defaultView;
+      switch (effectiveView) {
         case 'month':
           previousMonthImpl();
           break;

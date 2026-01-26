@@ -382,6 +382,58 @@ describe('createCalendar', () => {
       calendar.previous('day');
       expect(calendar.getState().referenceDate.day).toBe(14);
     });
+
+    it('should navigate next using currentView when view is omitted', () => {
+      const calendar = createCalendar({
+        data: [],
+        views: {
+          month: { accessor: testAccessor },
+          week: { accessor: testAccessor },
+          day: { accessor: testAccessor },
+        },
+        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+      });
+
+      // Default view is 'month' (first configured view)
+      calendar.next();
+      expect(calendar.getState().referenceDate.month).toBe(2);
+
+      // Switch to week view and navigate
+      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15'), currentView: 'week' }));
+      calendar.next();
+      expect(calendar.getState().referenceDate.day).toBe(22);
+
+      // Switch to day view and navigate
+      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15'), currentView: 'day' }));
+      calendar.next();
+      expect(calendar.getState().referenceDate.day).toBe(16);
+    });
+
+    it('should navigate previous using currentView when view is omitted', () => {
+      const calendar = createCalendar({
+        data: [],
+        views: {
+          month: { accessor: testAccessor },
+          week: { accessor: testAccessor },
+          day: { accessor: testAccessor },
+        },
+        state: { referenceDate: Temporal.PlainDate.from('2024-02-15') },
+      });
+
+      // Default view is 'month' (first configured view)
+      calendar.previous();
+      expect(calendar.getState().referenceDate.month).toBe(1);
+
+      // Switch to week view and navigate
+      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15'), currentView: 'week' }));
+      calendar.previous();
+      expect(calendar.getState().referenceDate.day).toBe(8);
+
+      // Switch to day view and navigate
+      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15'), currentView: 'day' }));
+      calendar.previous();
+      expect(calendar.getState().referenceDate.day).toBe(14);
+    });
   });
 
   describe('state synchronization', () => {

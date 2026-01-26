@@ -177,8 +177,9 @@ type BaseCalendarMethods<Options> = {
   goToDate(date: Temporal.PlainDate): void;
 
   // View-aware navigation shortcuts (only for configured views)
-  next(view: ValidViews<Options>): void;
-  previous(view: ValidViews<Options>): void;
+  // If view is omitted, navigates based on currentView
+  next(view?: ValidViews<Options>): void;
+  previous(view?: ValidViews<Options>): void;
 
   // View management
   views: ReadonlyArray<ValidViews<Options>>;
