@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "calendar-docs",
+  "name": "tiempo-docs",
   "main": "@tanstack/react-start/server-entry",
   "compatibility_date": "2025-01-23",
   "compatibility_flags": ["nodejs_compat"],
@@ -15,11 +15,11 @@
   "workers_dev": false,
   "routes": [
     {
-      "pattern": "eng.gobrand.app/calendar",
+      "pattern": "eng.gobrand.app/tiempo",
       "zone_name": "gobrand.app"
     },
     {
-      "pattern": "eng.gobrand.app/calendar/*",
+      "pattern": "eng.gobrand.app/tiempo/*",
       "zone_name": "gobrand.app"
     }
   ]
