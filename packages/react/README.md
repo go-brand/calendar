@@ -14,17 +14,26 @@
 - **TanStack Store** - Optimized reactive state management
 
 ```tsx
-import { useCalendar, createCalendarViews, createCalendarAccessor } from '@gobrand/react-calendar';
+import { useCreateCalendar, useView, CalendarProvider } from '@gobrand/react-calendar';
 
-const calendar = useCalendar({
-  data: events,
-  views: createCalendarViews<Event>()({
-    month: { accessor: createCalendarAccessor({ getDate: (e) => e.date }) },
-  }),
-});
+const accessor = { getDate: (e: Event) => e.date };
 
-const month = calendar.getMonth();
-// month.weeks.flat().map(day => ...)
+function App() {
+  const calendar = useCreateCalendar<Event>({
+    views: { month: { accessor } },
+  });
+
+  return (
+    <CalendarProvider calendar={calendar}>
+      <Calendar />
+    </CalendarProvider>
+  );
+}
+
+function Calendar() {
+  const view = useView({ data: events });
+  // view.data.weeks.flat().map(day => ...)
+}
 ```
 
 ## Install
