@@ -1,0 +1,153 @@
+---
+title: Calendar Types
+description: Core calendar types and state management
+---
+
+## CalendarOptions
+
+The main configuration object for creating a calendar.
+
+```typescript
+type CalendarOptions<TItem> = {
+  views: CalendarViewOptions<TItem>;
+  timeZone?: 'UTC' | string;
+  state?: Partial<CalendarState>;
+  onStateChange?: (updater: Updater<CalendarState>) => void;
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `views` | `CalendarViewOptions<TItem>` | View configurations (month, week, day) |
+| `timeZone` | `string` | IANA timezone identifier. Defaults to system timezone |
+| `state` | `Partial<CalendarState>` | Initial state override |
+| `onStateChange` | `function` | Callback when state changes |
+
+Data is passed directly to view methods (`getMonth(data)`, `getWeek(data)`, `getDay(data)`) rather than stored in options.
+
+## CalendarState
+
+The internal state of a calendar instance.
+
+```typescript
+type CalendarState = {
+  referenceDate: Temporal.PlainDate;
+  currentView?: string;
+  dateRange: DateRange;
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `referenceDate` | `PlainDate` | The date used as reference for the current view |
+| `currentView` | `string` | The currently active view name |
+| `dateRange` | `DateRange` | Computed ZonedDateTime range for the calendar's timezone |
+
+## DateRange
+
+A timezone-aware date range.
+
+```typescript
+type DateRange = {
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+};
+```
+
+## CalendarAccessor
+
+Defines how to extract dates from your data items.
+
+```typescript
+type CalendarAccessor<TItem> = {
+  getDate: (item: TItem) => Temporal.PlainDate;
+  getStart?: (item: TItem) => Temporal.ZonedDateTime;
+  getEnd?: (item: TItem) => Temporal.ZonedDateTime;
+};
+```
+
+| Property | Required | Description |
+|----------|----------|-------------|
+| `getDate` | Yes | Extract PlainDate for day-level mapping |
+| `getStart` | No | Extract ZonedDateTime start time for time slots |
+| `getEnd` | No | Extract ZonedDateTime end time for duration |
+
+## Calendar
+
+The main calendar type. Methods are conditional based on configured views.
+
+```typescript
+type Calendar<TItem, TOptions> =
+  BaseCalendarMethods<TOptions> &
+  MonthMethods<TItem, TOptions> &
+  WeekMethods<TItem, TOptions> &
+  DayMethods<TItem, TOptions>;
+```
+
+### Base Methods (Always Available)
+
+```typescript
+type BaseCalendarMethods<Options> = {
+  getTitle(view?, locales?, options?): string;
+  getState(): CalendarState;
+  setState(updater): void;
+  goToToday(): void;
+  goToDate(date: PlainDate): void;
+  next(view?): void;
+  previous(view?): void;
+  views: ReadonlyArray<ValidViews<Options>>;
+  currentView: ValidViews<Options>;
+  setCurrentView(view): void;
+  dateRange: DateRange;
+  getDateRange(view?): DateRange;
+  options: Options;
+  setOptions(updater): void;
+  store: Store<CalendarState>;
+  hasMonthView(): boolean;
+  hasWeekView(): boolean;
+  hasDayView(): boolean;
+};
+```
+
+| Method | Description |
+|--------|-------------|
+| `getDateRange(view?)` | Get date range for a specific view (useful for dual-view scenarios) |
+
+### Month Methods (When Month View Configured)
+
+```typescript
+type MonthMethods<TItem, TOptions> = {
+  getMonth(data?: TItem[]): CalendarMonth<TItem>;
+  nextMonth(): void;
+  previousMonth(): void;
+  goToMonth(year: number, month: number): void;
+};
+```
+
+### Week Methods (When Week View Configured)
+
+```typescript
+type WeekMethods<TItem, TOptions> = {
+  getWeek(data?: TItem[]): CalendarWeekView<TItem>;
+  nextWeek(): void;
+  previousWeek(): void;
+};
+```
+
+### Day Methods (When Day View Configured)
+
+```typescript
+type DayMethods<TItem, TOptions> = {
+  getDay(data?: TItem[]): CalendarDayView<TItem>;
+  nextDay(): void;
+  previousDay(): void;
+};
+```
+
+## Updater
+
+Used for state updates, following TanStack patterns.
+
+```typescript
+type Updater<T> = T | ((old: T) => T);
+```

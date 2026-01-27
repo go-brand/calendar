@@ -1,0 +1,147 @@
+---
+title: useCreateCalendar
+description: Creates a calendar instance with React state management
+---
+
+```tsx
+function useCreateCalendar<TItem, TOptions extends CalendarOptions<TItem>>(
+  options: TOptions
+): Calendar<TItem, TOptions>
+```
+
+Creates and manages a calendar instance with React state. This is the primary way to create a calendar in React applications.
+
+## Usage
+
+```tsx
+import { useCreateCalendar, CalendarProvider } from '@gobrand/react-calendar';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Event = { id: string; title: string; date: string };
+
+const accessor = { getDate: (e: Event) => Temporal.PlainDate.from(e.date) };
+
+function App() {
+  const calendar = useCreateCalendar<Event>({
+    views: {
+      month: { accessor, weekStartsOn: 1 },
+    },
+  });
+
+  return (
+    <CalendarProvider calendar={calendar}>
+      <Toolbar />
+      <MonthGrid events={events} />
+    </CalendarProvider>
+  );
+}
+```
+
+## Parameters
+
+### `options`
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `views` | `CalendarViewOptions<TItem>` | Yes | View configurations. At least one view required |
+| `timeZone` | `string` | No | IANA timezone identifier. Defaults to system timezone |
+| `state` | `Partial<CalendarState>` | No | Initial state override |
+| `onStateChange` | `(updater: Updater<CalendarState>) => void` | No | Callback when state changes |
+
+### View Options
+
+Each view accepts specific configuration:
+
+**Month View:**
+```tsx
+{
+  accessor: CalendarAccessor<TItem>;  // Required
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;  // 0 = Sunday (default)
+}
+```
+
+**Week View:**
+```tsx
+{
+  accessor: CalendarAccessor<TItem>;  // Required
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  startHour?: number;   // Default: 0
+  endHour?: number;     // Default: 24
+  slotDuration?: number; // Minutes, default: 60
+}
+```
+
+**Day View:**
+```tsx
+{
+  accessor: CalendarAccessor<TItem>;  // Required
+  startHour?: number;   // Default: 0
+  endHour?: number;     // Default: 24
+  slotDuration?: number; // Minutes, default: 60
+}
+```
+
+## Returns
+
+Returns a [`Calendar`](/docs/api/calendar-instance) instance with methods conditional on configured views.
+
+## Type Safety
+
+TypeScript ensures you can only use views you've configured:
+
+```tsx
+const calendar = useCreateCalendar<Event>({
+  views: {
+    month: { accessor },
+  },
+});
+
+calendar.setCurrentView('month'); // OK
+calendar.setCurrentView('week');  // TypeScript Error - week not configured
+```
+
+## State Management
+
+The hook manages calendar state internally, but you can control it externally:
+
+```tsx
+const [state, setState] = useState<CalendarState>();
+
+const calendar = useCreateCalendar<Event>({
+  views: { month: { accessor } },
+  state,
+  onStateChange: setState,
+});
+```
+
+## Timezone Support
+
+```tsx
+const calendar = useCreateCalendar<Event>({
+  timeZone: 'America/New_York',
+  views: { month: { accessor } },
+});
+
+// dateRange provides ZonedDateTime boundaries for data fetching
+const { start, end } = calendar.dateRange;
+// start: 2025-01-01T00:00:00-05:00[America/New_York]
+```
+
+## Multi-View Configuration
+
+```tsx
+const calendar = useCreateCalendar<Event>({
+  views: {
+    month: { accessor, weekStartsOn: 1 },
+    week: { accessor, startHour: 8, endHour: 18 },
+    day: { accessor, startHour: 8, endHour: 18, slotDuration: 30 },
+  },
+});
+
+// Switch between views
+calendar.setCurrentView('week');
+
+// Navigate based on current view
+calendar.next();     // Goes to next week
+calendar.previous(); // Goes to previous week
+```

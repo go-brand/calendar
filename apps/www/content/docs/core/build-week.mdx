@@ -1,0 +1,195 @@
+---
+title: buildWeek
+description: Standalone function to build a week with time slots
+---
+
+## Overview
+
+`buildWeek` is a standalone function that creates a week view with optional time slots. Use this for one-off renders or when you don't need the stateful features of [`createCalendar`](/docs/core/create-calendar).
+
+## Import
+
+```typescript
+import { buildWeek } from '@gobrand/calendar-core';
+```
+
+## Signature
+
+```typescript
+function buildWeek<TItem>(
+  date: Temporal.PlainDate,
+  options?: {
+    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    startHour?: number;
+    endHour?: number;
+    slotDuration?: number;
+    today?: Temporal.PlainDate;
+    data?: TItem[];
+    accessor?: CalendarAccessor<TItem>;
+  }
+): CalendarWeekView<TItem>;
+```
+
+## Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `date` | `PlainDate` | Yes | Any date within the target week |
+| `options.weekStartsOn` | `0-6` | No | First day of week. Default: `1` (Monday) |
+| `options.startHour` | `number` | No | Start hour for time slots. Default: `0` |
+| `options.endHour` | `number` | No | End hour for time slots. Default: `24` |
+| `options.slotDuration` | `number` | No | Minutes per slot. Default: `60` |
+| `options.today` | `PlainDate` | No | Override today's date |
+| `options.data` | `TItem[]` | No | Items to map to the week |
+| `options.accessor` | `CalendarAccessor<TItem>` | No | Required if `data` is provided |
+
+## Return Type
+
+```typescript
+type CalendarWeekView<TItem> = {
+  days: WeekDay<TItem>[];
+  weekStart: Temporal.PlainDate;
+  weekEnd: Temporal.PlainDate;
+};
+
+type WeekDay<TItem> = {
+  date: Temporal.PlainDate;
+  isToday: boolean;
+  items: TItem[];
+  timeSlots?: TimeSlot<TItem>[];
+};
+
+type TimeSlot<TItem> = {
+  hour: number;
+  minute: number;
+  time: Temporal.PlainTime;
+  items: TItem[];
+};
+```
+
+## Basic Usage
+
+```typescript
+import { buildWeek } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+const date = Temporal.PlainDate.from('2025-01-15');
+const week = buildWeek(date, { weekStartsOn: 1 });
+
+console.log(`${week.weekStart} to ${week.weekEnd}`);
+// 2025-01-13 to 2025-01-19
+
+week.days.forEach(day => {
+  console.log(day.date.toString(), day.isToday);
+});
+```
+
+## With Time Slots and Data
+
+```typescript
+import { buildWeek, createCalendarAccessor } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Meeting = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+};
+
+const meetings: Meeting[] = [
+  {
+    id: '1',
+    title: 'Standup',
+    start: Temporal.ZonedDateTime.from('2025-01-15T09:00:00-05:00[America/New_York]'),
+  },
+  {
+    id: '2',
+    title: 'Review',
+    start: Temporal.ZonedDateTime.from('2025-01-15T14:00:00-05:00[America/New_York]'),
+  },
+];
+
+const accessor = createCalendarAccessor<Meeting>({
+  getDate: (m) => m.start.toPlainDate(),
+  getStart: (m) => m.start,
+});
+
+const week = buildWeek(Temporal.PlainDate.from('2025-01-15'), {
+  weekStartsOn: 1,
+  startHour: 8,
+  endHour: 18,
+  slotDuration: 60,
+  data: meetings,
+  accessor,
+});
+
+// Find meetings in time slots
+week.days.forEach(day => {
+  day.timeSlots?.forEach(slot => {
+    if (slot.items.length > 0) {
+      console.log(`${day.date} ${slot.hour}:00 - ${slot.items.map(m => m.title)}`);
+    }
+  });
+});
+// 2025-01-15 9:00 - Standup
+// 2025-01-15 14:00 - Review
+```
+
+## Slot Duration Options
+
+```typescript
+// Hourly slots (10 slots for 8 AM - 6 PM)
+buildWeek(date, { startHour: 8, endHour: 18, slotDuration: 60 });
+
+// Half-hour slots (20 slots)
+buildWeek(date, { startHour: 8, endHour: 18, slotDuration: 30 });
+
+// 15-minute slots (40 slots)
+buildWeek(date, { startHour: 8, endHour: 18, slotDuration: 15 });
+```
+
+## Rendering
+
+```tsx
+function WeekView({ week }: { week: CalendarWeekView<Meeting> }) {
+  return (
+    <div className="flex">
+      {/* Time column */}
+      <div className="w-16">
+        {week.days[0].timeSlots?.map(slot => (
+          <div key={slot.hour} className="h-12 text-xs text-gray-500">
+            {slot.hour}:00
+          </div>
+        ))}
+      </div>
+
+      {/* Day columns */}
+      {week.days.map(day => (
+        <div key={day.date.toString()} className="flex-1">
+          <div className={`p-2 text-center ${day.isToday ? 'bg-blue-100' : ''}`}>
+            {day.date.day}
+          </div>
+          {day.timeSlots?.map(slot => (
+            <div key={slot.hour} className="h-12 border-t relative">
+              {slot.items.map(meeting => (
+                <div key={meeting.id} className="absolute inset-x-0 bg-blue-200 p-1 text-xs">
+                  {meeting.title}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## When to Use
+
+| Use Case | Recommendation |
+|----------|----------------|
+| One-off static render | `buildWeek` |
+| Server-side generation | `buildWeek` |
+| Need navigation, view switching | [`createCalendar`](/docs/core/create-calendar) |
+| React app with state | [`createCalendar`](/docs/core/create-calendar) |

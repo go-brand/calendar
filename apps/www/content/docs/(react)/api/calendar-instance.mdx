@@ -1,0 +1,346 @@
+---
+title: Calendar Instance
+description: The calendar object returned by useCreateCalendar and useCalendar
+---
+
+The calendar instance is returned by [`useCreateCalendar`](/docs/api/use-create-calendar) and [`useCalendar`](/docs/api/use-calendar). It provides methods for navigation, state management, and display.
+
+**For view data**, use the [`useView`](/docs/api/use-view) hook instead of calling `getMonth()`/`getWeek()`/`getDay()` directly.
+
+## Properties
+
+### `currentView`
+
+```tsx
+currentView: string
+```
+
+The currently active view name (`'month'`, `'week'`, or `'day'`).
+
+```tsx
+const calendar = useCalendar();
+console.log(calendar.currentView); // 'month'
+```
+
+### `views`
+
+```tsx
+views: ReadonlyArray<string>
+```
+
+Array of configured view names.
+
+```tsx
+const calendar = useCalendar();
+console.log(calendar.views); // ['month', 'week', 'day']
+```
+
+### `dateRange`
+
+```tsx
+dateRange: DateRange
+```
+
+Current date range for the active view with timezone-aware boundaries:
+
+```tsx
+type DateRange = {
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+};
+```
+
+Use for data fetching:
+
+```tsx
+const calendar = useCalendar();
+
+const { data } = useQuery({
+  queryKey: ['events', calendar.dateRange.start.toString()],
+  queryFn: () => fetchEvents(calendar.dateRange),
+});
+```
+
+### `options`
+
+```tsx
+options: CalendarOptions<TItem>
+```
+
+The current calendar configuration.
+
+### `store`
+
+```tsx
+store: Store<CalendarState>
+```
+
+TanStack Store instance for advanced state management and subscriptions.
+
+---
+
+## Navigation Methods
+
+### `next()`
+
+```tsx
+next(view?: ViewType): void
+```
+
+Navigate to the next period. Uses `currentView` if view is not specified.
+
+```tsx
+calendar.next();        // Next based on currentView
+calendar.next('month'); // Next month regardless of currentView
+```
+
+### `previous()`
+
+```tsx
+previous(view?: ViewType): void
+```
+
+Navigate to the previous period. Uses `currentView` if view is not specified.
+
+```tsx
+calendar.previous();        // Previous based on currentView
+calendar.previous('week');  // Previous week regardless of currentView
+```
+
+### `goToToday()`
+
+```tsx
+goToToday(): void
+```
+
+Navigate to today's date.
+
+```tsx
+calendar.goToToday();
+```
+
+### `goToDate()`
+
+```tsx
+goToDate(date: Temporal.PlainDate): void
+```
+
+Navigate to a specific date.
+
+```tsx
+calendar.goToDate(Temporal.PlainDate.from('2025-12-25'));
+```
+
+---
+
+## View-Specific Navigation
+
+These methods are only available when the corresponding view is configured.
+
+### Month View
+
+```tsx
+nextMonth(): void
+previousMonth(): void
+goToMonth(year: number, month: number): void
+```
+
+```tsx
+calendar.nextMonth();
+calendar.previousMonth();
+calendar.goToMonth(2025, 12); // December 2025
+```
+
+### Week View
+
+```tsx
+nextWeek(): void
+previousWeek(): void
+```
+
+```tsx
+calendar.nextWeek();
+calendar.previousWeek();
+```
+
+### Day View
+
+```tsx
+nextDay(): void
+previousDay(): void
+```
+
+```tsx
+calendar.nextDay();
+calendar.previousDay();
+```
+
+---
+
+## Display Methods
+
+### `getTitle()`
+
+```tsx
+getTitle(
+  view?: ViewType,
+  locales?: Intl.LocalesArgument,
+  options?: Intl.DateTimeFormatOptions
+): string
+```
+
+Returns a formatted title for the current view. Uses `currentView` if view is not specified.
+
+```tsx
+calendar.getTitle();                    // "January 2025"
+calendar.getTitle('week');              // "Jan 12 - 18, 2025"
+calendar.getTitle('month', 'es-ES');    // "enero de 2025"
+calendar.getTitle('month', 'en-US', { year: '2-digit' }); // "January '25"
+```
+
+### `getDateRange()`
+
+```tsx
+getDateRange(view?: ViewType): DateRange
+```
+
+Get the date range for a specific view. Uses `currentView` if view is not specified.
+
+```tsx
+// For dual-view scenarios
+const monthRange = calendar.getDateRange('month');
+const weekRange = calendar.getDateRange('week');
+```
+
+---
+
+## State Methods
+
+### `getState()`
+
+```tsx
+getState(): CalendarState
+```
+
+Returns the current calendar state:
+
+```tsx
+type CalendarState = {
+  referenceDate: Temporal.PlainDate;
+  currentView?: string;
+  dateRange: DateRange;
+};
+```
+
+```tsx
+const state = calendar.getState();
+console.log(state.referenceDate.toString()); // '2025-01-15'
+```
+
+### `setState()`
+
+```tsx
+setState(
+  updater: CalendarState | ((old: CalendarState) => Partial<CalendarState>)
+): void
+```
+
+Updates calendar state. Accepts full state or an updater function:
+
+```tsx
+// Set specific date
+calendar.setState({
+  ...calendar.getState(),
+  referenceDate: Temporal.PlainDate.from('2025-06-01'),
+});
+
+// Using updater function
+calendar.setState((old) => ({
+  referenceDate: old.referenceDate.add({ months: 1 }),
+}));
+```
+
+### `setOptions()`
+
+```tsx
+setOptions(updater: (old: Options) => Options): void
+```
+
+Updates calendar options dynamically:
+
+```tsx
+calendar.setOptions((old) => ({
+  ...old,
+  timeZone: 'Europe/London',
+}));
+```
+
+---
+
+## View Management
+
+### `setCurrentView()`
+
+```tsx
+setCurrentView(view: string): void
+```
+
+Switch the active view:
+
+```tsx
+calendar.setCurrentView('week');
+```
+
+### Type Predicates
+
+Runtime checks for configured views:
+
+```tsx
+hasMonthView(): boolean
+hasWeekView(): boolean
+hasDayView(): boolean
+```
+
+```tsx
+if (calendar.hasWeekView()) {
+  calendar.setCurrentView('week');
+}
+```
+
+---
+
+## Low-Level View Methods
+
+These methods return view data directly. **Prefer using [`useView`](/docs/api/use-view)** which provides memoization and type inference from your data array.
+
+### `getMonth()`
+
+```tsx
+getMonth(data?: TItem[]): CalendarMonth<TItem>
+```
+
+### `getWeek()`
+
+```tsx
+getWeek(data?: TItem[]): CalendarWeekView<TItem>
+```
+
+### `getDay()`
+
+```tsx
+getDay(data?: TItem[]): CalendarDayView<TItem>
+```
+
+See [View Types](/docs/types/views) for the complete type definitions.
+
+---
+
+## TypeScript Types
+
+### `Calendar<TItem, TOptions>`
+
+Full calendar type with conditional methods based on configured views. Methods only exist for views you've configured.
+
+### `CalendarInstance<TItem>`
+
+Generic calendar type with all methods available. Used internally by context and when view configuration is unknown at compile time.

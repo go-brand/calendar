@@ -10,7 +10,6 @@ import {
   nextDay,
   previousDay,
   goToToday,
-  getWeekdays,
   getMonthName,
   formatTime,
   getTimeSlotHeight,
@@ -153,119 +152,6 @@ describe('goToToday', () => {
     const today = Temporal.Now.plainDateISO();
     expect(result.year).toBe(today.year);
     expect(result.month).toBe(today.month);
-  });
-});
-
-describe('getWeekdays', () => {
-  it('should return 7 weekday names starting from Monday', () => {
-    const result = getWeekdays(1);
-    expect(result).toHaveLength(7);
-    expect(result[0]).toBe('Mon');
-    expect(result[6]).toBe('Sun');
-  });
-
-  it('should return 7 weekday names starting from Sunday', () => {
-    const result = getWeekdays(0);
-    expect(result).toHaveLength(7);
-    expect(result[0]).toBe('Sun');
-    expect(result[6]).toBe('Sat');
-  });
-
-  it('should return 7 weekday names starting from Wednesday', () => {
-    const result = getWeekdays(3);
-    expect(result).toHaveLength(7);
-    expect(result[0]).toBe('Wed');
-    expect(result[6]).toBe('Tue');
-  });
-
-  it('should default to Monday when no argument provided', () => {
-    const result = getWeekdays();
-    expect(result[0]).toBe('Mon');
-  });
-
-  describe('locale support', () => {
-    it('should return weekdays in Spanish', () => {
-      const result = getWeekdays(1, 'es-ES');
-      expect(result).toHaveLength(7);
-      expect(result[0]).toBe('lun');
-      expect(result[6]).toBe('dom');
-    });
-
-    it('should return weekdays in French', () => {
-      const result = getWeekdays(1, 'fr-FR');
-      expect(result).toHaveLength(7);
-      expect(result[0]).toBe('lun.');
-      expect(result[6]).toBe('dim.');
-    });
-
-    it('should return weekdays in German', () => {
-      const result = getWeekdays(1, 'de-DE');
-      expect(result).toHaveLength(7);
-      expect(result[0]).toBe('Mo');
-      expect(result[6]).toBe('So');
-    });
-
-    it('should support locale array', () => {
-      const result = getWeekdays(1, ['es-ES', 'en-US']);
-      expect(result).toHaveLength(7);
-      expect(result[0]).toBe('lun');
-    });
-  });
-
-  describe('format support', () => {
-    it('should return long format weekdays', () => {
-      const result = getWeekdays(1, 'en-US', 'long');
-      expect(result).toHaveLength(7);
-      expect(result[0]).toBe('Monday');
-      expect(result[6]).toBe('Sunday');
-    });
-
-    it('should return narrow format weekdays', () => {
-      const result = getWeekdays(1, 'en-US', 'narrow');
-      expect(result).toHaveLength(7);
-      expect(result[0]).toBe('M');
-      expect(result[6]).toBe('S');
-    });
-
-    it('should combine different locale and format', () => {
-      const result = getWeekdays(0, 'es-ES', 'long');
-      expect(result).toHaveLength(7);
-      expect(result[0]).toBe('domingo');
-      expect(result[6]).toBe('sábado');
-    });
-
-    it('should work with French locale and long format', () => {
-      const result = getWeekdays(1, 'fr-FR', 'long');
-      expect(result[0]).toBe('lundi');
-      expect(result[6]).toBe('dimanche');
-    });
-
-    it('should work with German locale and narrow format', () => {
-      const result = getWeekdays(3, 'de-DE', 'narrow');
-      expect(result).toHaveLength(7);
-      expect(result[0]).toBe('M');
-    });
-  });
-
-  describe('combined scenarios', () => {
-    it('should work with Sunday start, Spanish locale, long format', () => {
-      const result = getWeekdays(0, 'es-ES', 'long');
-      expect(result[0]).toBe('domingo');
-      expect(result[1]).toBe('lunes');
-      expect(result).toHaveLength(7);
-    });
-
-    it('should work with Wednesday start, French locale, narrow format', () => {
-      const result = getWeekdays(3, 'fr-FR', 'narrow');
-      expect(result).toHaveLength(7);
-      expect(result[0]).toBe('M');
-    });
-
-    it('should maintain backwards compatibility with single argument', () => {
-      const result = getWeekdays(0);
-      expect(result[0]).toBe('Sun');
-      expect(result[1]).toBe('Mon');
-    });
   });
 });
 

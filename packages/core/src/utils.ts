@@ -40,22 +40,6 @@ export function goToToday(): { year: number; month: number } {
   return { year: today.year, month: today.month };
 }
 
-export function getWeekdays(
-  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1,
-  locale: string | string[] = 'en-US',
-  format: 'short' | 'long' | 'narrow' = 'short'
-): string[] {
-  const referenceDate = Temporal.PlainDate.from('2023-01-02');
-  const days: string[] = [];
-
-  for (let i = 0; i < 7; i++) {
-    const offset = (weekStartsOn - 1 + i + 7) % 7;
-    const date = referenceDate.add({ days: offset });
-    days.push(date.toLocaleString(locale, { weekday: format }));
-  }
-
-  return days;
-}
 
 export function getMonthName(month: Temporal.PlainYearMonth, locale = 'en-US'): string {
   return month.toPlainDate({ day: 1 }).toLocaleString(locale, { month: 'long' });

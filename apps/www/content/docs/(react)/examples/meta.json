@@ -1,0 +1,4 @@
+{
+  "title": "Examples",
+  "pages": ["basic-month", "week-view", "day-view", "multi-view"]
+}

@@ -1,0 +1,212 @@
+---
+title: buildDay
+description: Standalone function to build a day with time slots
+---
+
+## Overview
+
+`buildDay` is a standalone function that creates a day view with time slots. Use this for one-off renders, daily schedule views, or when you don't need the stateful features of [`createCalendar`](/docs/core/create-calendar).
+
+## Import
+
+```typescript
+import { buildDay } from '@gobrand/calendar-core';
+```
+
+## Signature
+
+```typescript
+function buildDay<TItem>(
+  date: Temporal.PlainDate,
+  options?: {
+    startHour?: number;
+    endHour?: number;
+    slotDuration?: number;
+    today?: Temporal.PlainDate;
+    data?: TItem[];
+    accessor?: CalendarAccessor<TItem>;
+  }
+): CalendarDayView<TItem>;
+```
+
+## Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `date` | `PlainDate` | Yes | The target date |
+| `options.startHour` | `number` | No | Start hour for time slots. Default: `0` |
+| `options.endHour` | `number` | No | End hour for time slots. Default: `24` |
+| `options.slotDuration` | `number` | No | Minutes per slot. Default: `60` |
+| `options.today` | `PlainDate` | No | Override today's date |
+| `options.data` | `TItem[]` | No | Items to map to the day |
+| `options.accessor` | `CalendarAccessor<TItem>` | No | Required if `data` is provided |
+
+## Return Type
+
+```typescript
+type CalendarDayView<TItem> = {
+  date: Temporal.PlainDate;
+  isToday: boolean;
+  timeSlots: TimeSlot<TItem>[];
+  items: TItem[];  // All items for this day
+};
+
+type TimeSlot<TItem> = {
+  hour: number;
+  minute: number;
+  time: Temporal.PlainTime;
+  items: TItem[];
+};
+```
+
+## Basic Usage
+
+```typescript
+import { buildDay } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+const date = Temporal.PlainDate.from('2025-01-15');
+const day = buildDay(date, {
+  startHour: 8,
+  endHour: 18,
+  slotDuration: 60,
+});
+
+console.log(`Date: ${day.date}, Today: ${day.isToday}`);
+console.log(`Slots: ${day.timeSlots.length}`); // 10
+```
+
+## With Appointments
+
+```typescript
+import { buildDay, createCalendarAccessor } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Appointment = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+};
+
+const appointments: Appointment[] = [
+  {
+    id: '1',
+    title: 'Morning Standup',
+    start: Temporal.ZonedDateTime.from('2025-01-15T09:00:00-05:00[America/New_York]'),
+    end: Temporal.ZonedDateTime.from('2025-01-15T09:30:00-05:00[America/New_York]'),
+  },
+  {
+    id: '2',
+    title: 'Client Call',
+    start: Temporal.ZonedDateTime.from('2025-01-15T14:00:00-05:00[America/New_York]'),
+    end: Temporal.ZonedDateTime.from('2025-01-15T15:00:00-05:00[America/New_York]'),
+  },
+];
+
+const accessor = createCalendarAccessor<Appointment>({
+  getDate: (a) => a.start.toPlainDate(),
+  getStart: (a) => a.start,
+  getEnd: (a) => a.end,
+});
+
+const day = buildDay(Temporal.PlainDate.from('2025-01-15'), {
+  startHour: 8,
+  endHour: 18,
+  slotDuration: 30,
+  data: appointments,
+  accessor,
+});
+
+// All appointments for the day
+console.log(`Total: ${day.items.length}`); // 2
+
+// Find appointments by time slot
+day.timeSlots.forEach(slot => {
+  if (slot.items.length > 0) {
+    console.log(`${slot.hour}:${String(slot.minute).padStart(2, '0')} - ${slot.items.map(a => a.title)}`);
+  }
+});
+// 9:00 - Morning Standup
+// 14:00 - Client Call
+```
+
+## Slot Duration Options
+
+```typescript
+// Hourly slots
+buildDay(date, { slotDuration: 60 });
+// Slots: 9:00, 10:00, 11:00, ...
+
+// Half-hour slots
+buildDay(date, { slotDuration: 30 });
+// Slots: 9:00, 9:30, 10:00, 10:30, ...
+
+// 15-minute slots
+buildDay(date, { slotDuration: 15 });
+// Slots: 9:00, 9:15, 9:30, 9:45, 10:00, ...
+```
+
+## Working Hours Examples
+
+```typescript
+// Standard business hours (9 AM - 5 PM)
+buildDay(date, { startHour: 9, endHour: 17 });
+
+// Extended hours
+buildDay(date, { startHour: 7, endHour: 21 });
+
+// Full day
+buildDay(date, { startHour: 0, endHour: 24 });
+```
+
+## Rendering
+
+```tsx
+function DayView({ day }: { day: CalendarDayView<Appointment> }) {
+  return (
+    <div>
+      <h2 className={day.isToday ? 'text-blue-600' : ''}>
+        {day.date.toLocaleString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+        })}
+      </h2>
+
+      <div className="relative">
+        {day.timeSlots.map(slot => (
+          <div
+            key={`${slot.hour}-${slot.minute}`}
+            className="h-12 border-t flex items-start"
+          >
+            <div className="w-16 text-xs text-gray-500 pr-2 text-right">
+              {slot.hour}:{String(slot.minute).padStart(2, '0')}
+            </div>
+            <div className="flex-1 relative">
+              {slot.items.map(apt => (
+                <div
+                  key={apt.id}
+                  className="absolute left-0 right-0 bg-blue-200 rounded p-1 text-sm"
+                >
+                  {apt.title}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## When to Use
+
+| Use Case | Recommendation |
+|----------|----------------|
+| One-off static render | `buildDay` |
+| Server-side generation | `buildDay` |
+| Daily schedule widget | `buildDay` |
+| Need navigation, view switching | [`createCalendar`](/docs/core/create-calendar) |
+| React app with state | [`createCalendar`](/docs/core/create-calendar) |

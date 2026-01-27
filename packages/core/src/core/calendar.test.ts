@@ -21,7 +21,6 @@ describe('createCalendar', () => {
   describe('initialization', () => {
     it('should create a calendar instance with month view only', () => {
       const calendar = createCalendar<TestEvent>({
-        data: [],
         views: {
           month: { accessor: testAccessor },
         },
@@ -36,8 +35,7 @@ describe('createCalendar', () => {
     });
 
     it('should create a calendar with all views', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
@@ -52,8 +50,7 @@ describe('createCalendar', () => {
     });
 
     it('should initialize with current date', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -69,8 +66,7 @@ describe('createCalendar', () => {
 
     it('should initialize with custom state', () => {
       const customDate = Temporal.PlainDate.from('2024-06-15');
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -84,8 +80,7 @@ describe('createCalendar', () => {
 
   describe('month view', () => {
     it('should return month data', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -98,9 +93,24 @@ describe('createCalendar', () => {
       expect(month.weeks.length).toBeGreaterThan(0);
     });
 
+    it('should return month data with items when data is passed', () => {
+      const testData: TestEvent[] = [
+        { id: '1', date: '2024-01-15', title: 'Event 1' },
+      ];
+      const calendar = createCalendar<TestEvent>({
+        views: {
+          month: { accessor: testAccessor },
+        },
+        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+      });
+
+      const month = calendar.getMonth(testData);
+      const allItems = month.weeks.flatMap(week => week.flatMap(day => day.items));
+      expect(allItems.length).toBe(1);
+    });
+
     it('should navigate to next month', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -116,8 +126,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate to previous month', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -133,8 +142,7 @@ describe('createCalendar', () => {
     });
 
     it('should use custom weekStartsOn for month view', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor, weekStartsOn: 0 }, // Sunday
         },
@@ -147,8 +155,7 @@ describe('createCalendar', () => {
     });
 
     it('should format month title', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -163,8 +170,7 @@ describe('createCalendar', () => {
 
   describe('week view', () => {
     it('should return week data', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           week: { accessor: testAccessor },
         },
@@ -178,8 +184,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate to next week', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           week: { accessor: testAccessor },
         },
@@ -193,8 +198,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate to previous week', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           week: { accessor: testAccessor },
         },
@@ -208,8 +212,7 @@ describe('createCalendar', () => {
     });
 
     it('should format week title', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           week: { accessor: testAccessor },
         },
@@ -224,8 +227,7 @@ describe('createCalendar', () => {
 
   describe('day view', () => {
     it('should return day data', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           day: { accessor: testAccessor },
         },
@@ -239,8 +241,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate to next day', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           day: { accessor: testAccessor },
         },
@@ -254,8 +255,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate to previous day', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           day: { accessor: testAccessor },
         },
@@ -269,8 +269,7 @@ describe('createCalendar', () => {
     });
 
     it('should format day title', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           day: { accessor: testAccessor },
         },
@@ -285,8 +284,7 @@ describe('createCalendar', () => {
     });
 
     it('should return title using currentView when view is omitted', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
@@ -314,8 +312,7 @@ describe('createCalendar', () => {
 
   describe('shared navigation', () => {
     it('should navigate to today', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -330,8 +327,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate to specific date', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           week: { accessor: testAccessor },
         },
@@ -346,8 +342,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate to specific month', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -365,8 +360,7 @@ describe('createCalendar', () => {
 
   describe('view-aware navigation shortcuts', () => {
     it('should navigate next based on view', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
@@ -388,8 +382,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate previous based on view', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
@@ -411,8 +404,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate next using currentView when view is omitted', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
@@ -437,8 +429,7 @@ describe('createCalendar', () => {
     });
 
     it('should navigate previous using currentView when view is omitted', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
@@ -465,8 +456,7 @@ describe('createCalendar', () => {
 
   describe('state synchronization', () => {
     it('should maintain single state across all views', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
@@ -490,8 +480,7 @@ describe('createCalendar', () => {
 
     it('should call onStateChange callback', () => {
       const onStateChange = vi.fn();
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -506,8 +495,7 @@ describe('createCalendar', () => {
 
     it('should call onStateChange with computed dateRange', () => {
       const onStateChange = vi.fn();
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -538,8 +526,7 @@ describe('createCalendar', () => {
     });
 
     it('should update state with setState', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -556,21 +543,20 @@ describe('createCalendar', () => {
   });
 
   describe('data handling', () => {
-    it('should include events in month view', () => {
+    it('should include events in month view when data is passed', () => {
       const testData: TestEvent[] = [
         { id: '1', date: '2024-01-15', title: 'Event 1' },
         { id: '2', date: '2024-01-16', title: 'Event 2' },
       ];
 
-      const calendar = createCalendar({
-        data: testData,
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
         state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
       });
 
-      const month = calendar.getMonth();
+      const month = calendar.getMonth(testData);
       const allItems = month.weeks.flatMap(week =>
         week.flatMap(day => day.items)
       );
@@ -578,27 +564,20 @@ describe('createCalendar', () => {
       expect(allItems.length).toBe(2);
     });
 
-    it('should update data with setOptions', () => {
-      const calendar = createCalendar({
-        data: [],
+    it('should return empty items when no data is passed', () => {
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
         state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
       });
 
-      calendar.setOptions((old) => ({
-        ...old,
-        data: [{ id: '1', date: '2024-01-15', title: 'New Event' }],
-      }));
-
       const month = calendar.getMonth();
       const allItems = month.weeks.flatMap(week =>
         week.flatMap(day => day.items)
       );
 
-      expect(allItems.length).toBe(1);
-      expect(allItems[0].title).toBe('New Event');
+      expect(allItems.length).toBe(0);
     });
   });
 
@@ -613,8 +592,7 @@ describe('createCalendar', () => {
         getStart: (item) => item.start ? Temporal.ZonedDateTime.from(item.start) : undefined,
       };
 
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: monthAccessor },
           week: { accessor: weekAccessor },
@@ -632,8 +610,7 @@ describe('createCalendar', () => {
 
   describe('store property', () => {
     it('should expose TanStack store', () => {
-      const calendar = createCalendar({
-        data: [],
+      const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
@@ -641,6 +618,38 @@ describe('createCalendar', () => {
 
       expect(calendar.store).toBeDefined();
       expect(calendar.store.state).toBeDefined();
+    });
+  });
+
+  describe('getDateRange', () => {
+    it('should return date range for current view', () => {
+      const calendar = createCalendar<TestEvent>({
+        views: {
+          month: { accessor: testAccessor },
+        },
+        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+      });
+
+      const dateRange = calendar.getDateRange();
+      expect(dateRange.start).toBeDefined();
+      expect(dateRange.end).toBeDefined();
+    });
+
+    it('should return date range for specific view', () => {
+      const calendar = createCalendar<TestEvent>({
+        views: {
+          month: { accessor: testAccessor },
+          week: { accessor: testAccessor },
+        },
+        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+      });
+
+      const monthRange = calendar.getDateRange('month');
+      const weekRange = calendar.getDateRange('week');
+
+      // Month range should be larger than week range
+      expect(monthRange.start).toBeDefined();
+      expect(weekRange.start).toBeDefined();
     });
   });
 });

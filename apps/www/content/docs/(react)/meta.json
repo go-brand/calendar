@@ -1,0 +1,17 @@
+{
+  "root": true,
+  "title": "React",
+  "description": "React hooks & components",
+  "icon": "Atom",
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "installation",
+    "---API---",
+    "...api",
+    "---Types---",
+    "...types",
+    "---Examples---",
+    "...examples"
+  ]
+}

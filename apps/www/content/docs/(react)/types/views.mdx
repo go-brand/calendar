@@ -1,0 +1,171 @@
+---
+title: View Types
+description: Types for month, week, and day views
+---
+
+## Month View Types
+
+### CalendarMonth
+
+The return type from `getMonth()` or `buildMonth()`.
+
+```typescript
+type CalendarMonth<TItem = unknown> = {
+  weeks: CalendarWeek<TItem>[];
+  month: Temporal.PlainYearMonth;
+};
+```
+
+### CalendarWeek
+
+An array of 7 calendar days.
+
+```typescript
+type CalendarWeek<TItem = unknown> = CalendarDay<TItem>[];
+```
+
+### CalendarDay
+
+A single day in the calendar grid.
+
+```typescript
+type CalendarDay<TItem = unknown> = {
+  date: Temporal.PlainDate;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  items: TItem[];
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `date` | `PlainDate` | The date this day represents |
+| `isCurrentMonth` | `boolean` | Whether this day is in the displayed month |
+| `isToday` | `boolean` | Whether this day is today |
+| `items` | `TItem[]` | Items that fall on this date |
+
+### MonthViewOptions
+
+Configuration for month view.
+
+```typescript
+type MonthViewOptions<TItem> = {
+  accessor: CalendarAccessor<TItem>;
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+};
+```
+
+## Week View Types
+
+### CalendarWeekView
+
+The return type from `getWeek()` or `buildWeek()`.
+
+```typescript
+type CalendarWeekView<TItem = unknown> = {
+  days: WeekDay<TItem>[];
+  weekStart: Temporal.PlainDate;
+  weekEnd: Temporal.PlainDate;
+};
+```
+
+### WeekDay
+
+A single day in the week view.
+
+```typescript
+type WeekDay<TItem = unknown> = {
+  date: Temporal.PlainDate;
+  isToday: boolean;
+  items: TItem[];
+  timeSlots?: TimeSlot<TItem>[];
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `date` | `PlainDate` | The date this day represents |
+| `isToday` | `boolean` | Whether this day is today |
+| `items` | `TItem[]` | All items for this day |
+| `timeSlots` | `TimeSlot[]` | Time slots (when startHour/endHour configured) |
+
+### WeekViewOptions
+
+Configuration for week view.
+
+```typescript
+type WeekViewOptions<TItem> = {
+  accessor: CalendarAccessor<TItem>;
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  startHour?: number;      // Default: 0
+  endHour?: number;        // Default: 24
+  slotDuration?: number;   // Minutes per slot, default: 60
+};
+```
+
+## Day View Types
+
+### CalendarDayView
+
+The return type from `getDay()` or `buildDay()`.
+
+```typescript
+type CalendarDayView<TItem = unknown> = {
+  date: Temporal.PlainDate;
+  isToday: boolean;
+  timeSlots: TimeSlot<TItem>[];
+  items: TItem[];
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `date` | `PlainDate` | The date being viewed |
+| `isToday` | `boolean` | Whether this is today |
+| `timeSlots` | `TimeSlot[]` | Time slots for the day |
+| `items` | `TItem[]` | All items for this day |
+
+### TimeSlot
+
+A time slot within a day or week view.
+
+```typescript
+type TimeSlot<TItem = unknown> = {
+  hour: number;
+  minute: number;
+  time: Temporal.PlainTime;
+  items: TItem[];
+};
+```
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `hour` | `number` | Hour (0-23) |
+| `minute` | `number` | Minute (0-59) |
+| `time` | `PlainTime` | The PlainTime for this slot |
+| `items` | `TItem[]` | Items that start in this time slot |
+
+### DayViewOptions
+
+Configuration for day view.
+
+```typescript
+type DayViewOptions<TItem> = {
+  accessor: CalendarAccessor<TItem>;
+  startHour?: number;      // Default: 0
+  endHour?: number;        // Default: 24
+  slotDuration?: number;   // Minutes per slot, default: 60
+};
+```
+
+## CalendarViewOptions
+
+Combined view configuration type.
+
+```typescript
+type CalendarViewOptions<TItem> = {
+  month?: MonthViewOptions<TItem>;
+  week?: WeekViewOptions<TItem>;
+  day?: DayViewOptions<TItem>;
+};
+```

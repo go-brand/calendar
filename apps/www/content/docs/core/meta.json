@@ -1,0 +1,20 @@
+{
+  "root": true,
+  "title": "Core",
+  "description": "Framework-agnostic utilities",
+  "icon": "Layers",
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "installation",
+    "---API Reference---",
+    "create-calendar",
+    "accessors",
+    "---Standalone Functions---",
+    "build-month",
+    "build-week",
+    "build-day",
+    "---Utilities---",
+    "utilities"
+  ]
+}

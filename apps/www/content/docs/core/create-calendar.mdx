@@ -1,0 +1,293 @@
+---
+title: createCalendar
+description: Create a stateful calendar instance with navigation, multi-view support, and automatic date range computation
+---
+
+## Overview
+
+`createCalendar` is the primary API for building calendars. It creates a stateful calendar instance that handles navigation, view switching, and date range computation automatically.
+
+## Import
+
+```typescript
+import { createCalendar, createCalendarAccessor } from '@gobrand/calendar-core';
+```
+
+## Signature
+
+```typescript
+function createCalendar<TItem, TOptions extends CalendarOptions<TItem>>(
+  options: TOptions
+): Calendar<TItem, TOptions>;
+```
+
+## Quick Example
+
+```typescript
+import { createCalendar, createCalendarAccessor } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Event = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+};
+
+const accessor = createCalendarAccessor<Event>({
+  getDate: (e) => e.start.toPlainDate(),
+  getStart: (e) => e.start,
+});
+
+const calendar = createCalendar({
+  views: {
+    month: { accessor, weekStartsOn: 1 },
+    week: { accessor, startHour: 8, endHour: 18, slotDuration: 60 },
+  },
+  timeZone: 'America/New_York',
+});
+
+// Get current month view
+const month = calendar.getMonth(events);
+
+// Navigate
+calendar.nextMonth();
+calendar.previous(); // Uses currentView
+
+// Get title for display
+calendar.getTitle(); // "January 2025"
+```
+
+## Options
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `views` | `CalendarViewOptions<TItem>` | Yes | Configure which views to enable |
+| `timeZone` | `string` | No | IANA timezone (e.g., `'America/New_York'`). Defaults to system timezone |
+| `state` | `Partial<CalendarState>` | No | Initial state overrides |
+| `onStateChange` | `(state: CalendarState) => void` | No | State change callback |
+
+### View Options
+
+Each view accepts an accessor and view-specific options:
+
+```typescript
+type CalendarViewOptions<TItem> = {
+  month?: {
+    accessor: CalendarAccessor<TItem>;
+    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6; // Default: 1 (Monday)
+  };
+  week?: {
+    accessor: CalendarAccessor<TItem>;
+    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    startHour?: number;   // Required for time slots
+    endHour?: number;     // Required for time slots
+    slotDuration?: number; // Required for time slots (minutes per slot)
+    // Note: All three (startHour, endHour, slotDuration) must be provided to enable time slots
+  };
+  day?: {
+    accessor: CalendarAccessor<TItem>;
+    startHour?: number;
+    endHour?: number;
+    slotDuration?: number;
+  };
+};
+```
+
+## Methods
+
+### View Data
+
+```typescript
+// Get data for each view (pass your items array)
+calendar.getMonth(events);  // CalendarMonth<TItem>
+calendar.getWeek(events);   // CalendarWeekView<TItem>
+calendar.getDay(events);    // CalendarDayView<TItem>
+```
+
+Methods only exist if the view is configured. TypeScript enforces this.
+
+### Navigation
+
+```typescript
+// View-specific navigation
+calendar.nextMonth();
+calendar.previousMonth();
+calendar.goToMonth(2025, 3); // March 2025
+
+calendar.nextWeek();
+calendar.previousWeek();
+
+calendar.nextDay();
+calendar.previousDay();
+
+// Generic navigation (uses currentView)
+calendar.next();        // Next based on current view
+calendar.previous();    // Previous based on current view
+calendar.next('week');  // Explicit view
+
+// Direct navigation
+calendar.goToToday();
+calendar.goToDate(Temporal.PlainDate.from('2025-06-15'));
+```
+
+### View Management
+
+```typescript
+// Available views (readonly)
+calendar.views; // ['month', 'week'] (what you configured)
+
+// Current view
+calendar.currentView; // 'month'
+calendar.setCurrentView('week');
+
+// Runtime checks
+calendar.hasMonthView(); // boolean
+calendar.hasWeekView();  // boolean
+calendar.hasDayView();   // boolean
+```
+
+### Title Formatting
+
+```typescript
+// Get formatted title for display
+calendar.getTitle();              // Uses currentView
+calendar.getTitle('month');       // "January 2025"
+calendar.getTitle('week');        // "Jan 13 - Jan 19, 2025"
+calendar.getTitle('day');         // "Wednesday, January 15, 2025"
+
+// With locale
+calendar.getTitle('month', 'es-ES'); // "enero 2025"
+
+// Custom format options
+calendar.getTitle('month', 'en-US', { month: 'short' }); // "Jan 2025"
+```
+
+### Date Range
+
+The calendar computes date ranges for data fetching. Ranges are timezone-aware `ZonedDateTime` values.
+
+```typescript
+// Current view's date range
+calendar.dateRange;
+// { start: ZonedDateTime, end: ZonedDateTime }
+
+// Get range for specific view
+calendar.getDateRange('month');
+calendar.getDateRange('week');
+```
+
+Use date ranges to fetch only the data you need:
+
+```typescript
+const { start, end } = calendar.dateRange;
+
+// Query your backend
+const events = await db.events.findMany({
+  where: {
+    startTime: {
+      gte: start.epochMilliseconds,
+      lte: end.epochMilliseconds,
+    },
+  },
+});
+```
+
+### State Management
+
+```typescript
+// Get current state
+const state = calendar.getState();
+// { referenceDate: PlainDate, currentView: string, dateRange: DateRange }
+
+// Update state
+calendar.setState({ referenceDate: newDate });
+calendar.setState((old) => ({
+  referenceDate: old.referenceDate.add({ months: 1 }),
+}));
+
+// Access underlying store (TanStack Store)
+calendar.store.subscribe((state) => {
+  console.log('State changed:', state);
+});
+```
+
+## TypeScript: Conditional Methods
+
+Methods are conditionally typed based on configured views:
+
+```typescript
+// Only month configured
+const monthOnly = createCalendar({
+  views: { month: { accessor } },
+});
+
+monthOnly.getMonth(events); // OK
+monthOnly.getWeek(events);  // TypeScript error: method doesn't exist
+
+// Both configured
+const both = createCalendar({
+  views: {
+    month: { accessor },
+    week: { accessor },
+  },
+});
+
+both.getMonth(events); // OK
+both.getWeek(events);  // OK
+both.getDay(events);   // TypeScript error
+```
+
+## Full Example
+
+```typescript
+import { createCalendar, createCalendarAccessor } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Meeting = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+};
+
+const accessor = createCalendarAccessor<Meeting>({
+  getDate: (m) => m.start.toPlainDate(),
+  getStart: (m) => m.start,
+  getEnd: (m) => m.end,
+});
+
+const calendar = createCalendar({
+  views: {
+    month: { accessor, weekStartsOn: 1 },
+    week: { accessor, weekStartsOn: 1, startHour: 8, endHour: 18, slotDuration: 30 },
+    day: { accessor, startHour: 8, endHour: 18, slotDuration: 15 },
+  },
+  timeZone: 'Europe/London',
+  onStateChange: (state) => {
+    // Sync with your router, URL, or external state
+    console.log('View:', state.currentView, 'Date:', state.referenceDate.toString());
+  },
+});
+
+// Fetch and render
+const meetings: Meeting[] = await fetchMeetings(calendar.dateRange);
+
+if (calendar.currentView === 'month') {
+  const month = calendar.getMonth(meetings);
+  renderMonthGrid(month);
+} else if (calendar.currentView === 'week') {
+  const week = calendar.getWeek(meetings);
+  renderWeekView(week);
+}
+```
+
+## When to Use createCalendar vs Standalone Functions
+
+| Use Case | Recommendation |
+|----------|----------------|
+| Building a full calendar UI | `createCalendar` |
+| Need navigation, view switching | `createCalendar` |
+| React app with state management | `createCalendar` + `useCalendar` hook |
+| One-off month grid rendering | `buildMonth` standalone |
+| Server-side static generation | Standalone functions |
+| Custom calendar logic | Standalone functions |

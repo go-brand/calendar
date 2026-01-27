@@ -41,13 +41,13 @@ describe('buildDay', () => {
     expect(result.isToday).toBe(false);
   });
 
-  it('should default to 0-24 hours with 30min slots', () => {
+  it('should default to 0-24 hours with 60min slots', () => {
     const date = Temporal.PlainDate.from('2024-01-15');
     const result = buildDay(date);
-    expect(result.timeSlots.length).toBe(48); // 24 hours * 2 (0:00-23:30)
+    expect(result.timeSlots.length).toBe(24); // 24 hours * 1 (0:00-23:00)
     expect(result.timeSlots[0].hour).toBe(0);
     expect(result.timeSlots[result.timeSlots.length - 1].hour).toBe(23);
-    expect(result.timeSlots[result.timeSlots.length - 1].minute).toBe(30);
+    expect(result.timeSlots[result.timeSlots.length - 1].minute).toBe(0);
   });
 
   it('should respect custom start and end hours', () => {

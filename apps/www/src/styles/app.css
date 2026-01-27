@@ -1,0 +1,24 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+/* Fix sidebar tabs - smaller icons using Tailwind spacing */
+
+/* Trigger button icon container: size-4 (1rem = 16px) */
+#nd-sidebar > div > button[data-state] > div:first-child {
+  width: --spacing(4);
+  height: --spacing(4);
+}
+
+/* Dropdown icon containers: size-4 (1rem = 16px) */
+[data-radix-popper-content-wrapper] a > div:first-child {
+  width: --spacing(4);
+  height: --spacing(4);
+}
+
+/* Ensure SVG icons scale to container */
+#nd-sidebar > div > button[data-state] > div:first-child svg,
+[data-radix-popper-content-wrapper] a > div:first-child svg {
+  width: 100%;
+  height: 100%;
+}

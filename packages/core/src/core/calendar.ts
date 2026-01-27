@@ -98,19 +98,19 @@ export function createCalendar<
     ...resolvedOptions.state,
   });
 
-  const getMonthImpl = () => {
+  const getMonthImpl = (data: TItem[] = []) => {
     const state = store.state;
     const { year, month } = state.referenceDate;
     const monthView = _options.views.month;
     if (!monthView) throw new Error('Month view not configured');
     return buildMonth(year, month, {
       weekStartsOn: monthView.weekStartsOn,
-      data: _options.data,
+      data,
       accessor: monthView.accessor,
     });
   };
 
-  const getWeekImpl = () => {
+  const getWeekImpl = (data: TItem[] = []) => {
     const state = store.state;
     const weekView = _options.views.week;
     if (!weekView) throw new Error('Week view not configured');
@@ -119,12 +119,12 @@ export function createCalendar<
       startHour: weekView.startHour,
       endHour: weekView.endHour,
       slotDuration: weekView.slotDuration,
-      data: _options.data,
+      data,
       accessor: weekView.accessor,
     });
   };
 
-  const getDayImpl = () => {
+  const getDayImpl = (data: TItem[] = []) => {
     const state = store.state;
     const dayView = _options.views.day;
     if (!dayView) throw new Error('Day view not configured');
@@ -132,7 +132,7 @@ export function createCalendar<
       startHour: dayView.startHour,
       endHour: dayView.endHour,
       slotDuration: dayView.slotDuration,
-      data: _options.data,
+      data,
       accessor: dayView.accessor,
     });
   };
@@ -347,6 +347,16 @@ export function createCalendar<
 
     get dateRange() {
       return store.state.dateRange;
+    },
+
+    getDateRange(view?: 'month' | 'week' | 'day') {
+      const effectiveView = view ?? store.state.currentView ?? defaultView;
+      return computeDateRange(
+        effectiveView,
+        store.state.referenceDate,
+        timeZone,
+        weekStartsOn
+      );
     },
 
     get options() {

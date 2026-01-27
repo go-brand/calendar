@@ -1,0 +1,149 @@
+---
+title: useView
+description: Gets memoized view data for the calendar
+---
+
+```tsx
+function useView<TItem, V extends ViewType | undefined = undefined>(
+  options: UseViewOptions<TItem, V>
+): ViewResultFor<TItem, V>
+```
+
+Gets memoized view data for the calendar. Recomputes only when calendar state or data changes.
+
+## Usage
+
+```tsx
+import { useView } from '@gobrand/react-calendar';
+
+function MonthGrid() {
+  const calendar = useCalendar<Event>();
+  const { data: events } = useQuery({ queryKey: ['events'] });
+
+  const { type, data } = useView({ data: events });
+
+  if (type === 'month') {
+    return <MonthView month={data} />;
+  }
+}
+```
+
+## Parameters
+
+### `options`
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `data` | `TItem[]` | Yes | Items to place on the calendar |
+| `calendar` | `CalendarInstance<TItem>` | No | Calendar instance. Required if not using CalendarProvider |
+| `name` | `'month' \| 'week' \| 'day'` | No | Specific view to get. Defaults to `currentView` |
+
+## Returns
+
+Returns a discriminated union based on the view:
+
+```tsx
+type ViewResult<TItem> =
+  | { type: 'month'; data: CalendarMonth<TItem> }
+  | { type: 'week'; data: CalendarWeekView<TItem> }
+  | { type: 'day'; data: CalendarDayView<TItem> };
+```
+
+When `name` is specified, the return type is narrowed:
+
+```tsx
+// Dynamic - returns full union
+const view = useView({ data });
+// view.type: 'month' | 'week' | 'day'
+
+// Specific - returns narrowed type
+const month = useView({ data, name: 'month' });
+// month.type: 'month' (always)
+// month.data: CalendarMonth<TItem>
+```
+
+## With CalendarProvider
+
+When inside a `CalendarProvider`, the calendar is obtained from context automatically:
+
+```tsx
+function MonthGrid() {
+  const { data: events } = useQuery({ queryKey: ['events'] });
+
+  // calendar comes from context
+  const { data: month } = useView({ data: events, name: 'month' });
+}
+```
+
+## Without CalendarProvider
+
+Pass the calendar instance explicitly:
+
+```tsx
+function SimpleCalendar({ events }: { events: Event[] }) {
+  const calendar = useCreateCalendar<Event>({
+    views: { month: { accessor } },
+  });
+
+  const { data: month } = useView({ data: events, calendar });
+}
+```
+
+## Dynamic View Switching
+
+Use the discriminated union to render different views:
+
+```tsx
+function CalendarView() {
+  const { data: events } = useQuery({ queryKey: ['events'] });
+  const view = useView({ data: events });
+
+  switch (view.type) {
+    case 'month':
+      return <MonthGrid month={view.data} />;
+    case 'week':
+      return <WeekGrid week={view.data} />;
+    case 'day':
+      return <DayGrid day={view.data} />;
+  }
+}
+```
+
+## Dual View Pattern
+
+Request multiple views simultaneously:
+
+```tsx
+function DualView() {
+  const { data: events } = useQuery({ queryKey: ['events'] });
+
+  const month = useView({ data: events, name: 'month' });
+  const week = useView({ data: events, name: 'week' });
+
+  return (
+    <div className="flex">
+      <MonthMiniCal month={month.data} />
+      <WeekGrid week={week.data} />
+    </div>
+  );
+}
+```
+
+## Memoization
+
+`useView` memoizes the result based on:
+- Calendar instance
+- Data array
+- Reference date
+- Current view (or specified view name)
+
+The view data is only recomputed when these dependencies change.
+
+## Error Handling
+
+Throws an error if no calendar is available:
+
+```
+Error: No calendar found. Either wrap your component tree in <CalendarProvider>
+or pass calendar explicitly: useView({ calendar, data }).
+```

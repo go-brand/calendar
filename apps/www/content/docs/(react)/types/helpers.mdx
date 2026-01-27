@@ -1,0 +1,298 @@
+---
+title: Helper Types
+description: Utility types for type extraction and component props
+---
+
+## CalendarInstance
+
+The main type for calendar instances with all view methods available. Use this when you need a calendar reference in components or contexts.
+
+```typescript
+type CalendarInstance<TItem = unknown> = {
+  // View methods
+  getMonth(data?: TItem[]): CalendarMonth<TItem>;
+  getWeek(data?: TItem[]): CalendarWeekView<TItem>;
+  getDay(data?: TItem[]): CalendarDayView<TItem>;
+
+  // Navigation
+  getTitle(view?, locales?, options?): string;
+  getState(): CalendarState;
+  setState(updater): void;
+  goToToday(): void;
+  goToDate(date: PlainDate): void;
+  next(view?): void;
+  previous(view?): void;
+
+  // View-specific navigation
+  nextMonth(): void;
+  previousMonth(): void;
+  goToMonth(year: number, month: number): void;
+  nextWeek(): void;
+  previousWeek(): void;
+  nextDay(): void;
+  previousDay(): void;
+
+  // View management
+  views: ReadonlyArray<string>;
+  currentView: string;
+  setCurrentView(view: string): void;
+
+  // Date range
+  dateRange: DateRange;
+  getDateRange(view?): DateRange;
+
+  // Options and store
+  options: CalendarOptions<TItem>;
+  setOptions(updater: (old: CalendarOptions<TItem>) => CalendarOptions<TItem>): void;
+  store: Store<CalendarState>;
+
+  // Type predicates
+  hasMonthView(): boolean;
+  hasWeekView(): boolean;
+  hasDayView(): boolean;
+};
+```
+
+## Type Extraction
+
+### CalendarItemType
+
+Extract the item type from a CalendarInstance.
+
+```typescript
+type CalendarItemType<C extends CalendarInstance> =
+  C['options'] extends CalendarOptions<infer TItem> ? TItem : never;
+```
+
+**Usage:**
+
+```typescript
+const calendar = useCalendar({ ... });
+type Item = CalendarItemType<typeof calendar>;
+// Item is your Event type
+```
+
+### CalendarViewsConfig
+
+Extract the views configuration from a CalendarInstance.
+
+```typescript
+type CalendarViewsConfig<C extends CalendarInstance> =
+  C['options'] extends { views: infer V } ? V : never;
+```
+
+**Usage:**
+
+```typescript
+type Views = CalendarViewsConfig<typeof calendar>;
+// { month: MonthViewOptions<Event>, week?: ... }
+```
+
+### ValidViewNames
+
+Extract valid view names as a union from a CalendarInstance.
+
+```typescript
+type ValidViewNames<C extends CalendarInstance> = 'month' | 'week' | 'day';
+```
+
+**Usage:**
+
+```typescript
+type Views = ValidViewNames<typeof calendar>;
+// 'month' | 'week' (if both configured)
+```
+
+### HasViewType
+
+Check if a CalendarInstance has a specific view configured.
+
+```typescript
+type HasViewType<
+  C extends CalendarInstance,
+  V extends 'month' | 'week' | 'day'
+> = true | false;
+```
+
+**Usage:**
+
+```typescript
+type HasMonth = HasViewType<typeof calendar, 'month'>;
+// true or false
+```
+
+## Component Props
+
+### CalendarComponentProps
+
+Base props for components that receive a CalendarInstance.
+
+```typescript
+type CalendarComponentProps<C extends CalendarInstance> = {
+  calendar: C;
+};
+```
+
+**Usage:**
+
+```tsx
+function MonthView<C extends CalendarInstance>(
+  props: CalendarComponentProps<C>
+) {
+  const month = props.calendar.getMonth(data);
+  // ...
+}
+```
+
+### RequireMonthView
+
+Require that a CalendarInstance has month view configured.
+
+```typescript
+type RequireMonthView<C extends CalendarInstance> =
+  HasViewType<C, 'month'> extends true ? C : never;
+```
+
+**Usage:**
+
+```tsx
+function MonthGrid<C extends CalendarInstance>(
+  props: { calendar: RequireMonthView<C> }
+) {
+  // TypeScript ensures calendar.getMonth() exists
+  const month = props.calendar.getMonth(data);
+}
+```
+
+### RequireWeekView
+
+Require that a CalendarInstance has week view configured.
+
+```typescript
+type RequireWeekView<C extends CalendarInstance> =
+  HasViewType<C, 'week'> extends true ? C : never;
+```
+
+### RequireDayView
+
+Require that a CalendarInstance has day view configured.
+
+```typescript
+type RequireDayView<C extends CalendarInstance> =
+  HasViewType<C, 'day'> extends true ? C : never;
+```
+
+## Type-Safe Component Example
+
+```tsx
+import type {
+  CalendarInstance,
+  CalendarComponentProps,
+  RequireMonthView,
+  CalendarItemType,
+  CalendarDay,
+} from '@gobrand/calendar-core';
+
+// Generic month view component
+function MonthView<C extends CalendarInstance>({
+  calendar,
+  data,
+}: {
+  calendar: RequireMonthView<C>;
+  data: CalendarItemType<C>[];
+}) {
+  type Item = CalendarItemType<C>;
+  const month = calendar.getMonth(data);
+
+  return (
+    <div className="grid grid-cols-7">
+      {month.weeks.flat().map(day => (
+        <DayCell<Item>
+          key={day.date.toString()}
+          day={day}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Type-safe day cell
+function DayCell<TItem>({ day }: { day: CalendarDay<TItem> }) {
+  return (
+    <div className={day.isToday ? 'bg-blue-100' : ''}>
+      <span>{day.date.day}</span>
+      <span>{day.items.length} items</span>
+    </div>
+  );
+}
+```
+
+## Runtime View Checking
+
+The calendar provides runtime methods for checking views:
+
+```typescript
+const calendar = useCalendar({ ... });
+
+if (calendar.hasMonthView()) {
+  const month = calendar.getMonth(data);
+}
+
+if (calendar.hasWeekView()) {
+  const week = calendar.getWeek(data);
+}
+
+if (calendar.hasDayView()) {
+  const day = calendar.getDay(data);
+}
+```
+
+These methods are useful when you need runtime checks in addition to TypeScript's compile-time guarantees.
+
+## View Result Types
+
+Types for discriminated union view results, useful with the `useView` hook.
+
+### ViewType
+
+```typescript
+type ViewType = 'month' | 'week' | 'day';
+```
+
+### ViewResult
+
+Discriminated union of all view results:
+
+```typescript
+type ViewResult<TItem> =
+  | { type: 'month'; data: CalendarMonth<TItem> }
+  | { type: 'week'; data: CalendarWeekView<TItem> }
+  | { type: 'day'; data: CalendarDayView<TItem> };
+```
+
+**Usage:**
+
+```tsx
+function ViewRenderer<TItem>({ view }: { view: ViewResult<TItem> }) {
+  switch (view.type) {
+    case 'month':
+      return <MonthGrid month={view.data} />;
+    case 'week':
+      return <WeekGrid week={view.data} />;
+    case 'day':
+      return <DayGrid day={view.data} />;
+  }
+}
+```
+
+### ViewResultFor
+
+Conditional type that narrows ViewResult based on view name:
+
+```typescript
+type ViewResultFor<TItem, V extends ViewType | undefined> =
+  V extends 'month' ? { type: 'month'; data: CalendarMonth<TItem> } :
+  V extends 'week' ? { type: 'week'; data: CalendarWeekView<TItem> } :
+  V extends 'day' ? { type: 'day'; data: CalendarDayView<TItem> } :
+  ViewResult<TItem>;
+```

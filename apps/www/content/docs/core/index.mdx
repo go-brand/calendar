@@ -1,0 +1,150 @@
+---
+title: Core Package
+description: Framework-agnostic calendar utilities built on the Temporal API
+---
+
+# Core Package
+
+Build calendars using the Temporal API. No date-fns, no moment.js, no legacy `Date` objects.
+
+```bash
+pnpm add @gobrand/calendar-core
+```
+
+## Why This Library
+
+- **Temporal API native** - Built entirely on [Temporal](https://tc39.es/proposal-temporal/docs/), the modern JavaScript date/time API
+- **Timezone-aware** - First-class support for IANA timezones, no offset bugs
+- **Type-safe** - Full TypeScript with conditional types based on configured views
+- **Framework agnostic** - Works with React, Vue, Svelte, or vanilla JS
+- **Minimal** - ~5KB gzipped, zero dependencies beyond the Temporal polyfill
+
+## Quick Start
+
+```typescript
+import { createCalendar, createCalendarAccessor } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Event = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+};
+
+// Define how to extract dates from your data
+const accessor = createCalendarAccessor<Event>({
+  getDate: (e) => e.start.toPlainDate(),
+  getStart: (e) => e.start,
+});
+
+// Create a calendar with month and week views
+const calendar = createCalendar({
+  views: {
+    month: { accessor, weekStartsOn: 1 },
+    week: { accessor, startHour: 8, endHour: 18 },
+  },
+  timeZone: 'America/New_York',
+});
+
+// Fetch data for the visible range
+const events = await fetchEvents(calendar.dateRange);
+
+// Get month view data
+const month = calendar.getMonth(events);
+// { weeks: CalendarDay[][], month: PlainYearMonth }
+
+// Navigate
+calendar.nextMonth();
+calendar.setCurrentView('week');
+calendar.goToToday();
+
+// Get formatted title
+calendar.getTitle(); // "January 2025"
+```
+
+## API Overview
+
+| Function | Description |
+|----------|-------------|
+| [`createCalendar()`](/docs/core/create-calendar) | Create a stateful calendar with navigation and multi-view support |
+| [`createCalendarAccessor()`](/docs/core/accessors) | Define how your data maps to calendar dates |
+| [`buildMonth()`](/docs/core/build-month) | Standalone function to build a month grid |
+| [`buildWeek()`](/docs/core/build-week) | Standalone function to build a week with time slots |
+| [`buildDay()`](/docs/core/build-day) | Standalone function to build a day with time slots |
+| [Utilities](/docs/core/utilities) | Formatting, navigation, and timezone helpers |
+
+## Core Concepts
+
+### Accessors
+
+Accessors define how your data maps to calendar dates. Required for any data to appear on the calendar.
+
+```typescript
+const accessor = createCalendarAccessor<Event>({
+  getDate: (e) => e.start.toPlainDate(),      // Required: date placement
+  getStart: (e) => e.start,                    // Optional: time slot mapping
+  getEnd: (e) => e.end,                        // Optional: duration
+});
+```
+
+### Views
+
+Configure which views you need. Only configured views get methods:
+
+```typescript
+const calendar = createCalendar({
+  views: {
+    month: { accessor },  // Enables getMonth(), nextMonth(), etc.
+    week: { accessor },   // Enables getWeek(), nextWeek(), etc.
+    // day not configured - getDay() won't exist
+  },
+});
+```
+
+### Date Ranges
+
+Every calendar computes its visible date range as timezone-aware `ZonedDateTime` values:
+
+```typescript
+const { start, end } = calendar.dateRange;
+// Use for efficient data fetching
+const events = await db.events.where('start').between(start, end);
+```
+
+## Standalone Functions
+
+For one-off renders or server-side generation, use the standalone build functions:
+
+```typescript
+import { buildMonth } from '@gobrand/calendar-core';
+
+const month = buildMonth(2025, 1, {
+  weekStartsOn: 1,
+  data: events,
+  accessor,
+});
+```
+
+These don't maintain state - each call is independent.
+
+## React Integration
+
+For React apps, use [`@gobrand/react-calendar`](/docs) which wraps the core with hooks:
+
+```tsx
+import { useCreateCalendar } from '@gobrand/react-calendar';
+
+function Calendar({ events }: { events: Event[] }) {
+  const calendar = useCreateCalendar<Event>({
+    views: {
+      month: {
+        accessor: { getDate: (e) => e.start.toPlainDate() },
+      },
+    },
+  });
+
+  const month = calendar.getMonth(events);
+
+  return <MonthGrid month={month} />;
+}
+```

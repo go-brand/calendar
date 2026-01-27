@@ -1,0 +1,67 @@
+---
+title: CalendarProvider
+description: Provides calendar instance to descendant components via context
+---
+
+```tsx
+function CalendarProvider<TItem, TOptions extends CalendarOptions<TItem>>(
+  props: CalendarProviderProps<TItem, TOptions>
+): ReactElement
+```
+
+React context provider that makes a calendar instance available to descendant components via `useCalendar` and `useView`.
+
+## Props
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `calendar` | `Calendar<TItem, TOptions>` | Calendar instance from `useCreateCalendar` |
+| `children` | `React.ReactNode` | Components that will have access to the calendar |
+
+## With Provider
+
+```tsx
+function App() {
+  const calendar = useCreateCalendar<Event>({
+    views: { month: { accessor } },
+  });
+
+  return (
+    <CalendarProvider calendar={calendar}>
+      <Toolbar />
+      <MonthGrid events={events} />
+    </CalendarProvider>
+  );
+}
+
+function Toolbar() {
+  // Gets calendar from context
+  const calendar = useCalendar();
+  return <button onClick={() => calendar.previous()}>Prev</button>;
+}
+
+function MonthGrid({ events }: { events: Event[] }) {
+  // Gets calendar from context
+  const { data: month } = useView({ data: events });
+  return <div>{/* render month */}</div>;
+}
+```
+
+## Without Provider
+
+```tsx
+function App() {
+  const calendar = useCreateCalendar<Event>({
+    views: { month: { accessor } },
+  });
+
+  const { data: month } = useView({ data: events, calendar });
+
+  return (
+    <div>
+      <button onClick={() => calendar.previous()}>Prev</button>
+      {/* render month */}
+    </div>
+  );
+}
+```

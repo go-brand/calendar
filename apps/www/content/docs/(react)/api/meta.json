@@ -1,0 +1,12 @@
+{
+  "title": "API Reference",
+  "pages": [
+    "createCalendarAccessor",
+    "createCalendarViews",
+    "use-create-calendar",
+    "use-calendar",
+    "use-view",
+    "calendar-provider",
+    "calendar-instance"
+  ]
+}

@@ -1,0 +1,160 @@
+---
+title: buildMonth
+description: Standalone function to build a month grid
+---
+
+## Overview
+
+`buildMonth` is a standalone function that creates a month view grid. Use this for one-off renders, server-side generation, or when you don't need the stateful features of [`createCalendar`](/docs/core/create-calendar).
+
+## Import
+
+```typescript
+import { buildMonth } from '@gobrand/calendar-core';
+```
+
+## Signature
+
+```typescript
+function buildMonth<TItem>(
+  year: number,
+  month: number,
+  options?: {
+    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    today?: Temporal.PlainDate;
+    data?: TItem[];
+    accessor?: CalendarAccessor<TItem>;
+  }
+): CalendarMonth<TItem>;
+```
+
+## Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `year` | `number` | Yes | The year (e.g., 2025) |
+| `month` | `number` | Yes | The month (1-12) |
+| `options.weekStartsOn` | `0-6` | No | First day of week (0=Sunday, 1=Monday). Default: `1` |
+| `options.today` | `PlainDate` | No | Override today's date for `isToday`. Default: current date |
+| `options.data` | `TItem[]` | No | Items to map to calendar days |
+| `options.accessor` | `CalendarAccessor<TItem>` | No | Required if `data` is provided |
+
+## Return Type
+
+```typescript
+type CalendarMonth<TItem> = {
+  weeks: CalendarWeek<TItem>[];
+  month: Temporal.PlainYearMonth;
+};
+
+type CalendarWeek<TItem> = CalendarDay<TItem>[];
+
+type CalendarDay<TItem> = {
+  date: Temporal.PlainDate;
+  isCurrentMonth: boolean;
+  isToday: boolean;
+  items: TItem[];
+};
+```
+
+## Basic Usage
+
+```typescript
+import { buildMonth } from '@gobrand/calendar-core';
+
+const month = buildMonth(2025, 1);
+
+month.weeks.forEach((week, i) => {
+  console.log(`Week ${i + 1}:`);
+  week.forEach(day => {
+    console.log(`  ${day.date.day} ${day.isCurrentMonth ? '' : '(padding)'}`);
+  });
+});
+```
+
+## With Data
+
+```typescript
+import { buildMonth, createCalendarAccessor } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Event = {
+  id: string;
+  title: string;
+  date: Temporal.PlainDate;
+};
+
+const events: Event[] = [
+  { id: '1', title: 'Meeting', date: Temporal.PlainDate.from('2025-01-15') },
+  { id: '2', title: 'Review', date: Temporal.PlainDate.from('2025-01-15') },
+];
+
+const accessor = createCalendarAccessor<Event>({
+  getDate: (e) => e.date,
+});
+
+const month = buildMonth(2025, 1, {
+  weekStartsOn: 1,
+  data: events,
+  accessor,
+});
+
+// Events are mapped to their respective days
+month.weeks.flat().forEach(day => {
+  if (day.items.length > 0) {
+    console.log(`${day.date}: ${day.items.map(e => e.title).join(', ')}`);
+  }
+});
+// 2025-01-15: Meeting, Review
+```
+
+## Week Structure
+
+A month grid contains 4-6 complete weeks. Days from adjacent months are included with `isCurrentMonth: false` to fill out the grid.
+
+```
+January 2025 (Monday start)
+Mon Tue Wed Thu Fri Sat Sun
+ 30  31   1   2   3   4   5  <- Dec 30-31 are padding
+  6   7   8   9  10  11  12
+ 13  14  15  16  17  18  19
+ 20  21  22  23  24  25  26
+ 27  28  29  30  31   1   2  <- Feb 1-2 are padding
+```
+
+## Rendering
+
+```tsx
+function MonthGrid({ month }: { month: CalendarMonth<Event> }) {
+  return (
+    <div className="grid grid-cols-7">
+      {month.weeks.flat().map(day => (
+        <div
+          key={day.date.toString()}
+          className={`
+            p-2 border
+            ${!day.isCurrentMonth ? 'opacity-40' : ''}
+            ${day.isToday ? 'bg-blue-100' : ''}
+          `}
+        >
+          <div className="font-bold">{day.date.day}</div>
+          {day.items.map(event => (
+            <div key={event.id} className="text-sm truncate">
+              {event.title}
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## When to Use
+
+| Use Case | Recommendation |
+|----------|----------------|
+| One-off static render | `buildMonth` |
+| Server-side generation | `buildMonth` |
+| Need navigation, view switching | [`createCalendar`](/docs/core/create-calendar) |
+| React app with state | [`createCalendar`](/docs/core/create-calendar) |

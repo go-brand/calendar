@@ -14,7 +14,7 @@ export function buildDay<T>(
 ): CalendarDayView<T> {
   const startHour = options?.startHour ?? 0;
   const endHour = options?.endHour ?? 24;
-  const slotDuration = options?.slotDuration ?? 30;
+  const slotDuration = options?.slotDuration ?? 60;
   const today = options?.today ?? Temporal.Now.plainDateISO();
   const data = options?.data ?? [];
   const accessor = options?.accessor;

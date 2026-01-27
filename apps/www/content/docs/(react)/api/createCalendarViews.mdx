@@ -1,0 +1,136 @@
+---
+title: createCalendarViews
+description: Type-safe helper for creating calendar view configurations
+---
+
+```tsx
+function createCalendarViews<TItem>(): <TViews>(views: TViews) => TViews
+```
+
+A curried identity function that provides TypeScript inference for view configurations. The double function call (`createCalendarViews<Event>()({...})`) separates the generic type from the configuration object.
+
+## Usage
+
+```tsx
+import { createCalendarViews, createCalendarAccessor } from '@gobrand/react-calendar';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Event = { id: string; title: string; date: Temporal.PlainDate };
+
+const accessor = createCalendarAccessor<Event>({
+  getDate: (e) => e.date,
+});
+
+const views = createCalendarViews<Event>()({
+  month: { accessor, weekStartsOn: 1 },
+  week: { accessor, weekStartsOn: 1, startHour: 8, endHour: 18 },
+  day: { accessor, startHour: 8, endHour: 18, slotDuration: 30 },
+});
+```
+
+## Parameters
+
+### `TItem`
+
+The generic type parameter representing your calendar data type (events, tasks, appointments).
+
+### `views`
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `month` | `MonthViewOptions<TItem>` | No | Month view configuration |
+| `week` | `WeekViewOptions<TItem>` | No | Week view configuration |
+| `day` | `DayViewOptions<TItem>` | No | Day view configuration |
+
+**MonthViewOptions:**
+```tsx
+{
+  accessor: CalendarAccessor<TItem>;  // Required
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;  // 0 = Sunday, 1 = Monday (default)
+}
+```
+
+**WeekViewOptions:**
+```tsx
+{
+  accessor: CalendarAccessor<TItem>;  // Required
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+  startHour?: number;   // Default: 0
+  endHour?: number;     // Default: 24
+  slotDuration?: number; // Minutes per slot, default: 60
+}
+```
+
+**DayViewOptions:**
+```tsx
+{
+  accessor: CalendarAccessor<TItem>;  // Required
+  startHour?: number;   // Default: 0
+  endHour?: number;     // Default: 24
+  slotDuration?: number; // Minutes per slot, default: 60
+}
+```
+
+## Returns
+
+Returns the same views object with full TypeScript inference. The return type preserves exactly which views you configured.
+
+## Type Safety
+
+TypeScript infers which calendar methods are available based on configured views:
+
+```tsx
+const views = createCalendarViews<Event>()({
+  month: { accessor },
+});
+
+const calendar = useCreateCalendar({ views });
+
+calendar.getMonth(events); // OK
+calendar.getWeek(events);  // TypeScript Error: Property does not exist
+```
+
+## With useCreateCalendar
+
+```tsx
+import { useCreateCalendar, createCalendarViews, createCalendarAccessor } from '@gobrand/react-calendar';
+
+type Event = { id: string; title: string; date: Temporal.PlainDate };
+
+const accessor = createCalendarAccessor<Event>({
+  getDate: (e) => e.date,
+});
+
+const views = createCalendarViews<Event>()({
+  month: { accessor, weekStartsOn: 1 },
+  week: { accessor, startHour: 8, endHour: 18 },
+});
+
+function Calendar({ events }: { events: Event[] }) {
+  const calendar = useCreateCalendar({ views });
+
+  return (
+    <div>
+      <button onClick={() => calendar.setCurrentView('month')}>Month</button>
+      <button onClick={() => calendar.setCurrentView('week')}>Week</button>
+      {/* Both views available */}
+    </div>
+  );
+}
+```
+
+## Why Curried?
+
+The curried pattern (`createCalendarViews<Event>()({...})`) exists because TypeScript cannot infer both the item type and the views structure in a single call. The first call binds `TItem`, the second provides the views object with full inference.
+
+```tsx
+// Without currying, you'd need to explicitly type everything:
+const views: CalendarViewOptions<Event> = {
+  month: { accessor },
+};
+
+// With currying, TypeScript infers the view structure:
+const views = createCalendarViews<Event>()({
+  month: { accessor },
+}); // Type: { month: MonthViewOptions<Event> }
+```

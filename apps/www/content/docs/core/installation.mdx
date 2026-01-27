@@ -1,0 +1,28 @@
+---
+title: Installation
+description: Get started with GoBrand Calendar Core
+---
+
+## Install
+
+```bash
+pnpm add @gobrand/calendar-core
+# or
+npm install @gobrand/calendar-core
+```
+
+## TypeScript
+
+The package is written in TypeScript and includes type definitions. No additional `@types` packages needed.
+
+## Temporal Polyfill
+
+The Temporal API is included via `@js-temporal/polyfill`. You can import Temporal types directly from the polyfill:
+
+```typescript
+import { Temporal } from '@js-temporal/polyfill';
+
+const today = Temporal.Now.plainDateISO();
+const meeting = Temporal.ZonedDateTime.from('2025-01-20T14:00:00-05:00[America/New_York]');
+```
+

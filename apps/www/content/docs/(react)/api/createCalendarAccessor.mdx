@@ -1,0 +1,174 @@
+---
+title: createCalendarAccessor
+description: Type-safe helper for defining how data maps to calendar dates
+---
+
+```tsx
+function createCalendarAccessor<T>(accessor: CalendarAccessor<T>): CalendarAccessor<T>
+```
+
+An identity function that provides TypeScript inference for accessor definitions. Accessors define how your data (events, tasks, appointments) maps to calendar dates.
+
+## Usage
+
+```tsx
+import { createCalendarAccessor } from '@gobrand/react-calendar';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Event = {
+  id: string;
+  title: string;
+  date: Temporal.PlainDate;
+};
+
+const accessor = createCalendarAccessor<Event>({
+  getDate: (event) => event.date,
+});
+```
+
+## Parameters
+
+### `accessor`
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `getDate` | `(item: T) => Temporal.PlainDate` | Yes | Extract date for placing item in calendar |
+| `getStart` | `(item: T) => Temporal.ZonedDateTime` | No | Start time for time slot positioning |
+| `getEnd` | `(item: T) => Temporal.ZonedDateTime` | No | End time for time slot positioning |
+
+## Returns
+
+Returns the same accessor object with TypeScript inference applied.
+
+## Date Only (Month View)
+
+For items without specific times (all-day events, tasks with due dates):
+
+```tsx
+type Task = {
+  id: string;
+  title: string;
+  dueDate: Temporal.PlainDate;
+};
+
+const accessor = createCalendarAccessor<Task>({
+  getDate: (task) => task.dueDate,
+});
+```
+
+## With Time Slots (Week/Day Views)
+
+For items with specific start times:
+
+```tsx
+type Meeting = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+};
+
+const accessor = createCalendarAccessor<Meeting>({
+  getDate: (m) => m.start.toPlainDate(),
+  getStart: (m) => m.start,
+});
+```
+
+## With Duration
+
+For items with start and end times:
+
+```tsx
+type Appointment = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+};
+
+const accessor = createCalendarAccessor<Appointment>({
+  getDate: (a) => a.start.toPlainDate(),
+  getStart: (a) => a.start,
+  getEnd: (a) => a.end,
+});
+```
+
+## Converting From Other Formats
+
+### From ISO String
+
+```tsx
+type ApiEvent = {
+  id: string;
+  startIso: string; // "2025-01-15T14:00:00-05:00[America/New_York]"
+};
+
+const accessor = createCalendarAccessor<ApiEvent>({
+  getDate: (e) => Temporal.ZonedDateTime.from(e.startIso).toPlainDate(),
+  getStart: (e) => Temporal.ZonedDateTime.from(e.startIso),
+});
+```
+
+### From Date String
+
+```tsx
+type SimpleEvent = {
+  id: string;
+  date: string; // "2025-01-15"
+};
+
+const accessor = createCalendarAccessor<SimpleEvent>({
+  getDate: (e) => Temporal.PlainDate.from(e.date),
+});
+```
+
+### From JavaScript Date
+
+```tsx
+type LegacyEvent = {
+  id: string;
+  startDate: Date;
+  timezone: string;
+};
+
+const accessor = createCalendarAccessor<LegacyEvent>({
+  getDate: (e) => {
+    const instant = Temporal.Instant.fromEpochMilliseconds(e.startDate.getTime());
+    return instant.toZonedDateTimeISO(e.timezone).toPlainDate();
+  },
+  getStart: (e) => {
+    const instant = Temporal.Instant.fromEpochMilliseconds(e.startDate.getTime());
+    return instant.toZonedDateTimeISO(e.timezone);
+  },
+});
+```
+
+## With useCreateCalendar
+
+```tsx
+import { useCreateCalendar, createCalendarAccessor } from '@gobrand/react-calendar';
+
+type Event = {
+  id: string;
+  title: string;
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+};
+
+const accessor = createCalendarAccessor<Event>({
+  getDate: (e) => e.start.toPlainDate(),
+  getStart: (e) => e.start,
+  getEnd: (e) => e.end,
+});
+
+function Calendar({ events }: { events: Event[] }) {
+  const calendar = useCreateCalendar<Event>({
+    views: {
+      month: { accessor, weekStartsOn: 1 },
+      week: { accessor, startHour: 8, endHour: 18 },
+    },
+  });
+
+  const month = calendar.getMonth(events);
+  // Items are automatically mapped to their respective days
+}
+```

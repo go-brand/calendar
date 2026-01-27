@@ -1,0 +1,107 @@
+---
+title: useCalendar
+description: Retrieves calendar instance from context
+---
+
+```tsx
+function useCalendar<TItem = unknown>(): CalendarInstance<TItem>
+```
+
+Gets the calendar instance from context. Must be used within a [`CalendarProvider`](/docs/api/calendar-provider).
+
+## Usage
+
+```tsx
+import { useCalendar } from '@gobrand/react-calendar';
+
+function CalendarToolbar() {
+  const calendar = useCalendar();
+
+  return (
+    <header>
+      <button onClick={() => calendar.previous()}>Previous</button>
+      <h2>{calendar.getTitle()}</h2>
+      <button onClick={() => calendar.next()}>Next</button>
+    </header>
+  );
+}
+```
+
+## Returns
+
+Returns a [`CalendarInstance`](/docs/api/calendar-instance) with all calendar methods for navigation, state management, and display.
+
+## Type Parameter
+
+The type parameter defaults to `unknown` and is **optional in most cases**.
+
+Use `useCalendar()` without a type parameter for:
+- Navigation (`next()`, `previous()`, `goToToday()`)
+- Display (`getTitle()`, `currentView`, `views`)
+- State (`getState()`, `setState()`)
+- Date ranges (`dateRange`, `getDateRange()`)
+
+```tsx
+function Toolbar() {
+  const calendar = useCalendar(); // No type needed
+  return (
+    <div>
+      <span>{calendar.getTitle()}</span>
+      <button onClick={() => calendar.next()}>Next</button>
+    </div>
+  );
+}
+```
+
+To get typed view data, use [`useView`](/docs/api/use-view) instead - it infers the type from your data array automatically.
+
+## Error Handling
+
+Throws an error if used outside of a `CalendarProvider`:
+
+```
+Error: useCalendar must be used within a CalendarProvider.
+Wrap your component tree with <CalendarProvider calendar={calendar}>.
+```
+
+## Pattern with CalendarProvider
+
+```tsx
+import {
+  useCreateCalendar,
+  CalendarProvider,
+  useCalendar,
+  useView
+} from '@gobrand/react-calendar';
+
+function App() {
+  const calendar = useCreateCalendar<Event>({
+    views: { month: { accessor } },
+  });
+
+  return (
+    <CalendarProvider calendar={calendar}>
+      <Toolbar />
+      <MonthGrid events={events} />
+    </CalendarProvider>
+  );
+}
+
+function Toolbar() {
+  const calendar = useCalendar(); // No type needed for navigation
+  return (
+    <header>
+      <button onClick={() => calendar.previous()}>Prev</button>
+      <span>{calendar.getTitle()}</span>
+      <button onClick={() => calendar.next()}>Next</button>
+    </header>
+  );
+}
+
+function MonthGrid({ events }: { events: Event[] }) {
+  // useView infers type from events array
+  const { data: month } = useView({ data: events });
+  // month.weeks[n][m].items is Event[] automatically
+  // ...
+}
+```

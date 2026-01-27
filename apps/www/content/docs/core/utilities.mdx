@@ -1,0 +1,185 @@
+---
+title: Utilities
+description: Formatting, navigation, and timezone helpers
+---
+
+## Formatting
+
+### getWeekdays
+
+Get localized weekday names in the correct order for your calendar header.
+
+```typescript
+import { getWeekdays } from '@gobrand/calendar-core';
+
+getWeekdays();
+// ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+getWeekdays(0);                    // Sunday start
+// ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
+getWeekdays(1, 'es-ES');           // Spanish
+// ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
+
+getWeekdays(1, 'en-US', 'long');   // Full names
+// ["Monday", "Tuesday", ...]
+
+getWeekdays(0, 'en-US', 'narrow'); // Single letter
+// ["S", "M", "T", "W", "T", "F", "S"]
+```
+
+**Signature:**
+```typescript
+function getWeekdays(
+  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6, // Default: 1 (Monday)
+  locale?: string | string[],                // Default: 'en-US'. Array for fallback locales
+  format?: 'long' | 'short' | 'narrow'       // Default: 'short'
+): string[];
+```
+
+### getMonthName
+
+Get localized month name from a `PlainYearMonth`.
+
+```typescript
+import { getMonthName } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+const month = Temporal.PlainYearMonth.from('2025-01');
+
+getMonthName(month);          // "January"
+getMonthName(month, 'es-ES'); // "enero"
+getMonthName(month, 'ja-JP'); // "1月"
+```
+
+### formatTime
+
+Format a `PlainTime` for display.
+
+```typescript
+import { formatTime } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
+
+const time = Temporal.PlainTime.from('14:30');
+
+formatTime(time);          // "2:30 PM"
+formatTime(time, 'en-GB'); // "14:30"
+```
+
+## Timezone
+
+### getCurrentTimeZone
+
+Get the system's IANA timezone.
+
+```typescript
+import { getCurrentTimeZone } from '@gobrand/calendar-core';
+
+getCurrentTimeZone(); // "America/New_York"
+```
+
+### convertToTimezone
+
+Convert a `ZonedDateTime` to a different timezone.
+
+```typescript
+import { convertToTimezone } from '@gobrand/calendar-core';
+
+const ny = Temporal.ZonedDateTime.from('2025-01-15T14:00:00-05:00[America/New_York]');
+const tokyo = convertToTimezone(ny, 'Asia/Tokyo');
+// 2025-01-16T04:00:00+09:00[Asia/Tokyo]
+```
+
+### createZonedDateTime
+
+Create a `ZonedDateTime` from date and time components.
+
+```typescript
+import { createZonedDateTime } from '@gobrand/calendar-core';
+
+const date = Temporal.PlainDate.from('2025-01-15');
+const time = Temporal.PlainTime.from('14:30');
+const zdt = createZonedDateTime(date, time, 'America/New_York');
+// 2025-01-15T14:30:00-05:00[America/New_York]
+```
+
+## Navigation
+
+Standalone navigation functions for use outside `createCalendar`:
+
+```typescript
+import {
+  nextMonth,
+  previousMonth,
+  nextWeek,
+  previousWeek,
+  nextDay,
+  previousDay,
+} from '@gobrand/calendar-core';
+
+// Month navigation
+const jan = Temporal.PlainYearMonth.from('2025-01');
+nextMonth(jan);     // 2025-02
+previousMonth(jan); // 2024-12
+
+// Week navigation
+const date = Temporal.PlainDate.from('2025-01-15');
+nextWeek(date);     // 2025-01-22
+previousWeek(date); // 2025-01-08
+
+// Day navigation
+nextDay(date);      // 2025-01-16
+previousDay(date);  // 2025-01-14
+```
+
+## Date Ranges
+
+Get date ranges for the current period. Useful for data fetching.
+
+```typescript
+import {
+  getMonthRange,
+  getWeekRange,
+  getDayRange,
+} from '@gobrand/calendar-core';
+
+// Ranges are aligned to week boundaries
+const monthRange = getMonthRange('America/New_York', 1); // Monday start
+// { start: PlainDate, end: PlainDate }
+
+const weekRange = getWeekRange('America/New_York', 1);
+const dayRange = getDayRange('America/New_York');
+```
+
+## Layout Helpers
+
+For rendering events in time-based views:
+
+### getEventPosition
+
+Calculate CSS position for an event block.
+
+```typescript
+import { getEventPosition } from '@gobrand/calendar-core';
+
+const position = getEventPosition(
+  eventStart,   // ZonedDateTime
+  eventEnd,     // ZonedDateTime
+  8,            // Day starts at 8 AM
+  60            // 60px per hour
+);
+// { top: 60, height: 90 }
+// Event starts 1 hour after 8 AM (top: 60px)
+// Event is 1.5 hours long (height: 90px)
+```
+
+### getTimeSlotHeight
+
+Calculate height for time slots.
+
+```typescript
+import { getTimeSlotHeight } from '@gobrand/calendar-core';
+
+getTimeSlotHeight(30, 60);  // 30px (half-hour slot at 60px/hour)
+getTimeSlotHeight(15, 60);  // 15px (quarter-hour slot)
+```

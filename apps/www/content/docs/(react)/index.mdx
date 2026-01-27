@@ -1,0 +1,73 @@
+---
+title: Introduction
+description: A lightweight calendar builder using the Temporal API
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+## What is GoBrand Calendar?
+
+**GoBrand Calendar** is a headless, framework-agnostic library for building calendars. Like TanStack Table for tables, it gives you complete control over rendering while handling all the complex calendar logic.
+
+Built exclusively on the [Temporal API](https://tc39.es/proposal-temporal/docs/) for timezone-safe, precise date handling.
+
+## Key Features
+
+- **Multi-View Support** - Month, week, and day views with type-safe switching
+- **Timezone-Aware** - 400+ IANA timezones, automatic DST handling
+- **Data-Agnostic** - Works with any data type through the accessor pattern
+- **Fully Type-Safe** - Conditional types ensure methods only exist for configured views
+- **React Integration** - `useCreateCalendar` hook with TanStack Store for optimal re-renders
+- **Framework Agnostic** - Core functions work anywhere: vanilla JS, SSR, any framework
+
+## Quick Example
+
+```tsx
+import { useCreateCalendar, useView } from '@gobrand/react-calendar';
+import { Temporal } from '@js-temporal/polyfill';
+
+type Event = { id: string; title: string; date: string };
+
+function MyCalendar({ events }: { events: Event[] }) {
+  const calendar = useCreateCalendar<Event>({
+    views: {
+      month: {
+        accessor: { getDate: (e) => Temporal.PlainDate.from(e.date) },
+        weekStartsOn: 1,
+      },
+    },
+  });
+
+  const { data: month } = useView({ data: events, calendar });
+
+  return (
+    <div>
+      <header>
+        <button onClick={() => calendar.previous()}>←</button>
+        <h2>{calendar.getTitle()}</h2>
+        <button onClick={() => calendar.next()}>→</button>
+      </header>
+
+      <div className="grid grid-cols-7">
+        {month.weeks.flat().map(day => (
+          <div key={day.date.toString()}>
+            <span>{day.date.day}</span>
+            {day.items.map(event => (
+              <div key={event.id}>{event.title}</div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## Documentation
+
+<Cards>
+  <Card title="Installation" href="/docs/installation" description="Get started with GoBrand Calendar" />
+  <Card title="useCreateCalendar" href="/docs/api/use-create-calendar" description="Create a calendar instance with React state" />
+  <Card title="Calendar Instance" href="/docs/api/calendar-instance" description="All calendar methods and properties" />
+  <Card title="Core Functions" href="/docs/core/build-month" description="Low-level calendar building functions" />
+</Cards>
