@@ -45,6 +45,7 @@ function buildDay<TItem>(
 
 ```typescript
 type CalendarDayView<TItem> = {
+  id: string;              // Unique identifier for React/Vue keys
   date: Temporal.PlainDate;
   isToday: boolean;
   timeSlots: TimeSlot<TItem>[];
@@ -52,6 +53,7 @@ type CalendarDayView<TItem> = {
 };
 
 type TimeSlot<TItem> = {
+  id: string;              // Unique identifier for React/Vue keys
   hour: number;
   minute: number;
   time: Temporal.PlainTime;
@@ -177,7 +179,7 @@ function DayView({ day }: { day: CalendarDayView<Appointment> }) {
       <div className="relative">
         {day.timeSlots.map(slot => (
           <div
-            key={`${slot.hour}-${slot.minute}`}
+            key={slot.id}
             className="h-12 border-t flex items-start"
           >
             <div className="w-16 text-xs text-gray-500 pr-2 text-right">

@@ -30,6 +30,7 @@ A single day in the calendar grid.
 
 ```typescript
 type CalendarDay<TItem = unknown> = {
+  id: string;
   date: Temporal.PlainDate;
   isCurrentMonth: boolean;
   isToday: boolean;
@@ -39,6 +40,7 @@ type CalendarDay<TItem = unknown> = {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| `id` | `string` | Unique identifier for React/Vue keys. Includes month context to prevent key collisions. |
 | `date` | `PlainDate` | The date this day represents |
 | `isCurrentMonth` | `boolean` | Whether this day is in the displayed month |
 | `isToday` | `boolean` | Whether this day is today |
@@ -75,6 +77,7 @@ A single day in the week view.
 
 ```typescript
 type WeekDay<TItem = unknown> = {
+  id: string;
   date: Temporal.PlainDate;
   isToday: boolean;
   items: TItem[];
@@ -84,6 +87,7 @@ type WeekDay<TItem = unknown> = {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| `id` | `string` | Unique identifier for React/Vue keys. Includes week context to prevent key collisions. |
 | `date` | `PlainDate` | The date this day represents |
 | `isToday` | `boolean` | Whether this day is today |
 | `items` | `TItem[]` | All items for this day |
@@ -111,6 +115,7 @@ The return type from `getDay()` or `buildDay()`.
 
 ```typescript
 type CalendarDayView<TItem = unknown> = {
+  id: string;
   date: Temporal.PlainDate;
   isToday: boolean;
   timeSlots: TimeSlot<TItem>[];
@@ -120,6 +125,7 @@ type CalendarDayView<TItem = unknown> = {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| `id` | `string` | Unique identifier for React/Vue keys |
 | `date` | `PlainDate` | The date being viewed |
 | `isToday` | `boolean` | Whether this is today |
 | `timeSlots` | `TimeSlot[]` | Time slots for the day |
@@ -131,6 +137,7 @@ A time slot within a day or week view.
 
 ```typescript
 type TimeSlot<TItem = unknown> = {
+  id: string;
   hour: number;
   minute: number;
   time: Temporal.PlainTime;
@@ -140,6 +147,7 @@ type TimeSlot<TItem = unknown> = {
 
 | Property | Type | Description |
 |----------|------|-------------|
+| `id` | `string` | Unique identifier for React/Vue keys (e.g., `2025-01-15-09:00`) |
 | `hour` | `number` | Hour (0-23) |
 | `minute` | `number` | Minute (0-59) |
 | `time` | `PlainTime` | The PlainTime for this slot |

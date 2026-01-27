@@ -53,6 +53,7 @@ type CalendarWeekView<TItem> = {
 };
 
 type WeekDay<TItem> = {
+  id: string;              // Unique identifier for React/Vue keys
   date: Temporal.PlainDate;
   isToday: boolean;
   items: TItem[];
@@ -60,6 +61,7 @@ type WeekDay<TItem> = {
 };
 
 type TimeSlot<TItem> = {
+  id: string;              // Unique identifier for React/Vue keys
   hour: number;
   minute: number;
   time: Temporal.PlainTime;
@@ -157,7 +159,7 @@ function WeekView({ week }: { week: CalendarWeekView<Meeting> }) {
       {/* Time column */}
       <div className="w-16">
         {week.days[0].timeSlots?.map(slot => (
-          <div key={slot.hour} className="h-12 text-xs text-gray-500">
+          <div key={slot.id} className="h-12 text-xs text-gray-500">
             {slot.hour}:00
           </div>
         ))}
@@ -165,12 +167,12 @@ function WeekView({ week }: { week: CalendarWeekView<Meeting> }) {
 
       {/* Day columns */}
       {week.days.map(day => (
-        <div key={day.date.toString()} className="flex-1">
+        <div key={day.id} className="flex-1">
           <div className={`p-2 text-center ${day.isToday ? 'bg-blue-100' : ''}`}>
             {day.date.day}
           </div>
           {day.timeSlots?.map(slot => (
-            <div key={slot.hour} className="h-12 border-t relative">
+            <div key={slot.id} className="h-12 border-t relative">
               {slot.items.map(meeting => (
                 <div key={meeting.id} className="absolute inset-x-0 bg-blue-200 p-1 text-xs">
                   {meeting.title}

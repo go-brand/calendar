@@ -9,6 +9,8 @@ export type CalendarAccessor<TItem> = {
 
 // Calendar types
 export type CalendarDay<TItem = unknown> = {
+  /** Unique identifier for this day within the view context. Use as React/Vue key. */
+  id: string;
   date: Temporal.PlainDate;
   isCurrentMonth: boolean;
   isToday: boolean;
@@ -24,6 +26,8 @@ export type CalendarMonth<TItem = unknown> = {
 
 // Week view types
 export type WeekDay<TItem = unknown> = {
+  /** Unique identifier for this day within the view context. Use as React/Vue key. */
+  id: string;
   date: Temporal.PlainDate;
   isToday: boolean;
   items: TItem[];
@@ -38,6 +42,8 @@ export type CalendarWeekView<TItem = unknown> = {
 
 // Day view types
 export type TimeSlot<TItem = unknown> = {
+  /** Unique identifier for this time slot. Use as React/Vue key. */
+  id: string;
   hour: number;
   minute: number;
   time: Temporal.PlainTime;
@@ -45,6 +51,8 @@ export type TimeSlot<TItem = unknown> = {
 };
 
 export type CalendarDayView<TItem = unknown> = {
+  /** Unique identifier for this day view. Use as React/Vue key. */
+  id: string;
   date: Temporal.PlainDate;
   isToday: boolean;
   timeSlots: TimeSlot<TItem>[];

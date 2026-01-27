@@ -52,6 +52,7 @@ export function buildMonth<T>(
 
     const dateKey = currentDate.toString();
     weeks[weeks.length - 1].push({
+      id: `${yearMonth.toString()}-${dateKey}`,
       date: currentDate,
       isCurrentMonth: currentDate.month === month,
       isToday: Temporal.PlainDate.compare(currentDate, today) === 0,

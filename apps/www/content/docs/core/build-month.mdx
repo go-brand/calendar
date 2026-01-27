@@ -50,6 +50,7 @@ type CalendarMonth<TItem> = {
 type CalendarWeek<TItem> = CalendarDay<TItem>[];
 
 type CalendarDay<TItem> = {
+  id: string;              // Unique identifier for React/Vue keys
   date: Temporal.PlainDate;
   isCurrentMonth: boolean;
   isToday: boolean;
@@ -130,7 +131,7 @@ function MonthGrid({ month }: { month: CalendarMonth<Event> }) {
     <div className="grid grid-cols-7">
       {month.weeks.flat().map(day => (
         <div
-          key={day.date.toString()}
+          key={day.id}
           className={`
             p-2 border
             ${!day.isCurrentMonth ? 'opacity-40' : ''}

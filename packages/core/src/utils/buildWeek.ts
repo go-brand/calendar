@@ -57,6 +57,7 @@ export function buildWeek<T>(
     }
 
     days.push({
+      id: `${weekStart.toString()}-${dateKey}`,
       date: currentDate,
       isToday: Temporal.PlainDate.compare(currentDate, today) === 0,
       items: itemsByDate.get(dateKey) ?? [],

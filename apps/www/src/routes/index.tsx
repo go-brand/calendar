@@ -1,45 +1,117 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
 import { baseOptions } from '@/lib/layout.shared';
-import { useState } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
+import { useCreateCalendar, useCalendar, useView, CalendarProvider, getWeekdays } from '@gobrand/react-calendar';
+import { Temporal } from '@js-temporal/polyfill';
 
 export const Route = createFileRoute('/')({
   component: Home,
 });
 
-// Calendar visualization component
+// Event type for the demo calendar
+type DemoEvent = {
+  id: string;
+  date: string;
+  title: string;
+  time: string;
+  color: 'sky' | 'cyan' | 'violet' | 'amber';
+};
+
+// Accessor to extract date from events
+const demoAccessor = {
+  getDate: (e: DemoEvent) => Temporal.PlainDate.from(e.date),
+};
+
+// Generate demo events relative to today
+function useDemoEvents(): DemoEvent[] {
+  return useMemo(() => {
+    const today = Temporal.Now.plainDateISO();
+    const yesterday = today.subtract({ days: 1 });
+    const tomorrow = today.add({ days: 1 });
+    const twoDaysAgo = today.subtract({ days: 2 });
+    const inTwoDays = today.add({ days: 2 });
+
+    return [
+      { id: '1', date: twoDaysAgo.toString(), title: 'Sprint Review', time: '10:00 AM', color: 'violet' },
+      { id: '2', date: yesterday.toString(), title: 'Team Standup', time: '9:00 AM', color: 'sky' },
+      { id: '3', date: yesterday.toString(), title: 'Code Review', time: '3:00 PM', color: 'cyan' },
+      { id: '4', date: today.toString(), title: 'Team Standup', time: '9:00 AM', color: 'sky' },
+      { id: '5', date: today.toString(), title: 'Client Meeting', time: '2:00 PM', color: 'cyan' },
+      { id: '6', date: today.toString(), title: 'Design Review', time: '4:30 PM', color: 'violet' },
+      { id: '7', date: tomorrow.toString(), title: 'Planning', time: '10:00 AM', color: 'amber' },
+      { id: '8', date: tomorrow.toString(), title: 'Lunch & Learn', time: '12:00 PM', color: 'cyan' },
+      { id: '9', date: inTwoDays.toString(), title: 'Deploy', time: '9:00 AM', color: 'sky' },
+    ];
+  }, []);
+}
+
+// Calendar options defined outside component to infer types correctly
+const calendarOptions = {
+  views: { month: { accessor: demoAccessor, weekStartsOn: 0 as const } },
+} as const;
+
+// Calendar visualization component using useCreateCalendar
 function CalendarVisualization() {
-  const [currentDate] = useState(new Date());
-  const [hoveredDay, setHoveredDay] = useState<number | null>(null);
+  const events = useDemoEvents();
+  const calendar = useCreateCalendar<DemoEvent, typeof calendarOptions>(calendarOptions);
 
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-  const today = currentDate.getDate();
+  return (
+    <CalendarProvider calendar={calendar}>
+      <CalendarContent events={events} />
+    </CalendarProvider>
+  );
+}
 
-  // Generate calendar days
-  const days = [];
-  const totalCells = 42; // 6 weeks * 7 days
+function CalendarContent({ events }: { events: DemoEvent[] }) {
+  const calendar = useCalendar<DemoEvent>();
+  const { data: month } = useView({ data: events, name: 'month' as const });
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [hoveredDay, setHoveredDay] = useState<string | null>(null);
 
-  // Previous month days
-  const prevMonthDays = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
-  for (let i = firstDayOfMonth - 1; i >= 0; i--) {
-    days.push({ day: prevMonthDays - i, isCurrentMonth: false, isToday: false });
-  }
+  // Track if initial animation has completed - only animate on first render
+  const hasAnimated = useRef(false);
+  useEffect(() => {
+    // Mark as animated after initial render
+    const timer = setTimeout(() => {
+      hasAnimated.current = true;
+    }, 1500); // Wait for animations to complete
+    return () => clearTimeout(timer);
+  }, []);
 
-  // Current month days
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push({ day: i, isCurrentMonth: true, isToday: i === today });
-  }
+  // Get events for the selected date
+  const selectedEvents = useMemo(() => {
+    if (!selectedDate) {
+      // Default to today's events
+      const today = Temporal.Now.plainDateISO().toString();
+      return events.filter(e => e.date === today);
+    }
+    return events.filter(e => e.date === selectedDate);
+  }, [selectedDate, events]);
 
-  // Next month days
-  const remainingDays = totalCells - days.length;
-  for (let i = 1; i <= remainingDays; i++) {
-    days.push({ day: i, isCurrentMonth: false, isToday: false });
-  }
+  const weekdays = getWeekdays(0);
 
-  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+  // Get all days from the month view
+  const allDays = month.weeks.flat();
+
+  // Build a set of dates that have events for quick lookup
+  const datesWithEvents = useMemo(() => {
+    const set = new Set<string>();
+    for (const day of allDays) {
+      if (day.items.length > 0) {
+        set.add(day.date.toString());
+      }
+    }
+    return set;
+  }, [allDays]);
+
+  const colorClasses: Record<DemoEvent['color'], string> = {
+    sky: 'bg-sky-400',
+    cyan: 'bg-cyan-400',
+    violet: 'bg-violet-400',
+    amber: 'bg-amber-400',
+  };
 
   return (
     <div className="relative w-full max-w-[420px] mx-auto">
@@ -66,7 +138,7 @@ function CalendarVisualization() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
           >
-            {monthName}
+            {calendar.getTitle()}
           </motion.h3>
           <div className="flex gap-1">
             <motion.button
@@ -74,6 +146,7 @@ function CalendarVisualization() {
               className="p-1.5 rounded-lg hover:bg-neutral-700/50 text-neutral-400 hover:text-neutral-200 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => calendar.previous()}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -84,6 +157,7 @@ function CalendarVisualization() {
               className="p-1.5 rounded-lg hover:bg-neutral-700/50 text-neutral-400 hover:text-neutral-200 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => calendar.next()}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -109,49 +183,66 @@ function CalendarVisualization() {
 
         {/* Calendar grid */}
         <div className="grid grid-cols-7 gap-1">
-          {days.map((dayInfo, i) => (
-            <motion.div
-              key={`day-${dayInfo.day}-${dayInfo.isCurrentMonth}-${i}`}
-              className={`
-                relative aspect-square flex items-center justify-center text-sm rounded-lg cursor-pointer transition-all
-                ${dayInfo.isCurrentMonth ? 'text-neutral-200' : 'text-neutral-600'}
-                ${dayInfo.isToday ? 'bg-sky-500 text-white font-semibold' : 'hover:bg-neutral-700/50'}
-                ${hoveredDay === i && !dayInfo.isToday ? 'bg-cyan-400/20 ring-1 ring-cyan-400/50' : ''}
-              `}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.6 + i * 0.01 }}
-              onMouseEnter={() => setHoveredDay(i)}
-              onMouseLeave={() => setHoveredDay(null)}
-            >
-              {dayInfo.day}
-              {/* Event indicator */}
-              {dayInfo.isCurrentMonth && [5, 12, 18, 23].includes(dayInfo.day) && (
-                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyan-400" />
-              )}
-            </motion.div>
-          ))}
+          {allDays.map((day, i) => {
+            const dateStr = day.date.toString();
+            const hasEvents = datesWithEvents.has(dateStr);
+            const isSelected = selectedDate === dateStr;
+            const isHovered = hoveredDay === dateStr && !day.isToday && !isSelected;
+
+            return (
+              <motion.button
+                type="button"
+                key={day.id}
+                className={`
+                  relative aspect-square flex items-center justify-center text-sm rounded-lg cursor-pointer transition-all
+                  ${day.isCurrentMonth ? 'text-neutral-200' : 'text-neutral-600'}
+                  ${day.isToday ? 'bg-sky-500 text-white font-semibold' : 'hover:bg-neutral-700/50'}
+                  ${isSelected && !day.isToday ? 'bg-cyan-500/30 ring-1 ring-cyan-400' : ''}
+                  ${isHovered ? 'bg-cyan-400/20 ring-1 ring-cyan-400/50' : ''}
+                `}
+                {...(!hasAnimated.current && {
+                  initial: { opacity: 0, scale: 0.8 },
+                  animate: { opacity: 1, scale: 1 },
+                  transition: { delay: 0.6 + i * 0.01 },
+                })}
+                onMouseEnter={() => setHoveredDay(dateStr)}
+                onMouseLeave={() => setHoveredDay(null)}
+                onClick={() => setSelectedDate(dateStr)}
+              >
+                {day.date.day}
+                {/* Event indicator */}
+                {hasEvents && (
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyan-400" />
+                )}
+              </motion.button>
+            );
+          })}
         </div>
 
-        {/* Sample events */}
+        {/* Events for selected day */}
         <motion.div
           className="mt-4 pt-4 border-t border-neutral-700/50"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2 }}
         >
-          <div className="text-xs font-medium text-neutral-400 mb-2">Events</div>
+          <div className="text-xs font-medium text-neutral-400 mb-2">
+            {selectedDate
+              ? `Events for ${Temporal.PlainDate.from(selectedDate).toLocaleString('en-US', { month: 'short', day: 'numeric' })}`
+              : 'Events for Today'}
+          </div>
           <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-xs">
-              <div className="w-2 h-2 rounded-full bg-sky-400" />
-              <span className="text-neutral-300">Team Standup</span>
-              <span className="text-neutral-500 ml-auto">9:00 AM</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <div className="w-2 h-2 rounded-full bg-cyan-400" />
-              <span className="text-neutral-300">Client Meeting</span>
-              <span className="text-neutral-500 ml-auto">2:00 PM</span>
-            </div>
+            {selectedEvents.length > 0 ? (
+              selectedEvents.map((event) => (
+                <div key={event.id} className="flex items-center gap-2 text-xs">
+                  <div className={`w-2 h-2 rounded-full ${colorClasses[event.color]}`} />
+                  <span className="text-neutral-300">{event.title}</span>
+                  <span className="text-neutral-500 ml-auto">{event.time}</span>
+                </div>
+              ))
+            ) : (
+              <div className="text-xs text-neutral-500 italic">No events</div>
+            )}
           </div>
         </motion.div>
       </motion.div>
@@ -267,43 +358,58 @@ function FeatureCard({
 }
 
 function Home() {
-  const reactCode = `import { useCalendar, createCalendarViews } from '@gobrand/react-calendar';
+  const reactCode = `import { useCreateCalendar, CalendarProvider, useCalendar, useView } from '@gobrand/react-calendar';
 import { Temporal } from '@js-temporal/polyfill';
 
-type Event = {
-  id: string;
-  title: string;
-  start: Temporal.ZonedDateTime;
-};
+type Event = { id: string; date: string; title: string };
 
-const calendar = useCalendar({
-  data: events,
-  views: createCalendarViews<Event>()({
-    month: { weekStartsOn: 1, accessor },
-    week: { accessor },
-  }),
-});
+const accessor = { getDate: (e: Event) => Temporal.PlainDate.from(e.date) };
 
-// Type-safe view methods
-const month = calendar.getMonth();
-const week = calendar.getWeek();`;
+function Calendar() {
+  const calendar = useCreateCalendar<Event>({
+    views: { month: { accessor, weekStartsOn: 1 } },
+  });
 
-  const coreCode = `import { buildMonth, getWeekdays, getMonthName } from '@gobrand/calendar-core';
+  return (
+    <CalendarProvider calendar={calendar}>
+      <MonthView />
+    </CalendarProvider>
+  );
+}
+
+function MonthView() {
+  const calendar = useCalendar<Event>();
+  const { data: month } = useView({ data: events });
+
+  return month.weeks.flat().map(day => (
+    <div key={day.date.toString()}>
+      {day.date.day} - {day.items.length} events
+    </div>
+  ));
+}`;
+
+  const coreCode = `import { buildMonth, getWeekdays } from '@gobrand/calendar-core';
 import { Temporal } from '@js-temporal/polyfill';
 
-// Build any month
+type Event = { id: string; date: string; title: string };
+
+// Build any month with events
 const month = buildMonth(2025, 1, {
   weekStartsOn: 1,
   data: events,
-  accessor: { getDate: (e) => e.date },
+  accessor: { getDate: (e: Event) => Temporal.PlainDate.from(e.date) },
 });
 
-// Localized formatting
-const weekdays = getWeekdays(1, 'es-ES');
-// ["lun", "mar", "mie", "jue", "vie", "sab", "dom"]
+// Iterate over weeks and days
+month.weeks.forEach(week => {
+  week.forEach(day => {
+    console.log(day.date.day, day.items); // 1, [Event, Event]
+  });
+});
 
-const name = getMonthName(month.month, 'ja-JP');
-// "1月"`;
+// Localized weekday names
+const weekdays = getWeekdays(1, 'es-ES');
+// ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]`;
 
   return (
     <HomeLayout {...baseOptions()}>

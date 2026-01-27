@@ -31,6 +31,7 @@ export function buildDay<T>(
   }
 
   const timeSlots: TimeSlot<T>[] = [];
+  const dateStr = date.toString(); // Cache for time slot IDs
   let currentHour = startHour;
   let currentMinute = 0;
 
@@ -66,6 +67,7 @@ export function buildDay<T>(
     }
 
     timeSlots.push({
+      id: `${dateStr}-${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`,
       hour: currentHour,
       minute: currentMinute,
       time: slotStart,
@@ -80,6 +82,7 @@ export function buildDay<T>(
   }
 
   return {
+    id: dateStr,
     date,
     isToday: Temporal.PlainDate.compare(date, today) === 0,
     timeSlots,
