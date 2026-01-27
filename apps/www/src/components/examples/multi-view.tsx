@@ -116,9 +116,9 @@ function ViewContent() {
 function MonthView({ month }: { month: ReturnType<typeof useView<Event>>['data'] & { weeks: unknown[] } }) {
   return (
     <div className="grid grid-cols-7 gap-0.5">
-      {(month as { weeks: { date: Temporal.PlainDate; isCurrentMonth: boolean; isToday: boolean; items: Event[] }[][] }).weeks.flat().map((day) => (
+      {(month as { weeks: { id: string; date: Temporal.PlainDate; isCurrentMonth: boolean; isToday: boolean; items: Event[] }[][] }).weeks.flat().map((day) => (
         <div
-          key={day.date.toString()}
+          key={day.id}
           className={`min-h-[60px] p-1 rounded border text-xs ${day.isCurrentMonth ? 'bg-fd-card' : 'bg-fd-muted/30'}`}
         >
           <span className={day.isToday ? 'bg-fd-primary text-fd-primary-foreground rounded-full w-5 h-5 inline-flex items-center justify-center text-xs' : ''}>
@@ -133,11 +133,11 @@ function MonthView({ month }: { month: ReturnType<typeof useView<Event>>['data']
   );
 }
 
-function WeekView({ week }: { week: { days: { date: Temporal.PlainDate; isToday: boolean; items: Event[] }[] } }) {
+function WeekView({ week }: { week: { days: { id: string; date: Temporal.PlainDate; isToday: boolean; items: Event[] }[] } }) {
   return (
     <div className="grid grid-cols-7 gap-1">
       {week.days.map((day) => (
-        <div key={day.date.toString()} className="text-center">
+        <div key={day.id} className="text-center">
           <div className={`text-lg mb-2 ${day.isToday ? 'bg-fd-primary text-fd-primary-foreground rounded-full w-8 h-8 flex items-center justify-center mx-auto' : ''}`}>
             {day.date.day}
           </div>
@@ -154,7 +154,7 @@ function WeekView({ week }: { week: { days: { date: Temporal.PlainDate; isToday:
   );
 }
 
-function DayView({ day }: { day: { date: Temporal.PlainDate; isToday: boolean; items: Event[] } }) {
+function DayView({ day }: { day: { id: string; date: Temporal.PlainDate; isToday: boolean; items: Event[] } }) {
   return (
     <div className="text-center">
       {day.isToday && <div className="text-sm text-fd-primary mb-4">Today</div>}

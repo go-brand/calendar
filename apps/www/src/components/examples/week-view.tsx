@@ -42,7 +42,7 @@ function SimpleWeekContent() {
   return (
     <div className="grid grid-cols-7 gap-1">
       {week.days.map((day) => (
-        <div key={day.date.toString()} className="min-h-[100px] p-1 rounded border bg-fd-card">
+        <div key={day.id} className="min-h-[100px] p-1 rounded border bg-fd-card">
           <div className="text-center mb-2">
             <span className={`text-lg ${day.isToday ? 'bg-fd-primary text-fd-primary-foreground rounded-full w-8 h-8 inline-flex items-center justify-center' : ''}`}>
               {day.date.day}
@@ -102,7 +102,7 @@ function WeekContentWithSlots() {
       <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b bg-fd-muted/20">
         <div className="p-2" />
         {week.days.map((day) => (
-          <div key={day.date.toString()} className="p-2 text-center border-l">
+          <div key={day.id} className="p-2 text-center border-l">
             <div className="text-xs text-fd-muted-foreground">
               {day.date.toLocaleString('en', { weekday: 'short' })}
             </div>
@@ -115,14 +115,14 @@ function WeekContentWithSlots() {
       {/* Time slots grid */}
       <div className="max-h-[400px] overflow-y-auto">
         {timeSlots.map((slot, slotIndex) => (
-          <div key={`${slot.hour}-${slot.minute}`} className="grid grid-cols-[60px_repeat(7,1fr)] border-b last:border-b-0">
+          <div key={slot.id} className="grid grid-cols-[60px_repeat(7,1fr)] border-b last:border-b-0">
             <div className="p-2 text-xs text-fd-muted-foreground border-r bg-fd-muted/10">
               {slot.time.toLocaleString('en', { hour: 'numeric' })}
             </div>
             {week.days.map((day) => {
               const daySlot = day.timeSlots?.[slotIndex];
               return (
-                <div key={day.date.toString()} className="min-h-[48px] p-1 border-l relative">
+                <div key={day.id} className="min-h-[48px] p-1 border-l relative">
                   {daySlot?.items.map((event) => (
                     <div key={event.id} className="text-xs bg-fd-primary text-fd-primary-foreground rounded px-1 py-0.5 truncate">
                       {event.title}
@@ -218,7 +218,7 @@ function WeekContent() {
   return (
     <div className="grid grid-cols-7">
       {week.days.map(day => (
-        <div key={day.date.toString()}>
+        <div key={day.id}>
           <div className={day.isToday ? 'font-bold' : ''}>{day.date.day}</div>
           {day.items.map(event => (
             <div key={event.id}>{event.title}</div>
@@ -271,17 +271,17 @@ function WeekContent() {
       <div className="grid grid-cols-[60px_repeat(7,1fr)]">
         <div />
         {week.days.map(day => (
-          <div key={day.date.toString()} className={day.isToday ? 'font-bold' : ''}>
+          <div key={day.id} className={day.isToday ? 'font-bold' : ''}>
             {day.date.toLocaleString('en', { weekday: 'short', day: 'numeric' })}
           </div>
         ))}
       </div>
       {/* Time slots */}
       {timeSlots.map((slot, i) => (
-        <div key={\`\${slot.hour}-\${slot.minute}\`} className="grid grid-cols-[60px_repeat(7,1fr)]">
+        <div key={slot.id} className="grid grid-cols-[60px_repeat(7,1fr)]">
           <div>{slot.time.toLocaleString('en', { hour: 'numeric' })}</div>
           {week.days.map(day => (
-            <div key={day.date.toString()}>
+            <div key={day.id}>
               {day.timeSlots?.[i]?.items.map(event => (
                 <div key={event.id}>{event.title}</div>
               ))}

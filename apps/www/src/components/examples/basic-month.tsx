@@ -74,7 +74,7 @@ function MonthContent() {
     <div className="grid grid-cols-7 gap-1">
       {month.weeks.flat().map((day) => (
         <div
-          key={day.date.toString()}
+          key={day.id}
           className={`min-h-[80px] p-2 rounded-lg border ${day.isCurrentMonth ? 'bg-fd-card border-fd-border' : 'bg-fd-muted/20 border-transparent opacity-40'}`}
         >
           <span className={`text-sm inline-flex items-center justify-center size-6 rounded-full ${day.isToday ? 'bg-fd-primary text-fd-primary-foreground font-medium' : ''} ${!day.isCurrentMonth ? 'text-fd-muted-foreground' : ''}`}>
@@ -151,7 +151,7 @@ function MonthContent() {
   return (
     <div className="grid grid-cols-7">
       {month.weeks.flat().map(day => (
-        <div key={day.date.toString()} className={day.isCurrentMonth ? '' : 'opacity-40'}>
+        <div key={day.id} className={day.isCurrentMonth ? '' : 'opacity-40'}>
           <span className={day.isToday ? 'font-bold' : ''}>{day.date.day}</span>
           {day.items.map(event => (
             <div key={event.id}>{event.title}</div>

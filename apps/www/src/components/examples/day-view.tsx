@@ -70,7 +70,7 @@ function DayContent() {
       )}
       <div className="border rounded-lg overflow-hidden max-h-[400px] overflow-y-auto">
         {day.timeSlots.map((slot) => (
-          <div key={`${slot.hour}-${slot.minute}`} className="flex border-b last:border-b-0 min-h-[48px]">
+          <div key={slot.id} className="flex border-b last:border-b-0 min-h-[48px]">
             <div className="w-16 p-2 text-sm text-fd-muted-foreground border-r bg-fd-muted/20 flex-shrink-0">
               {slot.time.toLocaleString('en', { hour: 'numeric' })}
             </div>
@@ -137,7 +137,7 @@ function DayContent() {
   return (
     <div>
       {day.timeSlots.map(slot => (
-        <div key={\`\${slot.hour}-\${slot.minute}\`} className="flex border-t h-12">
+        <div key={slot.id} className="flex border-t h-12">
           <div className="w-16 text-sm">
             {slot.time.toLocaleString('en', { hour: 'numeric' })}
           </div>
