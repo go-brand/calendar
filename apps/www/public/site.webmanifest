@@ -1,17 +1,17 @@
 {
-  "name": "tiempo",
-  "short_name": "tiempo",
-  "description": "Temporal API datetime utilities",
-  "start_url": "/tiempo/",
+  "name": "gobrand-calendar-docs",
+  "short_name": "calendar",
+  "description": "Build calendars using the Temporal API",
+  "start_url": "/calendar/",
   "icons": [
     {
-      "src": "/tiempo/web-app-manifest-192x192.png",
+      "src": "/calendar/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/tiempo/web-app-manifest-512x512.png",
+      "src": "/calendar/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

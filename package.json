@@ -10,9 +10,11 @@
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "typecheck": "pnpm -r run typecheck",
-    "release": "bash scripts/release.sh"
+    "release": "bash scripts/release.sh",
+    "generate:docs": "tsx scripts/generate-docs.ts"
   },
   "devDependencies": {
+    "tsx": "^4.21.0",
     "typescript": "^5.7.3"
   }
 }
