@@ -19,3 +19,4 @@ pnpm-debug.log*
 # Demo app (local development only)
 apps/demo
 .playwright-mcp/
+apps/www/.wrangler/
