@@ -382,7 +382,7 @@ function MonthView() {
   const { data: month } = useView({ data: events });
 
   return month.weeks.flat().map(day => (
-    <div key={day.date.toString()}>
+    <div key={day.id}>
       {day.date.day} - {day.items.length} events
     </div>
   ));

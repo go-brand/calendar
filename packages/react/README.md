@@ -96,7 +96,7 @@ function MyCalendar() {
 
         {month.weeks.flat().map(day => (
           <div
-            key={day.date.toString()}
+            key={day.id}
             className={`
               ${!day.isCurrentMonth && 'opacity-40'}
               ${day.isToday && 'bg-blue-100'}
@@ -548,7 +548,7 @@ function PostCalendar() {
 
       <div className="calendar-grid">
         {month.weeks.flat().map((day) => (
-          <div key={day.date.toString()}>
+          <div key={day.id}>
             <div>{day.date.day}</div>
             {day.items.map((post) => (
               <div key={post.id}>{post.title}</div>
@@ -687,7 +687,7 @@ function EventCalendar() {
           <div className="month-grid">
             {calendar.getMonth().weeks.flat().map(day => (
               <div
-                key={day.date.toString()}
+                key={day.id}
                 className={`day ${!day.isCurrentMonth ? 'other-month' : ''} ${day.isToday ? 'today' : ''}`}
               >
                 <div className="day-number">{day.date.day}</div>
@@ -709,7 +709,7 @@ function EventCalendar() {
         <div className="week-view">
           <div className="weekday-headers">
             {calendar.getWeek().days.map(day => (
-              <div key={day.date.toString()} className="weekday">
+              <div key={day.id} className="weekday">
                 <div>{day.date.toLocaleString('en-US', { weekday: 'short' })}</div>
                 <div className={day.isToday ? 'today' : ''}>{day.date.day}</div>
               </div>
@@ -717,9 +717,9 @@ function EventCalendar() {
           </div>
           <div className="week-grid">
             {calendar.getWeek().days.map(day => (
-              <div key={day.date.toString()} className="day-column">
-                {day.timeSlots?.map((slot, i) => (
-                  <div key={i} className="time-slot">
+              <div key={day.id} className="day-column">
+                {day.timeSlots?.map((slot) => (
+                  <div key={slot.id} className="time-slot">
                     {slot.items.map(event => (
                       <div key={event.id} className="event">
                         {event.title}
@@ -736,8 +736,8 @@ function EventCalendar() {
       {/* Day View */}
       {currentView === 'day' && (
         <div className="day-view">
-          {calendar.getDay().timeSlots.map((slot, i) => (
-            <div key={i} className="time-slot">
+          {calendar.getDay().timeSlots.map((slot) => (
+            <div key={slot.id} className="time-slot">
               <div className="time">{slot.hour}:{String(slot.minute).padStart(2, '0')}</div>
               <div className="slot-events">
                 {slot.items.map(event => (
@@ -802,7 +802,7 @@ function TaskCalendar() {
       <div className="calendar-grid">
         {month.weeks.flat().map(day => (
           <div
-            key={day.date.toString()}
+            key={day.id}
             className={!day.isCurrentMonth ? 'dimmed' : ''}
           >
             <div>{day.date.day}</div>

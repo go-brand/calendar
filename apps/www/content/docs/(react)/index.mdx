@@ -50,7 +50,7 @@ function MyCalendar({ events }: { events: Event[] }) {
 
       <div className="grid grid-cols-7">
         {month.weeks.flat().map(day => (
-          <div key={day.date.toString()}>
+          <div key={day.id}>
             <span>{day.date.day}</span>
             {day.items.map(event => (
               <div key={event.id}>{event.title}</div>

@@ -56,7 +56,7 @@ function CalendarView() {
       <div className="grid grid-cols-7">
         {getWeekdays().map(day => <div key={day}>{day}</div>)}
         {view.data.weeks.flat().map(day => (
-          <div key={day.date.toString()} className={day.isToday ? 'bg-blue-100' : ''}>
+          <div key={day.id} className={day.isToday ? 'bg-blue-100' : ''}>
             {day.date.day}
             {day.items.map(e => <div key={e.id}>{e.title}</div>)}
           </div>
@@ -69,7 +69,7 @@ function CalendarView() {
     return (
       <div className="flex">
         {view.data.days.map(day => (
-          <div key={day.date.toString()} className="flex-1">
+          <div key={day.id} className="flex-1">
             <div className={day.isToday ? 'font-bold' : ''}>{day.date.day}</div>
             {day.items.map(e => <div key={e.id}>{e.title}</div>)}
           </div>

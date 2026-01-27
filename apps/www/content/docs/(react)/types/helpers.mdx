@@ -208,7 +208,7 @@ function MonthView<C extends CalendarInstance>({
     <div className="grid grid-cols-7">
       {month.weeks.flat().map(day => (
         <DayCell<Item>
-          key={day.date.toString()}
+          key={day.id}
           day={day}
         />
       ))}
