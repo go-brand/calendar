@@ -31,7 +31,7 @@
   "bugs": {
     "url": "https://github.com/go-brand/calendar/issues"
   },
-  "homepage": "https://github.com/go-brand/calendar#readme",
+  "homepage": "https://eng.gobrand.app/calendar",
   "scripts": {
     "build": "tsup && tsc --emitDeclarationOnly --declaration --declarationMap",
     "test": "vitest",
