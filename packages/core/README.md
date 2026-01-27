@@ -1,6 +1,7 @@
-# @gobrand/calendar-core
+# Calendar Core
 
 [![npm version](https://img.shields.io/npm/v/@gobrand/calendar-core.svg)](https://www.npmjs.com/package/@gobrand/calendar-core)
+[![CI](https://github.com/go-brand/calendar/actions/workflows/ci.yml/badge.svg)](https://github.com/go-brand/calendar/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Framework-agnostic calendar utilities built with the Temporal API.** Simple, composable functions for building month, week, and day views.

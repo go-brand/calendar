@@ -1,6 +1,7 @@
-# @gobrand/react-calendar
+# React Calendar
 
 [![npm version](https://img.shields.io/npm/v/@gobrand/react-calendar.svg)](https://www.npmjs.com/package/@gobrand/react-calendar)
+[![CI](https://github.com/go-brand/calendar/actions/workflows/ci.yml/badge.svg)](https://github.com/go-brand/calendar/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **React hooks for building calendars with the Temporal API.** Type-safe views, timezone-aware, optimized state management.
