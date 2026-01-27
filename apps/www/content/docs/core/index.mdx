@@ -41,7 +41,7 @@ const accessor = createCalendarAccessor<Event>({
 const calendar = createCalendar({
   views: {
     month: { accessor, weekStartsOn: 1 },
-    week: { accessor, startHour: 8, endHour: 18 },
+    week: { accessor },
   },
   timeZone: 'America/New_York',
 });

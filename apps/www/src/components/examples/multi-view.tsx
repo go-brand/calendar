@@ -11,8 +11,8 @@ function MultiViewCalendar() {
   const calendar = useCreateCalendar<Event>({
     views: {
       month: { accessor, weekStartsOn: 1 },
-      week: { accessor, weekStartsOn: 1, startHour: 8, endHour: 18 },
-      day: { accessor, startHour: 8, endHour: 18 },
+      week: { accessor, weekStartsOn: 1 },
+      day: { accessor },
     },
   });
 
@@ -186,8 +186,8 @@ function MultiViewCalendar() {
   const calendar = useCreateCalendar<Event>({
     views: {
       month: { accessor, weekStartsOn: 1 },
-      week: { accessor, weekStartsOn: 1, startHour: 8, endHour: 18 },
-      day: { accessor, startHour: 8, endHour: 18 },
+      week: { accessor, weekStartsOn: 1 },
+      day: { accessor },
     },
   });
 

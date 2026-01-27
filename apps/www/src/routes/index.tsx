@@ -280,7 +280,7 @@ const calendar = useCalendar({
   data: events,
   views: createCalendarViews<Event>()({
     month: { weekStartsOn: 1, accessor },
-    week: { startHour: 8, endHour: 18, accessor },
+    week: { accessor },
   }),
 });
 

@@ -139,7 +139,7 @@ const accessor = createCalendarAccessor<SimpleEvent>({
 const calendar = createCalendar({
   views: {
     month: { accessor, weekStartsOn: 1 },
-    week: { accessor, startHour: 8, endHour: 18 },
+    week: { accessor },
   },
 });
 
@@ -159,7 +159,5 @@ const month = buildMonth(2025, 1, {
 const week = buildWeek(date, {
   data: events,
   accessor,
-  startHour: 8,
-  endHour: 18,
 });
 ```

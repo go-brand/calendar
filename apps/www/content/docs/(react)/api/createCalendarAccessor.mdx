@@ -164,7 +164,7 @@ function Calendar({ events }: { events: Event[] }) {
   const calendar = useCreateCalendar<Event>({
     views: {
       month: { accessor, weekStartsOn: 1 },
-      week: { accessor, startHour: 8, endHour: 18 },
+      week: { accessor },
     },
   });
 

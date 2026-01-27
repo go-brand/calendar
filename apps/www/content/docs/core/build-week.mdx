@@ -116,8 +116,8 @@ const accessor = createCalendarAccessor<Meeting>({
 
 const week = buildWeek(Temporal.PlainDate.from('2025-01-15'), {
   weekStartsOn: 1,
-  startHour: 8,
-  endHour: 18,
+  startHour: 0,
+  endHour: 24,
   slotDuration: 60,
   data: meetings,
   accessor,
@@ -138,14 +138,14 @@ week.days.forEach(day => {
 ## Slot Duration Options
 
 ```typescript
-// Hourly slots (10 slots for 8 AM - 6 PM)
-buildWeek(date, { startHour: 8, endHour: 18, slotDuration: 60 });
+// Hourly slots (24 slots for full day)
+buildWeek(date, { startHour: 0, endHour: 24, slotDuration: 60 });
 
-// Half-hour slots (20 slots)
-buildWeek(date, { startHour: 8, endHour: 18, slotDuration: 30 });
+// Half-hour slots (48 slots)
+buildWeek(date, { startHour: 0, endHour: 24, slotDuration: 30 });
 
-// 15-minute slots (40 slots)
-buildWeek(date, { startHour: 8, endHour: 18, slotDuration: 15 });
+// 15-minute slots (96 slots)
+buildWeek(date, { startHour: 0, endHour: 24, slotDuration: 15 });
 ```
 
 ## Rendering

@@ -23,8 +23,8 @@ const accessor = createCalendarAccessor<Event>({
 
 const views = createCalendarViews<Event>()({
   month: { accessor, weekStartsOn: 1 },
-  week: { accessor, weekStartsOn: 1, startHour: 8, endHour: 18 },
-  day: { accessor, startHour: 8, endHour: 18, slotDuration: 30 },
+  week: { accessor, weekStartsOn: 1, startHour: 0, endHour: 24, slotDuration: 60 },
+  day: { accessor, startHour: 0, endHour: 24, slotDuration: 30 },
 });
 ```
 
@@ -103,7 +103,7 @@ const accessor = createCalendarAccessor<Event>({
 
 const views = createCalendarViews<Event>()({
   month: { accessor, weekStartsOn: 1 },
-  week: { accessor, startHour: 8, endHour: 18 },
+  week: { accessor, startHour: 0, endHour: 24, slotDuration: 60 },
 });
 
 function Calendar({ events }: { events: Event[] }) {

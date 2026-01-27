@@ -67,13 +67,13 @@ import { Temporal } from '@js-temporal/polyfill';
 
 const date = Temporal.PlainDate.from('2025-01-15');
 const day = buildDay(date, {
-  startHour: 8,
-  endHour: 18,
+  startHour: 0,
+  endHour: 24,
   slotDuration: 60,
 });
 
 console.log(`Date: ${day.date}, Today: ${day.isToday}`);
-console.log(`Slots: ${day.timeSlots.length}`); // 10
+console.log(`Slots: ${day.timeSlots.length}`); // 24
 ```
 
 ## With Appointments
@@ -111,8 +111,8 @@ const accessor = createCalendarAccessor<Appointment>({
 });
 
 const day = buildDay(Temporal.PlainDate.from('2025-01-15'), {
-  startHour: 8,
-  endHour: 18,
+  startHour: 0,
+  endHour: 24,
   slotDuration: 30,
   data: appointments,
   accessor,

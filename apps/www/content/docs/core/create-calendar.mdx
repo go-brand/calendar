@@ -41,7 +41,7 @@ const accessor = createCalendarAccessor<Event>({
 const calendar = createCalendar({
   views: {
     month: { accessor, weekStartsOn: 1 },
-    week: { accessor, startHour: 8, endHour: 18, slotDuration: 60 },
+    week: { accessor, startHour: 0, endHour: 24, slotDuration: 60 },
   },
   timeZone: 'America/New_York',
 });
@@ -259,8 +259,8 @@ const accessor = createCalendarAccessor<Meeting>({
 const calendar = createCalendar({
   views: {
     month: { accessor, weekStartsOn: 1 },
-    week: { accessor, weekStartsOn: 1, startHour: 8, endHour: 18, slotDuration: 30 },
-    day: { accessor, startHour: 8, endHour: 18, slotDuration: 15 },
+    week: { accessor, weekStartsOn: 1, startHour: 0, endHour: 24, slotDuration: 30 },
+    day: { accessor, startHour: 0, endHour: 24, slotDuration: 15 },
   },
   timeZone: 'Europe/London',
   onStateChange: (state) => {
