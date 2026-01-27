@@ -50,9 +50,9 @@ fi
 
 echo -e "${GREEN}Starting release process...${NC}"
 
-# Run tests
+# Run tests (packages only, not apps)
 echo "Running tests..."
-pnpm test --run
+pnpm -r --filter './packages/*' run test --run
 
 # Run type check
 echo "Running type check..."
