@@ -1,6 +1,6 @@
 {
   "name": "@gobrand/react-calendar",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "React hooks and components for building calendars using the Temporal API",
   "private": false,
   "publishConfig": {
