@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from "@js-temporal/polyfill";
 
 export type Event = {
   id: string;
@@ -7,7 +7,18 @@ export type Event = {
   title: string;
 };
 
-const titles = ['Standup', 'Planning', 'Review', 'Launch', 'Demo', 'Retro', 'Sprint', 'Deploy', 'Sync', 'Lunch'];
+const titles = [
+  "Standup",
+  "Planning",
+  "Review",
+  "Launch",
+  "Demo",
+  "Retro",
+  "Sprint",
+  "Deploy",
+  "Sync",
+  "Lunch",
+];
 
 // Generate events around the current date so calendars are never empty
 function generateEvents(): Event[] {
@@ -21,7 +32,7 @@ function generateEvents(): Event[] {
     const daysInMonth = month.daysInMonth;
 
     // Add events on various days throughout each month
-    const eventDays = [3, 5, 8, 12, 15, 18, 22, 25, 28].filter(d => d <= daysInMonth);
+    const eventDays = [3, 5, 8, 12, 15, 18, 22, 25, 28].filter((d) => d <= daysInMonth);
     eventDays.forEach((day, i) => {
       const date = month.with({ day });
       events.push({
@@ -33,21 +44,27 @@ function generateEvents(): Event[] {
   }
 
   // Add 2 events for today at specific times (9 AM and 11 AM - visible in week view's first 5 slots)
-  const todayAt9am = today.toZonedDateTime({ timeZone, plainTime: Temporal.PlainTime.from('09:00') });
-  const todayAt11am = today.toZonedDateTime({ timeZone, plainTime: Temporal.PlainTime.from('11:00') });
-
-  events.push({
-    id: 'today-9am',
-    date: today.toString(),
-    start: todayAt9am.toString(),
-    title: 'Team Sync',
+  const todayAt9am = today.toZonedDateTime({
+    timeZone,
+    plainTime: Temporal.PlainTime.from("09:00"),
+  });
+  const todayAt11am = today.toZonedDateTime({
+    timeZone,
+    plainTime: Temporal.PlainTime.from("11:00"),
   });
 
   events.push({
-    id: 'today-11am',
+    id: "today-9am",
+    date: today.toString(),
+    start: todayAt9am.toString(),
+    title: "Team Sync",
+  });
+
+  events.push({
+    id: "today-11am",
     date: today.toString(),
     start: todayAt11am.toString(),
-    title: 'Project Review',
+    title: "Project Review",
   });
 
   // Add extra events around today for day/week views (excluding today itself)
@@ -56,7 +73,10 @@ function generateEvents(): Event[] {
     if (dayOffset === 0) continue; // Skip today, we already added specific events
     const date = today.add({ days: dayOffset });
     const hour = 9 + Math.abs(dayOffset); // Vary the time: 10, 11, 12 AM
-    const startTime = date.toZonedDateTime({ timeZone, plainTime: Temporal.PlainTime.from({ hour, minute: 0 }) });
+    const startTime = date.toZonedDateTime({
+      timeZone,
+      plainTime: Temporal.PlainTime.from({ hour, minute: 0 }),
+    });
     events.push({
       id: `nearby-${dayOffset}`,
       date: date.toString(),
@@ -68,9 +88,12 @@ function generateEvents(): Event[] {
   return events;
 }
 
-export const allEvents = generateEvents();
+const allEvents = generateEvents();
 
-export async function fetchEvents(start: Temporal.ZonedDateTime, end: Temporal.ZonedDateTime): Promise<Event[]> {
+export async function fetchEvents(
+  start: Temporal.ZonedDateTime,
+  end: Temporal.ZonedDateTime,
+): Promise<Event[]> {
   await new Promise((r) => setTimeout(r, 300));
   return allEvents.filter((e) => {
     const date = Temporal.PlainDate.from(e.date);
@@ -93,7 +116,7 @@ export const accessor = {
     // Default to midnight in browser timezone for events without specific time
     return Temporal.PlainDate.from(e.date).toZonedDateTime({
       timeZone: browserTimeZone,
-      plainTime: Temporal.PlainTime.from('00:00'),
+      plainTime: Temporal.PlainTime.from("00:00"),
     });
   },
 };

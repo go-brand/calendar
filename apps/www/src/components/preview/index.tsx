@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
-import { type ReactNode, useState } from 'react';
-import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
-import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
-import { CodeIcon, EyeIcon } from 'lucide-react';
+import { DynamicCodeBlock } from "fumadocs-ui/components/dynamic-codeblock";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+import { type ReactNode } from "react";
 
 type PreviewProps = {
   /** The live component to render */
@@ -16,15 +15,10 @@ type PreviewProps = {
   className?: string;
 };
 
-export function Preview({
-  children,
-  code,
-  lang = 'tsx',
-  className,
-}: PreviewProps) {
+export function Preview({ children, code, lang = "tsx", className }: PreviewProps) {
   return (
-    <div className={`not-prose my-6 [&_[role=tabpanel]]:!p-0 ${className ?? ''}`}>
-      <Tabs items={['Preview', 'Code']} defaultIndex={0}>
+    <div className={`not-prose my-6 **:[[role=tabpanel]]:p-0! ${className ?? ""}`}>
+      <Tabs items={["Preview", "Code"]} defaultIndex={0}>
         <Tab value="Preview">
           <PreviewContent>{children}</PreviewContent>
         </Tab>
@@ -37,16 +31,12 @@ export function Preview({
 }
 
 function PreviewContent({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex min-h-[200px] items-center justify-center p-4">
-      {children}
-    </div>
-  );
+  return <div className="flex min-h-[200px] items-center justify-center p-4">{children}</div>;
 }
 
 function PreviewCode({ code, lang }: { code: string; lang: string }) {
   return (
-    <div className="max-h-[400px] overflow-auto [&_figure]:!my-0 [&_figure]:!rounded-none [&_figure]:!border-0">
+    <div className="max-h-[400px] overflow-auto [&_figure]:my-0! [&_figure]:rounded-none! [&_figure]:border-0!">
       <DynamicCodeBlock code={code.trim()} lang={lang} />
     </div>
   );

@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { useCreateCalendar, useCalendar, useView, CalendarProvider, getWeekdays } from '@gobrand/react-calendar';
-import { Preview } from '@/components/preview';
-import { type Event, fetchEvents, accessor } from './mock-data';
+import { Suspense } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useCreateCalendar,
+  useCalendar,
+  useView,
+  CalendarProvider,
+  getWeekdays,
+} from "@gobrand/react-calendar";
+import { Preview } from "@/components/preview";
+import { type Event, fetchEvents, accessor } from "./mock-data";
 
 // =============================================================================
 // Simple Week View (without time slots)
@@ -33,24 +39,29 @@ function SimpleWeekContent() {
   const { start, end } = calendar.dateRange;
 
   const { data: events } = useSuspenseQuery({
-    queryKey: ['events', start.toString(), end.toString()],
+    queryKey: ["events", start.toString(), end.toString()],
     queryFn: () => fetchEvents(start, end),
   });
 
-  const { data: week } = useView({ data: events });
+  const { data: week } = useView({ data: events, name: "week" });
 
   return (
     <div className="grid grid-cols-7 gap-1">
       {week.days.map((day) => (
         <div key={day.id} className="min-h-[100px] p-1 rounded border bg-fd-card">
           <div className="text-center mb-2">
-            <span className={`text-lg ${day.isToday ? 'bg-fd-primary text-fd-primary-foreground rounded-full w-8 h-8 inline-flex items-center justify-center' : ''}`}>
+            <span
+              className={`text-lg ${day.isToday ? "bg-fd-primary text-fd-primary-foreground rounded-full w-8 h-8 inline-flex items-center justify-center" : ""}`}
+            >
               {day.date.day}
             </span>
           </div>
           <div className="space-y-1">
             {day.items.map((event) => (
-              <div key={event.id} className="text-xs bg-fd-primary text-fd-primary-foreground rounded px-1 py-0.5 truncate">
+              <div
+                key={event.id}
+                className="text-xs bg-fd-primary text-fd-primary-foreground rounded px-1 py-0.5 truncate"
+              >
                 {event.title}
               </div>
             ))}
@@ -87,11 +98,11 @@ function WeekContentWithSlots() {
   const { start, end } = calendar.dateRange;
 
   const { data: events } = useSuspenseQuery({
-    queryKey: ['events-slots', start.toString(), end.toString()],
+    queryKey: ["events-slots", start.toString(), end.toString()],
     queryFn: () => fetchEvents(start, end),
   });
 
-  const { data: week } = useView({ data: events });
+  const { data: week } = useView({ data: events, name: "week" });
 
   // Get time slots from the first day to render the time column
   const timeSlots = week.days[0]?.timeSlots ?? [];
@@ -104,9 +115,11 @@ function WeekContentWithSlots() {
         {week.days.map((day) => (
           <div key={day.id} className="p-2 text-center border-l">
             <div className="text-xs text-fd-muted-foreground">
-              {day.date.toLocaleString('en', { weekday: 'short' })}
+              {day.date.toLocaleString("en", { weekday: "short" })}
             </div>
-            <div className={`text-lg ${day.isToday ? 'bg-fd-primary text-fd-primary-foreground rounded-full w-8 h-8 inline-flex items-center justify-center mx-auto' : ''}`}>
+            <div
+              className={`text-lg ${day.isToday ? "bg-fd-primary text-fd-primary-foreground rounded-full w-8 h-8 inline-flex items-center justify-center mx-auto" : ""}`}
+            >
               {day.date.day}
             </div>
           </div>
@@ -115,16 +128,22 @@ function WeekContentWithSlots() {
       {/* Time slots grid */}
       <div className="max-h-[400px] overflow-y-auto">
         {timeSlots.map((slot, slotIndex) => (
-          <div key={slot.id} className="grid grid-cols-[60px_repeat(7,1fr)] border-b last:border-b-0">
+          <div
+            key={slot.id}
+            className="grid grid-cols-[60px_repeat(7,1fr)] border-b last:border-b-0"
+          >
             <div className="p-2 text-xs text-fd-muted-foreground border-r bg-fd-muted/10">
-              {slot.time.toLocaleString('en', { hour: 'numeric' })}
+              {slot.time.toLocaleString("en", { hour: "numeric" })}
             </div>
             {week.days.map((day) => {
               const daySlot = day.timeSlots?.[slotIndex];
               return (
                 <div key={day.id} className="min-h-[48px] p-1 border-l relative">
                   {daySlot?.items.map((event) => (
-                    <div key={event.id} className="text-xs bg-fd-primary text-fd-primary-foreground rounded px-1 py-0.5 truncate">
+                    <div
+                      key={event.id}
+                      className="text-xs bg-fd-primary text-fd-primary-foreground rounded px-1 py-0.5 truncate"
+                    >
                       {event.title}
                     </div>
                   ))}
@@ -161,7 +180,9 @@ function WeekdayHeaders() {
   return (
     <div className="grid grid-cols-7 mb-1">
       {getWeekdays(1).map((day) => (
-        <div key={day} className="text-center text-xs text-fd-muted-foreground py-1">{day}</div>
+        <div key={day} className="text-center text-xs text-fd-muted-foreground py-1">
+          {day}
+        </div>
       ))}
     </div>
   );

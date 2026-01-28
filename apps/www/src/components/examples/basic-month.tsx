@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import { Suspense } from 'react';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { useCreateCalendar, useCalendar, useView, CalendarProvider, getWeekdays } from '@gobrand/react-calendar';
-import { Preview } from '@/components/preview';
-import { type Event, fetchEvents, accessor } from './mock-data';
+import { Suspense } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+  useCreateCalendar,
+  useCalendar,
+  useView,
+  CalendarProvider,
+  getWeekdays,
+} from "@gobrand/react-calendar";
+import { Preview } from "@/components/preview";
+import { type Event, fetchEvents, accessor } from "./mock-data";
 
 function MonthCalendar() {
   const calendar = useCreateCalendar<Event>({
@@ -64,25 +70,30 @@ function MonthContent() {
   const { start, end } = calendar.dateRange;
 
   const { data: events } = useSuspenseQuery({
-    queryKey: ['events', start.toString(), end.toString()],
+    queryKey: ["events", start.toString(), end.toString()],
     queryFn: () => fetchEvents(start, end),
   });
 
-  const { data: month } = useView({ data: events });
+  const { data: month } = useView({ data: events, name: "month" });
 
   return (
     <div className="grid grid-cols-7 gap-1">
       {month.weeks.flat().map((day) => (
         <div
           key={day.id}
-          className={`min-h-[80px] p-2 rounded-lg border ${day.isCurrentMonth ? 'bg-fd-card border-fd-border' : 'bg-fd-muted/20 border-transparent opacity-40'}`}
+          className={`min-h-[80px] p-2 rounded-lg border ${day.isCurrentMonth ? "bg-fd-card border-fd-border" : "bg-fd-muted/20 border-transparent opacity-40"}`}
         >
-          <span className={`text-sm inline-flex items-center justify-center size-6 rounded-full ${day.isToday ? 'bg-fd-primary text-fd-primary-foreground font-medium' : ''} ${!day.isCurrentMonth ? 'text-fd-muted-foreground' : ''}`}>
+          <span
+            className={`text-sm inline-flex items-center justify-center size-6 rounded-full ${day.isToday ? "bg-fd-primary text-fd-primary-foreground font-medium" : ""} ${!day.isCurrentMonth ? "text-fd-muted-foreground" : ""}`}
+          >
             {day.date.day}
           </span>
           <div className="mt-1 space-y-1">
             {day.items.map((event) => (
-              <div key={event.id} className={`text-xs rounded px-1.5 py-0.5 truncate ${day.isCurrentMonth ? 'bg-fd-primary text-fd-primary-foreground' : 'bg-fd-muted-foreground/50 text-fd-muted'}`}>
+              <div
+                key={event.id}
+                className={`text-xs rounded px-1.5 py-0.5 truncate ${day.isCurrentMonth ? "bg-fd-primary text-fd-primary-foreground" : "bg-fd-muted-foreground/50 text-fd-muted"}`}
+              >
                 {event.title}
               </div>
             ))}
