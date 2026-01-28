@@ -4,9 +4,9 @@ description: Creates a calendar instance with React state management
 ---
 
 ```tsx
-function useCreateCalendar<TItem, TOptions extends CalendarOptions<TItem>>(
-  options: TOptions
-): Calendar<TItem, TOptions>
+function useCreateCalendar<TItem>(
+  options: CalendarOptions<TItem>
+): Calendar<TItem>
 ```
 
 Creates and manages a calendar instance with React state. This is the primary way to create a calendar in React applications.

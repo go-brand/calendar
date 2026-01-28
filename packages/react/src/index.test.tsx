@@ -19,6 +19,40 @@ const accessor: CalendarAccessor<Event> = {
 };
 
 describe('useCreateCalendar', () => {
+  describe('type inference', () => {
+    it('allows single type argument (TItem only)', () => {
+      // This test verifies the DX improvement:
+      // Users can now pass just <TItem> without specifying TOptions
+      const { result } = renderHook(() =>
+        useCreateCalendar<Event>({
+          views: {
+            month: { accessor },
+          },
+          timeZone: 'America/New_York',
+          onStateChange: (state) => {
+            // TypeScript should infer state type correctly
+            const _date = state.referenceDate;
+          },
+        })
+      );
+
+      expect(result.current.getMonth).toBeDefined();
+    });
+
+    it('infers types without any type argument', () => {
+      // TypeScript should infer TItem from accessor usage
+      const { result } = renderHook(() =>
+        useCreateCalendar({
+          views: {
+            month: { accessor },
+          },
+        })
+      );
+
+      expect(result.current.getMonth).toBeDefined();
+    });
+  });
+
   describe('initialization', () => {
     it('initializes with current date by default', () => {
       const { result } = renderHook(() =>

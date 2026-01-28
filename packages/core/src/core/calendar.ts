@@ -58,7 +58,7 @@ function computeDateRange(
 
 export function createCalendar<
   TItem,
-  TOptions extends CalendarOptions<TItem>
+  TOptions extends CalendarOptions<TItem> = CalendarOptions<TItem>
 >(options: TOptions): Calendar<TItem, TOptions> {
   type ViewType = keyof TOptions['views'] & string;
   const configuredViews = Object.keys(options.views) as ReadonlyArray<ViewType>;

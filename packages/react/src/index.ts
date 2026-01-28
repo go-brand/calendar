@@ -21,12 +21,12 @@ import {
  * Creates and manages a calendar instance with React state.
  *
  * @example
- * const calendar = useCreateCalendar({
+ * const calendar = useCreateCalendar<Post>({
  *   views: { month: { accessor: { getDate: (p) => p.date } } },
  *   timeZone: 'America/New_York',
  * });
  */
-export function useCreateCalendar<TItem, TOptions extends CalendarOptions<TItem>>(
+export function useCreateCalendar<TItem, TOptions extends CalendarOptions<TItem> = CalendarOptions<TItem>>(
   options: TOptions
 ): Calendar<TItem, TOptions> {
   // Create a new calendar and store it in state
