@@ -19,7 +19,7 @@ and update your row in the table when done.
 | 002  | Bump TanStack Store to 0.11 and fix React reactivity | P1 | M | 001 | DONE (bumped @tanstack/store 0.8->0.11, added @tanstack/react-store 0.11; useView/useCalendar subscribe to the store via useSelector; 2 red-then-green reactivity tests added; 232 tests/typecheck/build green) |
 | 003  | Fix `getTimezoneOffset` for fractional / negative offsets | P2 | S | 001 | DONE (fractional/negative offsets now formatted via signed total-minutes split; Asia/Kolkata -> `+5:30`, America/St_Johns -> `-3:30`, whole hours unchanged; tests added) |
 | 004  | Consolidate date-range construction into the `dateRanges` helpers | P2 | M | 001 | DONE (computeDateRange now delegates to getMonth/Week/DayDateRange helpers; behavior-preserving, 3 characterization tests pin the bounds; merged with 001's typed test pattern) |
-| 005  | Sync docs, website, and skills with the merged fixes | P3 | M | 002, 003, 004 | TODO |
+| 005  | Sync docs, website, and skills with the merged fixes | P3 | M | 002, 003, 004 | DONE (audited react/core MDX + READMEs/TODO against merged 002/003/004 — docs already accurate, no content edits needed; `pnpm generate:docs` re-run clean, llms.txt/SKILL.md already in sync; test/typecheck/build green) |
 
 Status values: TODO | IN PROGRESS | DONE | BLOCKED (one-line reason) | REJECTED (one-line rationale)
 
