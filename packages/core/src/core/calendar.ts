@@ -1,5 +1,5 @@
-import { Temporal } from '@js-temporal/polyfill';
-import { Store } from '@tanstack/store';
+import { Temporal } from "@js-temporal/polyfill";
+import { Store } from "@tanstack/store";
 import {
   functionalUpdate,
   nextMonth,
@@ -8,59 +8,33 @@ import {
   previousWeek,
   nextDay,
   previousDay,
-} from '../utils';
-import { buildMonth } from '../utils/buildMonth';
-import { buildWeek } from '../utils/buildWeek';
-import { buildDay } from '../utils/buildDay';
-import type { Calendar, CalendarOptions, CalendarState, DateRange } from '../types';
+} from "../utils";
+import { buildMonth } from "../utils/buildMonth";
+import { buildWeek } from "../utils/buildWeek";
+import { buildDay } from "../utils/buildDay";
+import { getMonthDateRange, getWeekDateRange, getDayDateRange } from "../utils/dateRanges";
+import type { Calendar, CalendarOptions, CalendarState, DateRange } from "../types";
 
 function computeDateRange(
   view: string,
   referenceDate: Temporal.PlainDate,
   timeZone: string,
-  weekStartsOn: number = 1
+  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1,
 ): DateRange {
-  let start: Temporal.PlainDate;
-  let end: Temporal.PlainDate;
-
-  if (view === 'month') {
-    const firstOfMonth = referenceDate.with({ day: 1 });
-    const lastOfMonth = referenceDate.with({ day: referenceDate.daysInMonth });
-
-    const startDayOfWeek = firstOfMonth.dayOfWeek;
-    const daysToSubtract = (startDayOfWeek - weekStartsOn + 7) % 7;
-    start = firstOfMonth.subtract({ days: daysToSubtract });
-
-    const endDayOfWeek = lastOfMonth.dayOfWeek;
-    const daysToAdd = (weekStartsOn + 6 - endDayOfWeek) % 7;
-    end = lastOfMonth.add({ days: daysToAdd });
-  } else if (view === 'week') {
-    const dayOfWeek = referenceDate.dayOfWeek;
-    const daysToSubtract = (dayOfWeek - weekStartsOn + 7) % 7;
-    start = referenceDate.subtract({ days: daysToSubtract });
-    end = start.add({ days: 6 });
-  } else {
-    start = referenceDate;
-    end = referenceDate;
+  if (view === "month") {
+    return getMonthDateRange(referenceDate, timeZone, { weekStartsOn });
   }
-
-  const startZoned = start.toZonedDateTime({
-    timeZone,
-    plainTime: Temporal.PlainTime.from('00:00:00'),
-  });
-  const endZoned = end.toZonedDateTime({
-    timeZone,
-    plainTime: Temporal.PlainTime.from('23:59:59.999'),
-  });
-
-  return { start: startZoned, end: endZoned };
+  if (view === "week") {
+    return getWeekDateRange(referenceDate, timeZone, { weekStartsOn });
+  }
+  return getDayDateRange(referenceDate, timeZone);
 }
 
 export function createCalendar<
   TItem,
-  TOptions extends CalendarOptions<TItem> = CalendarOptions<TItem>
+  TOptions extends CalendarOptions<TItem> = CalendarOptions<TItem>,
 >(options: TOptions): Calendar<TItem, TOptions> {
-  type ViewType = keyof TOptions['views'] & string;
+  type ViewType = keyof TOptions["views"] & string;
   const configuredViews = Object.keys(options.views) as ReadonlyArray<ViewType>;
   const defaultView = configuredViews[0];
 
@@ -77,7 +51,7 @@ export function createCalendar<
     initialView as string,
     initialReferenceDate,
     timeZone,
-    weekStartsOn
+    weekStartsOn,
   );
 
   const resolvedOptions = {
@@ -102,7 +76,7 @@ export function createCalendar<
     const state = store.state;
     const { year, month } = state.referenceDate;
     const monthView = _options.views.month;
-    if (!monthView) throw new Error('Month view not configured');
+    if (!monthView) throw new Error("Month view not configured");
     return buildMonth(year, month, {
       weekStartsOn: monthView.weekStartsOn,
       data,
@@ -113,7 +87,7 @@ export function createCalendar<
   const getWeekImpl = (data: TItem[] = []) => {
     const state = store.state;
     const weekView = _options.views.week;
-    if (!weekView) throw new Error('Week view not configured');
+    if (!weekView) throw new Error("Week view not configured");
     return buildWeek(state.referenceDate, {
       weekStartsOn: weekView.weekStartsOn,
       startHour: weekView.startHour,
@@ -127,7 +101,7 @@ export function createCalendar<
   const getDayImpl = (data: TItem[] = []) => {
     const state = store.state;
     const dayView = _options.views.day;
-    if (!dayView) throw new Error('Day view not configured');
+    if (!dayView) throw new Error("Day view not configured");
     return buildDay(state.referenceDate, {
       startHour: dayView.startHour,
       endHour: dayView.endHour,
@@ -137,8 +111,10 @@ export function createCalendar<
     });
   };
 
-  const setStateImpl = (updater: CalendarState | ((old: CalendarState) => Partial<CalendarState>)) => {
-    const partialState = typeof updater === 'function' ? updater(store.state) : updater;
+  const setStateImpl = (
+    updater: CalendarState | ((old: CalendarState) => Partial<CalendarState>),
+  ) => {
+    const partialState = typeof updater === "function" ? updater(store.state) : updater;
 
     const newState = {
       ...store.state,
@@ -146,12 +122,7 @@ export function createCalendar<
     };
 
     const currentView = newState.currentView || defaultView;
-    const dateRange = computeDateRange(
-      currentView,
-      newState.referenceDate,
-      timeZone,
-      weekStartsOn
-    );
+    const dateRange = computeDateRange(currentView, newState.referenceDate, timeZone, weekStartsOn);
 
     const stateWithDateRange = {
       ...newState,
@@ -221,45 +192,45 @@ export function createCalendar<
     getDay: getDayImpl,
 
     getTitle(
-      view?: 'month' | 'week' | 'day',
+      view?: "month" | "week" | "day",
       locales?: Temporal.LocalesArgument,
-      options?: globalThis.Intl.DateTimeFormatOptions
+      options?: globalThis.Intl.DateTimeFormatOptions,
     ): string {
       const effectiveView = view ?? store.state.currentView ?? defaultView;
       switch (effectiveView) {
-        case 'month': {
+        case "month": {
           const month = getMonthImpl();
           const date = month.month.toPlainDate({ day: 1 });
           return date.toLocaleString(locales, {
-            month: 'long',
-            year: 'numeric',
+            month: "long",
+            year: "numeric",
             ...options,
           });
         }
-        case 'week': {
+        case "week": {
           const week = getWeekImpl();
           const startOptions: globalThis.Intl.DateTimeFormatOptions = {
-            month: 'short' as const,
-            day: 'numeric' as const,
+            month: "short" as const,
+            day: "numeric" as const,
             ...options,
           };
           const endOptions: globalThis.Intl.DateTimeFormatOptions = {
-            month: 'short' as const,
-            day: 'numeric' as const,
-            year: 'numeric' as const,
+            month: "short" as const,
+            day: "numeric" as const,
+            year: "numeric" as const,
             ...options,
           };
           const start = week.weekStart.toLocaleString(locales, startOptions);
           const end = week.weekEnd.toLocaleString(locales, endOptions);
           return `${start} - ${end}`;
         }
-        case 'day': {
+        case "day": {
           const day = getDayImpl();
           return day.date.toLocaleString(locales, {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-            year: 'numeric',
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric",
             ...options,
           });
         }
@@ -300,31 +271,31 @@ export function createCalendar<
       }));
     },
 
-    next(view?: 'month' | 'week' | 'day') {
+    next(view?: "month" | "week" | "day") {
       const effectiveView = view ?? store.state.currentView ?? defaultView;
       switch (effectiveView) {
-        case 'month':
+        case "month":
           nextMonthImpl();
           break;
-        case 'week':
+        case "week":
           nextWeekImpl();
           break;
-        case 'day':
+        case "day":
           nextDayImpl();
           break;
       }
     },
 
-    previous(view?: 'month' | 'week' | 'day') {
+    previous(view?: "month" | "week" | "day") {
       const effectiveView = view ?? store.state.currentView ?? defaultView;
       switch (effectiveView) {
-        case 'month':
+        case "month":
           previousMonthImpl();
           break;
-        case 'week':
+        case "week":
           previousWeekImpl();
           break;
-        case 'day':
+        case "day":
           previousDayImpl();
           break;
       }
@@ -349,14 +320,9 @@ export function createCalendar<
       return store.state.dateRange;
     },
 
-    getDateRange(view?: 'month' | 'week' | 'day') {
+    getDateRange(view?: "month" | "week" | "day") {
       const effectiveView = view ?? store.state.currentView ?? defaultView;
-      return computeDateRange(
-        effectiveView,
-        store.state.referenceDate,
-        timeZone,
-        weekStartsOn
-      );
+      return computeDateRange(effectiveView, store.state.referenceDate, timeZone, weekStartsOn);
     },
 
     get options() {
@@ -369,15 +335,15 @@ export function createCalendar<
 
     // Type predicates for runtime view checking
     hasMonthView() {
-      return 'month' in _options.views && _options.views.month !== undefined;
+      return "month" in _options.views && _options.views.month !== undefined;
     },
 
     hasWeekView() {
-      return 'week' in _options.views && _options.views.week !== undefined;
+      return "week" in _options.views && _options.views.week !== undefined;
     },
 
     hasDayView() {
-      return 'day' in _options.views && _options.views.day !== undefined;
+      return "day" in _options.views && _options.views.day !== undefined;
     },
 
     store,

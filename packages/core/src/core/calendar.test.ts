@@ -679,4 +679,55 @@ describe("createCalendar", () => {
       expect(weekRange.start).toBeDefined();
     });
   });
+
+  describe("date range (characterization)", () => {
+    it("month dateRange matches calendar-grid bounds", () => {
+      const calendar = createCalendar<TestEvent>({
+        views: {
+          month: { accessor: testAccessor, weekStartsOn: 1 },
+        },
+        timeZone: "UTC",
+        state: {
+          referenceDate: Temporal.PlainDate.from("2026-01-15"),
+          currentView: "month",
+        },
+      });
+      const range = calendar.getDateRange("month");
+      expect(range.start.toPlainDate().toString()).toBe("2025-12-29");
+      expect(range.end.toPlainDate().toString()).toBe("2026-02-01");
+      expect(range.start.toPlainTime().toString()).toBe("00:00:00");
+    });
+
+    it("week dateRange spans 7 days from weekStart", () => {
+      const calendar = createCalendar<TestEvent>({
+        views: {
+          week: { accessor: testAccessor, weekStartsOn: 1 },
+        },
+        timeZone: "UTC",
+        state: {
+          referenceDate: Temporal.PlainDate.from("2026-01-15"),
+          currentView: "week",
+        },
+      });
+      const range = calendar.getDateRange("week");
+      expect(range.start.toPlainDate().toString()).toBe("2026-01-12"); // Monday
+      expect(range.end.toPlainDate().toString()).toBe("2026-01-18"); // Sunday
+    });
+
+    it("day dateRange is the single reference day", () => {
+      const calendar = createCalendar<TestEvent>({
+        views: {
+          day: { accessor: testAccessor },
+        },
+        timeZone: "UTC",
+        state: {
+          referenceDate: Temporal.PlainDate.from("2026-01-15"),
+          currentView: "day",
+        },
+      });
+      const range = calendar.getDateRange("day");
+      expect(range.start.toPlainDate().toString()).toBe("2026-01-15");
+      expect(range.end.toPlainDate().toString()).toBe("2026-01-15");
+    });
+  });
 });
