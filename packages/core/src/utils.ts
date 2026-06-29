@@ -1,12 +1,12 @@
-import { Temporal } from '@js-temporal/polyfill';
-import type { CalendarAccessor } from './types';
+import { Temporal } from "@js-temporal/polyfill";
+import type { CalendarAccessor } from "./types";
 
 export function functionalUpdate<T>(updater: T | ((old: T) => T), input: T): T {
-  return typeof updater === 'function' ? (updater as (old: T) => T)(input) : updater;
+  return typeof updater === "function" ? (updater as (old: T) => T)(input) : updater;
 }
 
 export function createCalendarAccessor<T, A extends CalendarAccessor<T> = CalendarAccessor<T>>(
-  accessor: A
+  accessor: A,
 ): A {
   return accessor;
 }
@@ -40,15 +40,14 @@ export function goToToday(): { year: number; month: number } {
   return { year: today.year, month: today.month };
 }
 
-
-export function getMonthName(month: Temporal.PlainYearMonth, locale = 'en-US'): string {
-  return month.toPlainDate({ day: 1 }).toLocaleString(locale, { month: 'long' });
+export function getMonthName(month: Temporal.PlainYearMonth, locale = "en-US"): string {
+  return month.toPlainDate({ day: 1 }).toLocaleString(locale, { month: "long" });
 }
 
-export function formatTime(time: Temporal.PlainTime, locale = 'en-US'): string {
-  const date = Temporal.PlainDate.from('2023-01-01');
+export function formatTime(time: Temporal.PlainTime, locale = "en-US"): string {
+  const date = Temporal.PlainDate.from("2023-01-01");
   const dateTime = date.toPlainDateTime(time);
-  return dateTime.toLocaleString(locale, { hour: 'numeric', minute: '2-digit' });
+  return dateTime.toLocaleString(locale, { hour: "numeric", minute: "2-digit" });
 }
 
 export function getTimeSlotHeight(slotDuration: number, hourHeight: number): number {
@@ -59,7 +58,7 @@ export function getEventPosition(
   eventStart: Temporal.ZonedDateTime,
   eventEnd: Temporal.ZonedDateTime,
   dayStart: number,
-  hourHeight: number
+  hourHeight: number,
 ): { top: number; height: number } {
   const startTime = eventStart.toPlainTime();
   const endTime = eventEnd.toPlainTime();
@@ -76,21 +75,24 @@ export function getEventPosition(
 
 export function convertToTimezone(
   dateTime: Temporal.ZonedDateTime,
-  timeZone: string
+  timeZone: string,
 ): Temporal.ZonedDateTime {
   return dateTime.withTimeZone(timeZone);
 }
 
 export function getTimezoneOffset(dateTime: Temporal.ZonedDateTime): string {
-  return dateTime.offsetNanoseconds / 3600000000000 >= 0
-    ? `+${Math.floor(dateTime.offsetNanoseconds / 3600000000000)}`
-    : `${Math.floor(dateTime.offsetNanoseconds / 3600000000000)}`;
+  const totalMinutes = Math.trunc(dateTime.offsetNanoseconds / 60_000_000_000);
+  const sign = totalMinutes < 0 ? "-" : "+";
+  const abs = Math.abs(totalMinutes);
+  const hours = Math.floor(abs / 60);
+  const minutes = abs % 60;
+  return minutes === 0 ? `${sign}${hours}` : `${sign}${hours}:${String(minutes).padStart(2, "0")}`;
 }
 
 export function createZonedDateTime(
   date: Temporal.PlainDate,
   time: Temporal.PlainTime,
-  timeZone: string
+  timeZone: string,
 ): Temporal.ZonedDateTime {
   return date.toZonedDateTime({ timeZone, plainTime: time });
 }
@@ -101,7 +103,7 @@ export function getCurrentTimeZone(): string {
 
 export function getMonthRange(
   timeZone: string = getCurrentTimeZone(),
-  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1
+  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1,
 ): { start: Temporal.PlainDate; end: Temporal.PlainDate } {
   const today = Temporal.Now.zonedDateTimeISO(timeZone).toPlainDate();
   const firstOfMonth = today.with({ day: 1 });
@@ -120,7 +122,7 @@ export function getMonthRange(
 
 export function getWeekRange(
   timeZone: string = getCurrentTimeZone(),
-  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1
+  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 1,
 ): { start: Temporal.PlainDate; end: Temporal.PlainDate } {
   const today = Temporal.Now.zonedDateTimeISO(timeZone).toPlainDate();
   const dayOfWeek = today.dayOfWeek;
@@ -131,9 +133,10 @@ export function getWeekRange(
   return { start, end };
 }
 
-export function getDayRange(
-  timeZone: string = getCurrentTimeZone()
-): { start: Temporal.PlainDate; end: Temporal.PlainDate } {
+export function getDayRange(timeZone: string = getCurrentTimeZone()): {
+  start: Temporal.PlainDate;
+  end: Temporal.PlainDate;
+} {
   const today = Temporal.Now.zonedDateTimeISO(timeZone).toPlainDate();
   return { start: today, end: today };
 }
