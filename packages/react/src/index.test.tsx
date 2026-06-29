@@ -510,3 +510,63 @@ describe("useView", () => {
     expect(screen.getByTestId("type").textContent).toBe("month");
   });
 });
+
+describe("reactivity", () => {
+  it("useView re-renders when calendar state changes (via context)", () => {
+    const referenceDate = Temporal.PlainDate.from("2025-01-15");
+    const options = {
+      views: { month: { accessor } },
+      state: { referenceDate },
+    };
+    const calendar = createCalendar<Event, typeof options>(options);
+
+    function MonthTitle() {
+      const view = useView<Event, "month">({ data: [], name: "month" });
+      return <span data-testid="title">{view.data.month.toString()}</span>;
+    }
+
+    render(
+      <CalendarProvider calendar={calendar}>
+        <MonthTitle />
+      </CalendarProvider>,
+    );
+
+    expect(screen.getByTestId("title").textContent).toBe("2025-01");
+
+    act(() => {
+      calendar.nextMonth();
+    });
+
+    // FAILS before the fix: consumer never re-renders, still shows 2025-01.
+    expect(screen.getByTestId("title").textContent).toBe("2025-02");
+  });
+
+  it("useCalendar re-renders consumer on navigation (via context)", () => {
+    const referenceDate = Temporal.PlainDate.from("2025-01-15");
+    const options = {
+      views: { month: { accessor } },
+      state: { referenceDate },
+    };
+    const calendar = createCalendar<Event, typeof options>(options);
+
+    function Toolbar() {
+      const cal = useCalendar<Event>();
+      return <span data-testid="cal-title">{cal.getTitle("month")}</span>;
+    }
+
+    render(
+      <CalendarProvider calendar={calendar}>
+        <Toolbar />
+      </CalendarProvider>,
+    );
+
+    const before = screen.getByTestId("cal-title").textContent;
+    act(() => {
+      calendar.nextMonth();
+    });
+    const after = screen.getByTestId("cal-title").textContent;
+
+    // FAILS before the fix: title does not change.
+    expect(after).not.toBe(before);
+  });
+});
