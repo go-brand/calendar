@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "pnpm -r run build",
-    "test": "pnpm -r run test",
+    "test": "pnpm --filter \"./packages/*\" run test",
     "typecheck": "pnpm -r run typecheck",
     "release": "bash scripts/release.sh",
     "generate:docs": "tsx scripts/generate-docs.ts"

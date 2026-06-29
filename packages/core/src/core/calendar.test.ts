@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
-import { Temporal } from '@js-temporal/polyfill';
-import { createCalendar } from './calendar';
-import type { CalendarAccessor } from '../types';
+import { describe, it, expect, vi } from "vitest";
+import { Temporal } from "@js-temporal/polyfill";
+import { createCalendar } from "./calendar";
+import type { CalendarAccessor } from "../types";
 
 type TestEvent = {
   id: string;
@@ -13,13 +13,15 @@ type TestEvent = {
 
 const testAccessor: CalendarAccessor<TestEvent> = {
   getDate: (item) => Temporal.PlainDate.from(item.date),
-  getStart: (item) => item.start ? Temporal.ZonedDateTime.from(item.start) : Temporal.Now.zonedDateTimeISO(),
-  getEnd: (item) => item.end ? Temporal.ZonedDateTime.from(item.end) : Temporal.Now.zonedDateTimeISO(),
+  getStart: (item) =>
+    item.start ? Temporal.ZonedDateTime.from(item.start) : Temporal.Now.zonedDateTimeISO(),
+  getEnd: (item) =>
+    item.end ? Temporal.ZonedDateTime.from(item.end) : Temporal.Now.zonedDateTimeISO(),
 };
 
-describe('createCalendar', () => {
-  describe('initialization', () => {
-    it('should create a calendar instance with month view only', () => {
+describe("createCalendar", () => {
+  describe("initialization", () => {
+    it("should create a calendar instance with month view only", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
@@ -34,7 +36,7 @@ describe('createCalendar', () => {
       expect(calendar.setState).toBeDefined();
     });
 
-    it('should create a calendar with all views', () => {
+    it("should create a calendar with all views", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
@@ -49,7 +51,7 @@ describe('createCalendar', () => {
       expect(calendar.getDay).toBeDefined();
     });
 
-    it('should initialize with current date', () => {
+    it("should initialize with current date", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
@@ -64,8 +66,8 @@ describe('createCalendar', () => {
       expect(state.referenceDate.day).toBe(today.day);
     });
 
-    it('should initialize with custom state', () => {
-      const customDate = Temporal.PlainDate.from('2024-06-15');
+    it("should initialize with custom state", () => {
+      const customDate = Temporal.PlainDate.from("2024-06-15");
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
@@ -74,18 +76,19 @@ describe('createCalendar', () => {
       });
 
       const state = calendar.getState();
-      expect(state.referenceDate.toString()).toBe('2024-06-15');
+      expect(state.referenceDate.toString()).toBe("2024-06-15");
     });
   });
 
-  describe('month view', () => {
-    it('should return month data', () => {
-      const calendar = createCalendar<TestEvent>({
+  describe("month view", () => {
+    it("should return month data", () => {
+      const options = {
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       const month = calendar.getMonth();
       expect(month.month.year).toBe(2024);
@@ -93,29 +96,29 @@ describe('createCalendar', () => {
       expect(month.weeks.length).toBeGreaterThan(0);
     });
 
-    it('should return month data with items when data is passed', () => {
-      const testData: TestEvent[] = [
-        { id: '1', date: '2024-01-15', title: 'Event 1' },
-      ];
-      const calendar = createCalendar<TestEvent>({
+    it("should return month data with items when data is passed", () => {
+      const testData: TestEvent[] = [{ id: "1", date: "2024-01-15", title: "Event 1" }];
+      const options = {
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       const month = calendar.getMonth(testData);
-      const allItems = month.weeks.flatMap(week => week.flatMap(day => day.items));
+      const allItems = month.weeks.flatMap((week) => week.flatMap((day) => day.items));
       expect(allItems.length).toBe(1);
     });
 
-    it('should navigate to next month', () => {
-      const calendar = createCalendar<TestEvent>({
+    it("should navigate to next month", () => {
+      const options = {
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.nextMonth();
       const state = calendar.getState();
@@ -125,13 +128,14 @@ describe('createCalendar', () => {
       expect(state.referenceDate.day).toBe(1);
     });
 
-    it('should navigate to previous month', () => {
-      const calendar = createCalendar<TestEvent>({
+    it("should navigate to previous month", () => {
+      const options = {
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-02-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-02-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.previousMonth();
       const state = calendar.getState();
@@ -141,41 +145,43 @@ describe('createCalendar', () => {
       expect(state.referenceDate.day).toBe(1);
     });
 
-    it('should use custom weekStartsOn for month view', () => {
-      const calendar = createCalendar<TestEvent>({
+    it("should use custom weekStartsOn for month view", () => {
+      const options = {
         views: {
-          month: { accessor: testAccessor, weekStartsOn: 0 }, // Sunday
+          month: { accessor: testAccessor, weekStartsOn: 0 as const }, // Sunday
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       const month = calendar.getMonth();
       const firstWeek = month.weeks[0];
       expect(firstWeek[0].date.dayOfWeek).toBe(7); // Sunday is 7 in Temporal
     });
 
-    it('should format month title', () => {
+    it("should format month title", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
       });
 
-      const title = calendar.getTitle('month', 'en-US');
-      expect(title).toContain('January');
-      expect(title).toContain('2024');
+      const title = calendar.getTitle("month", "en-US");
+      expect(title).toContain("January");
+      expect(title).toContain("2024");
     });
   });
 
-  describe('week view', () => {
-    it('should return week data', () => {
-      const calendar = createCalendar<TestEvent>({
+  describe("week view", () => {
+    it("should return week data", () => {
+      const options = {
         views: {
           week: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       const week = calendar.getWeek();
       expect(week.days.length).toBe(7);
@@ -183,140 +189,145 @@ describe('createCalendar', () => {
       expect(week.weekEnd).toBeDefined();
     });
 
-    it('should navigate to next week', () => {
-      const calendar = createCalendar<TestEvent>({
+    it("should navigate to next week", () => {
+      const options = {
         views: {
           week: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.nextWeek();
       const state = calendar.getState();
 
-      expect(state.referenceDate.toString()).toBe('2024-01-22');
+      expect(state.referenceDate.toString()).toBe("2024-01-22");
     });
 
-    it('should navigate to previous week', () => {
-      const calendar = createCalendar<TestEvent>({
+    it("should navigate to previous week", () => {
+      const options = {
         views: {
           week: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.previousWeek();
       const state = calendar.getState();
 
-      expect(state.referenceDate.toString()).toBe('2024-01-08');
+      expect(state.referenceDate.toString()).toBe("2024-01-08");
     });
 
-    it('should format week title', () => {
+    it("should format week title", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           week: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
       });
 
-      const title = calendar.getTitle('week', 'en-US');
-      expect(title).toContain('-');
-      expect(title).toContain('2024');
+      const title = calendar.getTitle("week", "en-US");
+      expect(title).toContain("-");
+      expect(title).toContain("2024");
     });
   });
 
-  describe('day view', () => {
-    it('should return day data', () => {
-      const calendar = createCalendar<TestEvent>({
+  describe("day view", () => {
+    it("should return day data", () => {
+      const options = {
         views: {
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       const day = calendar.getDay();
-      expect(day.date.toString()).toBe('2024-01-15');
+      expect(day.date.toString()).toBe("2024-01-15");
       expect(day.isToday).toBeDefined();
       expect(day.items).toBeDefined();
     });
 
-    it('should navigate to next day', () => {
-      const calendar = createCalendar<TestEvent>({
+    it("should navigate to next day", () => {
+      const options = {
         views: {
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.nextDay();
       const state = calendar.getState();
 
-      expect(state.referenceDate.toString()).toBe('2024-01-16');
+      expect(state.referenceDate.toString()).toBe("2024-01-16");
     });
 
-    it('should navigate to previous day', () => {
-      const calendar = createCalendar<TestEvent>({
+    it("should navigate to previous day", () => {
+      const options = {
         views: {
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.previousDay();
       const state = calendar.getState();
 
-      expect(state.referenceDate.toString()).toBe('2024-01-14');
+      expect(state.referenceDate.toString()).toBe("2024-01-14");
     });
 
-    it('should format day title', () => {
+    it("should format day title", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
       });
 
-      const title = calendar.getTitle('day', 'en-US');
-      expect(title).toContain('Monday');
-      expect(title).toContain('January');
-      expect(title).toContain('15');
-      expect(title).toContain('2024');
+      const title = calendar.getTitle("day", "en-US");
+      expect(title).toContain("Monday");
+      expect(title).toContain("January");
+      expect(title).toContain("15");
+      expect(title).toContain("2024");
     });
 
-    it('should return title using currentView when view is omitted', () => {
+    it("should return title using currentView when view is omitted", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
       });
 
       // Default view is 'month' (first configured view)
-      const monthTitle = calendar.getTitle(undefined, 'en-US');
-      expect(monthTitle).toContain('January');
-      expect(monthTitle).toContain('2024');
+      const monthTitle = calendar.getTitle(undefined, "en-US");
+      expect(monthTitle).toContain("January");
+      expect(monthTitle).toContain("2024");
 
       // Switch to week view
-      calendar.setCurrentView('week');
-      const weekTitle = calendar.getTitle(undefined, 'en-US');
-      expect(weekTitle).toContain('-');
+      calendar.setCurrentView("week");
+      const weekTitle = calendar.getTitle(undefined, "en-US");
+      expect(weekTitle).toContain("-");
 
       // Switch to day view
-      calendar.setCurrentView('day');
-      const dayTitle = calendar.getTitle(undefined, 'en-US');
-      expect(dayTitle).toContain('Monday');
+      calendar.setCurrentView("day");
+      const dayTitle = calendar.getTitle(undefined, "en-US");
+      expect(dayTitle).toContain("Monday");
     });
   });
 
-  describe('shared navigation', () => {
-    it('should navigate to today', () => {
+  describe("shared navigation", () => {
+    it("should navigate to today", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2020-01-01') },
+        state: { referenceDate: Temporal.PlainDate.from("2020-01-01") },
       });
 
       calendar.goToToday();
@@ -326,28 +337,29 @@ describe('createCalendar', () => {
       expect(state.referenceDate.toString()).toBe(today.toString());
     });
 
-    it('should navigate to specific date', () => {
+    it("should navigate to specific date", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           week: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-01') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-01") },
       });
 
-      const targetDate = Temporal.PlainDate.from('2024-06-15');
+      const targetDate = Temporal.PlainDate.from("2024-06-15");
       calendar.goToDate(targetDate);
       const state = calendar.getState();
 
-      expect(state.referenceDate.toString()).toBe('2024-06-15');
+      expect(state.referenceDate.toString()).toBe("2024-06-15");
     });
 
-    it('should navigate to specific month', () => {
-      const calendar = createCalendar<TestEvent>({
+    it("should navigate to specific month", () => {
+      const options = {
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.goToMonth(2024, 6);
       const state = calendar.getState();
@@ -358,59 +370,59 @@ describe('createCalendar', () => {
     });
   });
 
-  describe('view-aware navigation shortcuts', () => {
-    it('should navigate next based on view', () => {
+  describe("view-aware navigation shortcuts", () => {
+    it("should navigate next based on view", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
       });
 
-      calendar.next('month');
+      calendar.next("month");
       expect(calendar.getState().referenceDate.month).toBe(2);
 
-      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15') }));
-      calendar.next('week');
+      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from("2024-01-15") }));
+      calendar.next("week");
       expect(calendar.getState().referenceDate.day).toBe(22);
 
-      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15') }));
-      calendar.next('day');
+      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from("2024-01-15") }));
+      calendar.next("day");
       expect(calendar.getState().referenceDate.day).toBe(16);
     });
 
-    it('should navigate previous based on view', () => {
+    it("should navigate previous based on view", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-02-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-02-15") },
       });
 
-      calendar.previous('month');
+      calendar.previous("month");
       expect(calendar.getState().referenceDate.month).toBe(1);
 
-      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15') }));
-      calendar.previous('week');
+      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from("2024-01-15") }));
+      calendar.previous("week");
       expect(calendar.getState().referenceDate.day).toBe(8);
 
-      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15') }));
-      calendar.previous('day');
+      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from("2024-01-15") }));
+      calendar.previous("day");
       expect(calendar.getState().referenceDate.day).toBe(14);
     });
 
-    it('should navigate next using currentView when view is omitted', () => {
+    it("should navigate next using currentView when view is omitted", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
       });
 
       // Default view is 'month' (first configured view)
@@ -418,24 +430,30 @@ describe('createCalendar', () => {
       expect(calendar.getState().referenceDate.month).toBe(2);
 
       // Switch to week view and navigate
-      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15'), currentView: 'week' }));
+      calendar.setState(() => ({
+        referenceDate: Temporal.PlainDate.from("2024-01-15"),
+        currentView: "week",
+      }));
       calendar.next();
       expect(calendar.getState().referenceDate.day).toBe(22);
 
       // Switch to day view and navigate
-      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15'), currentView: 'day' }));
+      calendar.setState(() => ({
+        referenceDate: Temporal.PlainDate.from("2024-01-15"),
+        currentView: "day",
+      }));
       calendar.next();
       expect(calendar.getState().referenceDate.day).toBe(16);
     });
 
-    it('should navigate previous using currentView when view is omitted', () => {
+    it("should navigate previous using currentView when view is omitted", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-02-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-02-15") },
       });
 
       // Default view is 'month' (first configured view)
@@ -443,27 +461,34 @@ describe('createCalendar', () => {
       expect(calendar.getState().referenceDate.month).toBe(1);
 
       // Switch to week view and navigate
-      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15'), currentView: 'week' }));
+      calendar.setState(() => ({
+        referenceDate: Temporal.PlainDate.from("2024-01-15"),
+        currentView: "week",
+      }));
       calendar.previous();
       expect(calendar.getState().referenceDate.day).toBe(8);
 
       // Switch to day view and navigate
-      calendar.setState(() => ({ referenceDate: Temporal.PlainDate.from('2024-01-15'), currentView: 'day' }));
+      calendar.setState(() => ({
+        referenceDate: Temporal.PlainDate.from("2024-01-15"),
+        currentView: "day",
+      }));
       calendar.previous();
       expect(calendar.getState().referenceDate.day).toBe(14);
     });
   });
 
-  describe('state synchronization', () => {
-    it('should maintain single state across all views', () => {
-      const calendar = createCalendar<TestEvent>({
+  describe("state synchronization", () => {
+    it("should maintain single state across all views", () => {
+      const options = {
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
           day: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.nextMonth();
 
@@ -473,36 +498,38 @@ describe('createCalendar', () => {
       const state = calendar.getState();
 
       expect(monthView.month.month).toBe(2);
-      expect(weekView.days.some(d => d.date.month === 2)).toBe(true);
+      expect(weekView.days.some((d) => d.date.month === 2)).toBe(true);
       expect(dayView.date.month).toBe(2);
       expect(state.referenceDate.month).toBe(2);
     });
 
-    it('should call onStateChange callback', () => {
+    it("should call onStateChange callback", () => {
       const onStateChange = vi.fn();
-      const calendar = createCalendar<TestEvent>({
+      const options = {
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
         onStateChange,
-      });
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.nextMonth();
 
       expect(onStateChange).toHaveBeenCalled();
     });
 
-    it('should call onStateChange with computed dateRange', () => {
+    it("should call onStateChange with computed dateRange", () => {
       const onStateChange = vi.fn();
-      const calendar = createCalendar<TestEvent>({
+      const options = {
         views: {
           month: { accessor: testAccessor },
         },
-        timeZone: 'Europe/Madrid',
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        timeZone: "Europe/Madrid",
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
         onStateChange,
-      });
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       calendar.nextMonth();
 
@@ -510,9 +537,9 @@ describe('createCalendar', () => {
       const newState = onStateChange.mock.calls[0][0];
 
       // The callback should receive the state object directly
-      expect(typeof newState).toBe('object');
-      expect(newState).toHaveProperty('referenceDate');
-      expect(newState).toHaveProperty('dateRange');
+      expect(typeof newState).toBe("object");
+      expect(newState).toHaveProperty("referenceDate");
+      expect(newState).toHaveProperty("dateRange");
 
       // dateRange should be defined and have the correct structure
       expect(newState.dateRange).toBeDefined();
@@ -525,80 +552,80 @@ describe('createCalendar', () => {
       expect(newState.dateRange.end.month).toBe(3); // Month view includes days from next month
     });
 
-    it('should update state with setState', () => {
+    it("should update state with setState", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
       });
 
       calendar.setState((old) => ({
-        referenceDate: Temporal.PlainDate.from('2024-06-15'),
+        referenceDate: Temporal.PlainDate.from("2024-06-15"),
       }));
 
       const state = calendar.getState();
-      expect(state.referenceDate.toString()).toBe('2024-06-15');
+      expect(state.referenceDate.toString()).toBe("2024-06-15");
     });
   });
 
-  describe('data handling', () => {
-    it('should include events in month view when data is passed', () => {
+  describe("data handling", () => {
+    it("should include events in month view when data is passed", () => {
       const testData: TestEvent[] = [
-        { id: '1', date: '2024-01-15', title: 'Event 1' },
-        { id: '2', date: '2024-01-16', title: 'Event 2' },
+        { id: "1", date: "2024-01-15", title: "Event 1" },
+        { id: "2", date: "2024-01-16", title: "Event 2" },
       ];
 
-      const calendar = createCalendar<TestEvent>({
+      const options = {
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       const month = calendar.getMonth(testData);
-      const allItems = month.weeks.flatMap(week =>
-        week.flatMap(day => day.items)
-      );
+      const allItems = month.weeks.flatMap((week) => week.flatMap((day) => day.items));
 
       expect(allItems.length).toBe(2);
     });
 
-    it('should return empty items when no data is passed', () => {
-      const calendar = createCalendar<TestEvent>({
+    it("should return empty items when no data is passed", () => {
+      const options = {
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       const month = calendar.getMonth();
-      const allItems = month.weeks.flatMap(week =>
-        week.flatMap(day => day.items)
-      );
+      const allItems = month.weeks.flatMap((week) => week.flatMap((day) => day.items));
 
       expect(allItems.length).toBe(0);
     });
   });
 
-  describe('different accessors per view', () => {
-    it('should use different accessors for different views', () => {
+  describe("different accessors per view", () => {
+    it("should use different accessors for different views", () => {
       const monthAccessor: CalendarAccessor<TestEvent> = {
         getDate: (item) => Temporal.PlainDate.from(item.date),
       };
 
       const weekAccessor: CalendarAccessor<TestEvent> = {
         getDate: (item) => Temporal.PlainDate.from(item.date),
-        getStart: (item) => item.start ? Temporal.ZonedDateTime.from(item.start) : undefined,
+        getStart: (item) =>
+          item.start ? Temporal.ZonedDateTime.from(item.start) : Temporal.Now.zonedDateTimeISO(),
       };
 
-      const calendar = createCalendar<TestEvent>({
+      const options = {
         views: {
           month: { accessor: monthAccessor },
           week: { accessor: weekAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
-      });
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
+      };
+      const calendar = createCalendar<TestEvent, typeof options>(options);
 
       const month = calendar.getMonth();
       const week = calendar.getWeek();
@@ -608,8 +635,8 @@ describe('createCalendar', () => {
     });
   });
 
-  describe('store property', () => {
-    it('should expose TanStack store', () => {
+  describe("store property", () => {
+    it("should expose TanStack store", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
@@ -621,13 +648,13 @@ describe('createCalendar', () => {
     });
   });
 
-  describe('getDateRange', () => {
-    it('should return date range for current view', () => {
+  describe("getDateRange", () => {
+    it("should return date range for current view", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
       });
 
       const dateRange = calendar.getDateRange();
@@ -635,17 +662,17 @@ describe('createCalendar', () => {
       expect(dateRange.end).toBeDefined();
     });
 
-    it('should return date range for specific view', () => {
+    it("should return date range for specific view", () => {
       const calendar = createCalendar<TestEvent>({
         views: {
           month: { accessor: testAccessor },
           week: { accessor: testAccessor },
         },
-        state: { referenceDate: Temporal.PlainDate.from('2024-01-15') },
+        state: { referenceDate: Temporal.PlainDate.from("2024-01-15") },
       });
 
-      const monthRange = calendar.getDateRange('month');
-      const weekRange = calendar.getDateRange('week');
+      const monthRange = calendar.getDateRange("month");
+      const weekRange = calendar.getDateRange("week");
 
       // Month range should be larger than week range
       expect(monthRange.start).toBeDefined();
