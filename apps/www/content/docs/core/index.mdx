@@ -4,12 +4,21 @@ description: Framework-agnostic Temporal controller and pure calendar projection
 ---
 
 ```ts
+import { Temporal } from '@js-temporal/polyfill'
 import { createCalendar, buildMonthView } from '@gobrand/calendar-core'
 
+type Event = {
+  id: string
+  title: string
+  date: Temporal.PlainDate
+}
+
+const events: Event[] = [
+  { id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() },
+]
+
 const calendar = createCalendar({
-  views: { month: true, week: true },
-  date: Temporal.PlainDate.from('2026-07-10'),
-  timeZone: 'America/Asuncion',
+  views: { month: true },
 })
 
 const month = buildMonthView({
@@ -19,4 +28,4 @@ const month = buildMonthView({
 })
 ```
 
-Core never installs Temporal globally and consistently uses `@js-temporal/polyfill`.
+The calendar starts on today in the device timezone. Pass `date` or `timeZone` only when your app needs to control them.

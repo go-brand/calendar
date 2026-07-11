@@ -20,7 +20,7 @@ type Event = {
 }
 
 const events: Event[] = [
-  { id: 'launch', title: 'Launch', date: Temporal.PlainDate.from('2026-07-14') },
+  { id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() },
 ]
 
 const views = ['month', 'week', 'day'] as const
@@ -28,7 +28,6 @@ const views = ['month', 'week', 'day'] as const
 function Calendar() {
   const calendar = useCreateCalendar({
     views: { month: true, week: true, day: true },
-    defaultDate: Temporal.PlainDate.from('2026-07-14'),
     items: events,
     getDate: event => event.date,
   })

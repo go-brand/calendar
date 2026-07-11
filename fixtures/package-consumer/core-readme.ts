@@ -7,15 +7,10 @@ type Event = {
   date: Temporal.PlainDate;
 };
 
-const date = Temporal.PlainDate.from('2026-07-10');
-const events: Event[] = [
-  { id: 'launch', title: 'Launch', date: Temporal.PlainDate.from('2026-07-14') },
-];
+const events: Event[] = [{ id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() }];
 
 const calendar = createCalendar({
   views: { month: true },
-  date,
-  timeZone: 'America/Asuncion',
 });
 
 const month = buildMonthView({
