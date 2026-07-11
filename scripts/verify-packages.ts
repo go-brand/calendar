@@ -8,6 +8,10 @@ const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const temporaryRoot = mkdtempSync(join(tmpdir(), 'calendar-packages-'));
 const packageDirectory = join(temporaryRoot, 'packages');
 const consumerDirectory = join(temporaryRoot, 'consumer');
+const coreVersion = JSON.parse(readFileSync(join(root, 'packages/core/package.json'), 'utf8'))
+  .version as string;
+const reactVersion = JSON.parse(readFileSync(join(root, 'packages/react/package.json'), 'utf8'))
+  .version as string;
 
 function run(command: string, args: string[], cwd = root) {
   execFileSync(command, args, { cwd, stdio: 'inherit' });
@@ -30,8 +34,8 @@ try {
     packageDirectory,
   ]);
 
-  const coreTarball = join(packageDirectory, 'gobrand-calendar-core-0.1.0.tgz');
-  const reactTarball = join(packageDirectory, 'gobrand-react-calendar-0.1.0.tgz');
+  const coreTarball = join(packageDirectory, `gobrand-calendar-core-${coreVersion}.tgz`);
+  const reactTarball = join(packageDirectory, `gobrand-react-calendar-${reactVersion}.tgz`);
   cpSync(join(root, 'fixtures/package-consumer'), consumerDirectory, { recursive: true });
   const manifestPath = join(consumerDirectory, 'package.json');
   const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
