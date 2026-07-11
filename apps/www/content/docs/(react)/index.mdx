@@ -1,19 +1,41 @@
 ---
 title: React Calendar
-description: Headless Temporal-first calendar state and view projections for React.
+description: Build month, week, and day calendars with React and Temporal.
 ---
 
-The common path is one hook with value-driven inference:
+React Calendar manages the current date, active view, navigation, and calendar geometry. You render it with your own components and styles.
+
+Start with one view and your events:
 
 ```tsx
-const calendar = useCreateCalendar({
-  views: { month: true, week: true },
-  items: events,
-  getDate: event => event.date,
-  getStart: event => event.startsAt,
-})
+import type { Temporal } from '@js-temporal/polyfill'
+import { useCreateCalendar } from '@gobrand/react-calendar'
 
-return <CalendarContent view={calendar.activeView} />
+type Event = {
+  id: string
+  title: string
+  date: Temporal.PlainDate
+}
+
+function Calendar({ events }: { events: Event[] }) {
+  const calendar = useCreateCalendar({
+    views: { month: true },
+    items: events,
+    getDate: event => event.date,
+  })
+
+  return calendar.activeView.weeks.map(week => (
+    <div key={week[0].id}>
+      {week.map(day => (
+        <div key={day.id}>
+          {day.date.toString()}: {day.items.length} events
+        </div>
+      ))}
+    </div>
+  ))
+}
 ```
 
-For Suspense composition, create the controller without items above the boundary and call `useCalendarView` inside each query-owning view component.
+Because only `month` is enabled, `activeView` is a month view. Add `week` or `day` when you need them.
+
+[Build your first calendar](/docs/first-calendar) or [open the complete month/week/day example](/docs/examples/multi-view).

@@ -1,32 +1,32 @@
-# @gobrand/calendar
+# GoBrand Calendar
 
 [![npm version](https://img.shields.io/npm/v/@gobrand/calendar-core.svg)](https://www.npmjs.com/package/@gobrand/calendar-core)
 [![CI](https://github.com/go-brand/calendar/actions/workflows/ci.yml/badge.svg)](https://github.com/go-brand/calendar/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Build calendars with the Temporal API.** Type-safe. Timezone-aware. Zero abstractions.
+Headless month, week, and day calendars built directly on the Temporal API.
 
-👉 **[Documentation](https://eng.gobrand.app/calendar)**
+[Read the documentation](https://eng.gobrand.app/calendar/docs).
 
-- **Built on Temporal API** - No Date objects, no moment.js, no date-fns
-- **Timezone-aware** - Native DST handling with IANA timezones
-- **Type-safe** - Full TypeScript with conditional types based on configured views
-- **Multi-view** - Month, week, and day views with time slots
-- **Data-agnostic** - Works with any data type through accessor pattern
+- `@gobrand/react-calendar` provides React state, context, and view hooks.
+- `@gobrand/calendar-core` provides the framework-independent controller and projections.
+- Both packages use Temporal values, preserve configured-view types, and accept your event type through direct callbacks.
 
 ## Install
 
 ```bash
 # React
-pnpm add @gobrand/react-calendar
+pnpm add @gobrand/react-calendar @js-temporal/polyfill
 
-# Core only (vanilla JS/TS)
-pnpm add @gobrand/calendar-core
+# Core only
+pnpm add @gobrand/calendar-core @js-temporal/polyfill
 ```
 
-## Docs
+## Start here
 
-**[eng.gobrand.app/calendar](https://eng.gobrand.app/calendar)** — Full API reference, examples, and guides.
+- [Build a React calendar](https://eng.gobrand.app/calendar/docs/first-calendar)
+- [Use Calendar Core](https://eng.gobrand.app/calendar/docs/core)
+- [Browse runnable examples](https://eng.gobrand.app/calendar/docs/examples/multi-view)
 
 ## License
 

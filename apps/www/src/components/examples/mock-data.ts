@@ -1,4 +1,4 @@
-import { Temporal } from "@js-temporal/polyfill";
+import { Temporal } from '@js-temporal/polyfill';
 
 export type Event = {
   id: string;
@@ -8,16 +8,16 @@ export type Event = {
 };
 
 const titles = [
-  "Standup",
-  "Planning",
-  "Review",
-  "Launch",
-  "Demo",
-  "Retro",
-  "Sprint",
-  "Deploy",
-  "Sync",
-  "Lunch",
+  'Standup',
+  'Planning',
+  'Review',
+  'Launch',
+  'Demo',
+  'Retro',
+  'Sprint',
+  'Deploy',
+  'Sync',
+  'Lunch',
 ];
 
 // Generate events around the current date so calendars are never empty
@@ -46,25 +46,25 @@ function generateEvents(): Event[] {
   // Add 2 events for today at specific times (9 AM and 11 AM - visible in week view's first 5 slots)
   const todayAt9am = today.toZonedDateTime({
     timeZone,
-    plainTime: Temporal.PlainTime.from("09:00"),
+    plainTime: Temporal.PlainTime.from('09:00'),
   });
   const todayAt11am = today.toZonedDateTime({
     timeZone,
-    plainTime: Temporal.PlainTime.from("11:00"),
+    plainTime: Temporal.PlainTime.from('11:00'),
   });
 
   events.push({
-    id: "today-9am",
+    id: 'today-9am',
     date: today.toString(),
     start: todayAt9am.toString(),
-    title: "Team Sync",
+    title: 'Team Sync',
   });
 
   events.push({
-    id: "today-11am",
+    id: 'today-11am',
     date: today.toString(),
     start: todayAt11am.toString(),
-    title: "Project Review",
+    title: 'Project Review',
   });
 
   // Add extra events around today for day/week views (excluding today itself)
@@ -88,14 +88,14 @@ function generateEvents(): Event[] {
   return events;
 }
 
-const allEvents = generateEvents();
+export const events = generateEvents();
 
 export async function fetchEvents(
   start: Temporal.ZonedDateTime,
   end: Temporal.ZonedDateTime,
 ): Promise<Event[]> {
   await new Promise((r) => setTimeout(r, 300));
-  return allEvents.filter((e) => {
+  return events.filter((e) => {
     const date = Temporal.PlainDate.from(e.date);
     return (
       Temporal.PlainDate.compare(date, start.toPlainDate()) >= 0 &&
@@ -116,7 +116,7 @@ export const accessor = {
     // Default to midnight in browser timezone for events without specific time
     return Temporal.PlainDate.from(e.date).toZonedDateTime({
       timeZone: browserTimeZone,
-      plainTime: Temporal.PlainTime.from("00:00"),
+      plainTime: Temporal.PlainTime.from('00:00'),
     });
   },
 };

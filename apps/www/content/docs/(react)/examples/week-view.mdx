@@ -1,15 +1,18 @@
 ---
 title: Week View
+description: Build a simple week or add explicit time slots.
 ---
 
-## Without Time Slots
+## Simple week
 
-A simple week view that displays events directly on each day.
+Events appear on each day.
 
 <CalendarPreview name="simple-week" />
 
-## With Time Slots
+## Week with time slots
 
-A week view with an hourly time grid for scheduling.
+Timed events appear in an hourly grid.
 
 <CalendarPreview name="week-slots" />
+
+Both sources import small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.

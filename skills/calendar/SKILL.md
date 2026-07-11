@@ -12,113 +12,98 @@ Lightweight utility library for building calendar UIs with the Temporal API.
 npm install @gobrand/calendar-core @js-temporal/polyfill
 
 # React
-npm install @gobrand/react-calendar @js-temporal/polyfill @tanstack/react-query
+npm install @gobrand/react-calendar @js-temporal/polyfill
 ```
 
-## Simple mode
+## Quick start
 
 ```tsx
 import { Temporal } from '@js-temporal/polyfill'
 import { useCreateCalendar } from '@gobrand/react-calendar'
 
-type Event = { id: string; date: Temporal.PlainDate; startsAt: Temporal.ZonedDateTime }
-
-function Calendar({ events }: { events: Event[] }) {
-  const calendar = useCreateCalendar({
-    views: { month: true, week: true },
-    items: events,
-    getDate: event => event.date,
-    getStart: event => event.startsAt,
-  })
-
-  if (calendar.activeView.view !== 'month') return null
-  return calendar.activeView.weeks.flat().map(day => (
-    <div key={day.id}>{day.items.length}</div>
-  ))
-}
-```
-
-## Suspense composition
-
-```tsx
-import { Suspense } from 'react'
-import { Temporal } from '@js-temporal/polyfill'
-import { CalendarProvider, useCalendar, useCalendarView, useCreateCalendar } from '@gobrand/react-calendar'
-import type { MonthView as MonthViewModel } from '@gobrand/react-calendar'
-import { QueryClient, QueryClientProvider, queryOptions, useSuspenseQuery } from '@tanstack/react-query'
-
-type Summary = { id: string; date: string }
-const queryClient = new QueryClient()
-function monthQuery(range: { start: Temporal.ZonedDateTime; end: Temporal.ZonedDateTime }) {
-  return queryOptions({
-    queryKey: ['calendar', 'month', range.start.toString(), range.end.toString()],
-    queryFn: async (): Promise<{ summaries: Summary[] }> => {
-      const params = new URLSearchParams({
-        start: range.start.toInstant().toString(),
-        end: range.end.toInstant().toString(),
-      })
-      const response = await fetch(`/api/summaries?${params}`)
-      if (!response.ok) throw new Error('Failed to load calendar summaries')
-      return response.json()
-    },
-  })
+type Event = {
+  id: string
+  title: string
+  date: Temporal.PlainDate
 }
 
-function CalendarControls() {
-  const calendar = useCalendar()
-  return <button onClick={calendar.next}>{calendar.title()}</button>
-}
-function CalendarSkeleton() { return <div>Loading</div> }
-function MonthGrid({ month }: { month: MonthViewModel<Summary> }) {
-  return <div>{month.weeks.length}</div>
-}
+const events: Event[] = [
+  { id: 'launch', title: 'Launch', date: Temporal.PlainDate.from('2026-07-14') },
+]
+
+const views = ['month', 'week', 'day'] as const
 
 function Calendar() {
-  const calendar = useCreateCalendar({ views: { month: true, week: true } })
+  const calendar = useCreateCalendar({
+    views: { month: true, week: true, day: true },
+    defaultDate: Temporal.PlainDate.from('2026-07-14'),
+    items: events,
+    getDate: event => event.date,
+  })
+  const view = calendar.activeView
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <CalendarProvider calendar={calendar}>
-        <CalendarControls />
-        <Suspense fallback={<CalendarSkeleton />}>
-          <MonthView />
-        </Suspense>
-      </CalendarProvider>
-    </QueryClientProvider>
+    <section>
+      <button onClick={calendar.previous}>Previous</button>
+      <button onClick={calendar.today}>Today</button>
+      <button onClick={calendar.next}>Next</button>
+
+      {views.map(name => (
+        <button key={name} onClick={() => calendar.setView(name)}>
+          {name}
+        </button>
+      ))}
+
+      <h2>{calendar.title()}</h2>
+
+      {view.view === 'month' && view.weeks.flat().map(day => (
+        <div key={day.id}>
+          {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
+        </div>
+      ))}
+
+      {view.view === 'week' && view.days.map(day => (
+        <div key={day.id}>
+          {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
+        </div>
+      ))}
+
+      {view.view === 'day' && (
+        <div>
+          {view.date.toString()}: {view.items.map(event => event.title).join(', ')}
+        </div>
+      )}
+    </section>
   )
 }
-
-function MonthView() {
-  const calendar = useCalendar()
-  const { data } = useSuspenseQuery(monthQuery(calendar.visibleRange))
-  const month = useCalendarView({
-    view: 'month',
-    items: data.summaries,
-    getDate: summary => Temporal.PlainDate.from(summary.date),
-  })
-  return <MonthGrid month={month} />
-}
 ```
+
+## Using Suspense
+
+When each view fetches its own data, keep the controller above the Suspense boundary and call `useCalendarView` after the data is ready.
+
+[See the complete Suspense example](https://eng.gobrand.app/calendar/docs/data-and-suspense).
 
 ## React
 
 | Function | Description |
 |----------|-------------|
 | `Installation` | Get started with GoBrand React Calendar |
-| `Your first calendar` | Build a navigable month from ordinary values and inferred item types. |
-| `Data and Suspense` | Keep controls interactive while each calendar view owns its query and item type. |
+| `Your first calendar` | Build a navigable month with one hook. |
+| `Data and Suspense` | Keep calendar controls available while a view loads its events. |
 | `Timezones and visible ranges` | Query half-open calendar ranges that remain correct across DST transitions. |
 | `Controlled state and routing` | Synchronize calendar date and view with URLs or external application state. |
 | `useCreateCalendar()` | Create a controlled or uncontrolled item-agnostic controller, with optional simple-mode data. |
 | `useCalendar()` | Read the item-agnostic calendar controller from context. |
-| `useCalendarView()` | Project view-local data through the item-agnostic calendar controller. |
-| `CalendarProvider` | Share an item-agnostic controller with controls and view projections. |
+| `useCalendarView()` | Put events into one view from a shared calendar controller. |
+| `CalendarProvider` | Share one calendar controller with child components. |
 | `Calendar Controller` | Item-agnostic calendar state, navigation, and visible query range. |
 | `View Models` | Discriminated month, week, and day models with locally inferred items. |
 | `Range and Configuration Types` | Public types for configured views, geometry, and half-open query ranges. |
-| `Month View` | Build a month calendar with data fetching |
-| `Week View` |  |
-| `Day View` | Build a day calendar with hourly time slots |
-| `Multi-View Calendar` | Switch between month, week, and day views |
+| `Month View` | A complete month with navigation and events. |
+| `Week View` | Build a simple week or add explicit time slots. |
+| `Day View` | A day timeline with explicit Temporal time slots. |
+| `Multi-View Calendar` | One calendar that switches between month, week, and day. |
 
 ## Core
 
@@ -132,13 +117,10 @@ function MonthView() {
 
 ## Key Types
 
-```ts
-type ViewConfig = { month: true | Record<string, never>; week: true | TimedViewConfig; day: true | TimedViewConfig };
-type VisibleRange = { start: Temporal.ZonedDateTime; end: Temporal.ZonedDateTime };
-type CalendarController<TViews> = { date: Temporal.PlainDate; view: keyof TViews; visibleRange: VisibleRange; title(): string; next(): void; previous(): void };
-type MonthView<TItem> = { view: 'month'; weeks: CalendarDay<TItem>[][]; month: Temporal.PlainYearMonth };
-type CalendarDay<TItem> = { id: string; date: Temporal.PlainDate; isCurrentMonth: boolean; isToday: boolean; items: TItem[] };
-```
+- `CalendarController<TViews>` contains the current date and view, resolved view configuration, visible range, title, navigation methods, setters, and `subscribe`.
+- `VisibleRange` contains `start` and `end` as `Temporal.ZonedDateTime` values in the controller timezone.
+- `MonthView<TItem>`, `WeekView<TItem>`, and `DayView<TItem>` are discriminated by their `view` field.
+- `NonEmptyCalendarViews` requires at least one of `month`, `week`, or `day`.
 
 ## Inference rules
 

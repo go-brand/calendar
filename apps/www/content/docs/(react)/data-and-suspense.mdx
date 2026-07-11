@@ -1,50 +1,90 @@
 ---
 title: Data and Suspense
-description: Keep controls interactive while each calendar view owns its query and item type.
+description: Keep calendar controls available while a view loads its events.
 ---
 
-The controller is item-agnostic, so it can live above a Suspense boundary before any records exist.
+Create the calendar without events above the Suspense boundary. Fetch and project the events inside the view.
 
 ```tsx
-function Calendar() {
-  const calendar = useCreateCalendar({
-    views: { month: true, week: true },
-  })
+import { Suspense } from 'react'
+import type { Temporal } from '@js-temporal/polyfill'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import {
+  CalendarProvider,
+  useCalendar,
+  useCalendarView,
+  useCreateCalendar,
+} from '@gobrand/react-calendar'
+
+type Event = {
+  id: string
+  title: string
+  date: Temporal.PlainDate
+}
+
+type CalendarProps = {
+  loadEvents(
+    start: Temporal.ZonedDateTime,
+    end: Temporal.ZonedDateTime,
+  ): Promise<Event[]>
+}
+
+function Calendar({ loadEvents }: CalendarProps) {
+  const calendar = useCreateCalendar({ views: { month: true } })
 
   return (
     <CalendarProvider calendar={calendar}>
-      <CalendarControls />
-      <Suspense fallback={<CalendarSkeleton />}>
-        <ActiveView />
+      <Controls />
+      <Suspense fallback={<p>Loading events…</p>}>
+        <MonthView loadEvents={loadEvents} />
       </Suspense>
     </CalendarProvider>
   )
 }
-```
 
-`CalendarControls` stays mounted while the active child suspends. The child reads the visible query range and projects the returned records:
+function Controls() {
+  const calendar = useCalendar()
 
-```tsx
-function MonthView() {
+  return (
+    <nav>
+      <button onClick={calendar.previous}>Previous</button>
+      <strong>{calendar.title()}</strong>
+      <button onClick={calendar.next}>Next</button>
+    </nav>
+  )
+}
+
+function MonthView({ loadEvents }: CalendarProps) {
   const calendar = useCalendar()
   const { start, end } = calendar.visibleRange
-  const { data } = useSuspenseQuery({
+  const { data: events } = useSuspenseQuery({
     queryKey: ['events', start.toString(), end.toString()],
-    queryFn: () => fetchEvents(start, end),
+    queryFn: () => loadEvents(start, end),
   })
 
   const month = useCalendarView({
     view: 'month',
-    items: data.events,
+    items: events,
     getDate: event => event.date,
   })
 
-  return <MonthGrid month={month} />
+  return month.weeks.map(week => (
+    <div key={week[0].id}>
+      {week.map(day => (
+        <div key={day.id}>
+          {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
+        </div>
+      ))}
+    </div>
+  ))
 }
 ```
 
+`Controls` does not unmount when `MonthView` suspends, so navigation remains available while events load.
+The example assumes your app already has TanStack Query's `QueryClientProvider`.
+
+## Different data for each view
+
+Each `useCalendarView` call infers its own item type. A month view can use summaries while a timed week view uses full event records. The shared controller does not need to know either type.
+
 <CalendarPreview name="multi-view" />
-
-## Independent record types
-
-Each literal `useCalendarView` call infers its own item type. A month can project compact summary rows while a week projects full meetings with start times. The controller and context do not carry either generic.

@@ -3,16 +3,29 @@
 Framework-agnostic, headless calendar state and projections built directly on the Temporal API.
 
 ```bash
-pnpm add @gobrand/calendar-core
+pnpm add @gobrand/calendar-core @js-temporal/polyfill
 ```
+
+## Quick start
 
 ```ts
 import { Temporal } from '@js-temporal/polyfill'
 import { buildMonthView, createCalendar } from '@gobrand/calendar-core'
 
+type Event = {
+  id: string
+  title: string
+  date: Temporal.PlainDate
+}
+
+const date = Temporal.PlainDate.from('2026-07-10')
+const events: Event[] = [
+  { id: 'launch', title: 'Launch', date: Temporal.PlainDate.from('2026-07-14') },
+]
+
 const calendar = createCalendar({
-  views: { month: true, week: true },
-  date: Temporal.PlainDate.from('2026-07-10'),
+  views: { month: true },
+  date,
   timeZone: 'America/Asuncion',
 })
 
@@ -21,10 +34,15 @@ const month = buildMonthView({
   items: events,
   getDate: event => event.date,
 })
+
+for (const day of month.weeks.flat()) {
+  console.log(day.date.toString(), day.items.map(event => event.title))
+}
 ```
 
-The controller owns date, active view, timezone-aware half-open query range, and navigation. Item types stay local to `buildMonthView`, `buildWeekView`, and `buildDayView`.
+The controller owns the current date, active view, timezone-aware visible range, and navigation.
+`buildMonthView`, `buildWeekView`, and `buildDayView` add your events to the dates you render.
 
-Full documentation: [eng.gobrand.app/calendar](https://eng.gobrand.app/calendar)
+[Read the Core documentation](https://eng.gobrand.app/calendar/docs/core).
 
 MIT © [Ruben Costa](https://x.com/PonziChad) / [Go Brand](https://gobrand.app)

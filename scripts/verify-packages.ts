@@ -44,7 +44,6 @@ try {
     '@gobrand/react-calendar': `file:${reactTarball}`,
     '@js-temporal/polyfill': '0.5.1',
     '@types/react': '19',
-    '@tanstack/react-query': '5',
     react: '19',
     typescript: '5.7',
   };

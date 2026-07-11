@@ -1,13 +1,6 @@
-"use client";
+'use client';
 
-import { Suspense } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import {
-  CalendarProvider,
-  useCalendar,
-  useCalendarView,
-  useCreateCalendar,
-} from "@gobrand/react-calendar";
+import { useCreateCalendar } from '@gobrand/react-calendar';
 import {
   Calendar,
   CalendarCell,
@@ -16,52 +9,27 @@ import {
   CalendarRow,
   CalendarToolbar,
   CalendarWeekdays,
-} from "./calendar-ui";
-import { accessor, fetchEvents } from "./mock-data";
+} from './calendar-ui';
+import { accessor, events } from './mock-data';
 
 export function BasicMonthExample() {
-  const calendar = useCreateCalendar({ views: { month: true } });
-  return (
-    <CalendarProvider calendar={calendar}>
-      <Calendar size="month">
-        <Toolbar />
-        <Suspense fallback={<div>Loading…</div>}>
-          <MonthContent />
-        </Suspense>
-      </Calendar>
-    </CalendarProvider>
-  );
-}
-
-function Toolbar() {
-  const calendar = useCalendar();
-  return (
-    <CalendarToolbar
-      title={calendar.title()}
-      previousLabel="Previous month"
-      nextLabel="Next month"
-      onPrevious={calendar.previous}
-      onNext={calendar.next}
-    />
-  );
-}
-
-function MonthContent() {
-  const calendar = useCalendar();
-  const { start, end } = calendar.visibleRange;
-  const { data: events } = useSuspenseQuery({
-    queryKey: ["events", start.toString(), end.toString()],
-    queryFn: () => fetchEvents(start, end),
-  });
-  const month = useCalendarView({
-    view: "month",
+  const calendar = useCreateCalendar({
+    views: { month: true },
     items: events,
     getDate: accessor.getDate,
     getStart: accessor.getStart,
   });
+  const month = calendar.activeView;
 
   return (
-    <>
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous month"
+        nextLabel="Next month"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
       <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
       <CalendarGrid>
         {month.weeks.map((week) => (
@@ -81,6 +49,6 @@ function MonthContent() {
           </CalendarRow>
         ))}
       </CalendarGrid>
-    </>
+    </Calendar>
   );
 }

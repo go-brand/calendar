@@ -1,94 +1,60 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { Suspense } from 'react';
-import {
-  QueryClient,
-  QueryClientProvider,
-  queryOptions,
-  useSuspenseQuery,
-} from '@tanstack/react-query';
-import {
-  CalendarProvider,
-  useCalendar,
-  useCalendarView,
-  useCreateCalendar,
-} from '@gobrand/react-calendar';
-import type { MonthView as MonthViewModel } from '@gobrand/react-calendar';
+import { useCreateCalendar } from '@gobrand/react-calendar';
 
 type Event = {
   id: string;
+  title: string;
   date: Temporal.PlainDate;
-  startsAt: Temporal.ZonedDateTime;
 };
 
-export function SimpleCalendar({ events }: { events: Event[] }) {
+const events: Event[] = [
+  { id: 'launch', title: 'Launch', date: Temporal.PlainDate.from('2026-07-14') },
+];
+
+const views = ['month', 'week', 'day'] as const;
+
+export function Calendar() {
   const calendar = useCreateCalendar({
-    views: { month: true, week: true },
+    views: { month: true, week: true, day: true },
+    defaultDate: Temporal.PlainDate.from('2026-07-14'),
     items: events,
     getDate: (event) => event.date,
-    getStart: (event) => event.startsAt,
   });
+  const view = calendar.activeView;
 
-  if (calendar.activeView.view !== 'month') return null;
-  return calendar.activeView.weeks.flat().map((day) => (
-    <div key={day.id}>{day.items.length}</div>
-  ));
-}
-
-type Summary = { id: string; date: string };
-const queryClient = new QueryClient();
-
-function monthQuery(range: {
-  start: Temporal.ZonedDateTime;
-  end: Temporal.ZonedDateTime;
-}) {
-  return queryOptions({
-    queryKey: ['calendar', 'month', range.start.toString(), range.end.toString()],
-    queryFn: async (): Promise<{ summaries: Summary[] }> => {
-      const params = new URLSearchParams({
-        start: range.start.toInstant().toString(),
-        end: range.end.toInstant().toString(),
-      });
-      const response = await fetch(`/api/summaries?${params}`);
-      if (!response.ok) throw new Error('Failed to load calendar summaries');
-      return response.json();
-    },
-  });
-}
-
-function CalendarControls() {
-  const calendar = useCalendar();
-  return <button onClick={calendar.next}>{calendar.title()}</button>;
-}
-
-function CalendarSkeleton() {
-  return <div>Loading</div>;
-}
-
-function MonthGrid({ month }: { month: MonthViewModel<Summary> }) {
-  return <div>{month.weeks.length}</div>;
-}
-
-export function SuspenseCalendar() {
-  const calendar = useCreateCalendar({ views: { month: true, week: true } });
   return (
-    <QueryClientProvider client={queryClient}>
-      <CalendarProvider calendar={calendar}>
-        <CalendarControls />
-        <Suspense fallback={<CalendarSkeleton />}>
-          <MonthContent />
-        </Suspense>
-      </CalendarProvider>
-    </QueryClientProvider>
-  );
-}
+    <section>
+      <button onClick={calendar.previous}>Previous</button>
+      <button onClick={calendar.today}>Today</button>
+      <button onClick={calendar.next}>Next</button>
 
-function MonthContent() {
-  const calendar = useCalendar();
-  const { data } = useSuspenseQuery(monthQuery(calendar.visibleRange));
-  const month = useCalendarView({
-    view: 'month',
-    items: data.summaries,
-    getDate: (summary) => Temporal.PlainDate.from(summary.date),
-  });
-  return <MonthGrid month={month} />;
+      {views.map((name) => (
+        <button key={name} onClick={() => calendar.setView(name)}>
+          {name}
+        </button>
+      ))}
+
+      <h2>{calendar.title()}</h2>
+
+      {view.view === 'month' &&
+        view.weeks.flat().map((day) => (
+          <div key={day.id}>
+            {day.date.toString()}: {day.items.map((event) => event.title).join(', ')}
+          </div>
+        ))}
+
+      {view.view === 'week' &&
+        view.days.map((day) => (
+          <div key={day.id}>
+            {day.date.toString()}: {day.items.map((event) => event.title).join(', ')}
+          </div>
+        ))}
+
+      {view.view === 'day' && (
+        <div>
+          {view.date.toString()}: {view.items.map((event) => event.title).join(', ')}
+        </div>
+      )}
+    </section>
+  );
 }

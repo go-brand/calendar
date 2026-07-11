@@ -1,19 +1,43 @@
 ---
 title: CalendarProvider
-description: Share an item-agnostic controller with controls and view projections.
+description: Share one calendar controller with child components.
 ---
 
 ```tsx
-const calendar = useCreateCalendar({ views: { month: true, week: true } })
+import {
+  CalendarProvider,
+  useCalendar,
+  useCreateCalendar,
+} from '@gobrand/react-calendar'
 
-return (
-  <CalendarProvider calendar={calendar}>
-    <CalendarControls />
-    <Suspense fallback={<CalendarSkeleton />}>
-      <ActiveView />
-    </Suspense>
-  </CalendarProvider>
-)
+function Calendar() {
+  const calendar = useCreateCalendar({ views: { month: true } })
+
+  return (
+    <CalendarProvider calendar={calendar}>
+      <Controls />
+      <VisibleRange />
+    </CalendarProvider>
+  )
+}
+
+function Controls() {
+  const calendar = useCalendar()
+
+  return (
+    <nav>
+      <button onClick={calendar.previous}>Previous</button>
+      <strong>{calendar.title()}</strong>
+      <button onClick={calendar.next}>Next</button>
+    </nav>
+  )
+}
+
+function VisibleRange() {
+  const { visibleRange } = useCalendar()
+
+  return <p>{visibleRange.start.toString()} – {visibleRange.end.toString()}</p>
+}
 ```
 
-Because the provider carries no data, controls stay mounted while a query-owning child view suspends.
+The provider shares calendar state, not event data. Child views can fetch their own records and use their own item types.

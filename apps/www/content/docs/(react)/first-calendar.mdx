@@ -1,43 +1,69 @@
 ---
 title: Your first calendar
-description: Build a navigable month from ordinary values and inferred item types.
+description: Build a navigable month with one hook.
 ---
 
-A Calendar view is enabled with `true`. Supply an options object only when the view needs custom geometry.
+Enable a view with `true`, pass your events, and tell the calendar where each event belongs.
 
 ```tsx
-const calendar = useCreateCalendar({
-  views: { month: true },
-  items: events,
-  getDate: event => event.date,
-})
+import type { Temporal } from '@js-temporal/polyfill'
+import { useCreateCalendar } from '@gobrand/react-calendar'
+
+type Event = {
+  id: string
+  title: string
+  date: Temporal.PlainDate
+}
+
+function Calendar({ events }: { events: Event[] }) {
+  const calendar = useCreateCalendar({
+    views: { month: true },
+    items: events,
+    getDate: event => event.date,
+  })
+
+  return (
+    <section>
+      <h2>{calendar.title()}</h2>
+      {calendar.activeView.weeks.flat().map(day => (
+        <div key={day.id}>
+          {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
+        </div>
+      ))}
+    </section>
+  )
+}
 ```
 
-There is no accessor factory, explicit generic, provider, or cast on the simple path. Because only `month` is configured, `activeView` is a `MonthView` rather than a month/week/day union.
+That is the whole setup. TypeScript infers the event type, and `calendar.activeView` is a `MonthView` because month is the only enabled view.
 
 <CalendarPreview name="basic-month" />
 
-## What Calendar owns
+The preview is live. Its source uses small website-only components for markup and styles; its calendar state and month data come directly from `useCreateCalendar`.
 
-- the reference `date` and active `view`;
-- navigation through `previous()`, `next()`, and `today()`;
-- a locale-aware `title()`;
-- the timezone-aware `visibleRange`;
-- month, week, and day geometry.
+## What the library does
 
-Your component still owns markup and styles. Your data layer still owns fetching and caching.
+- Keeps the current date and active view.
+- Moves with `previous()`, `next()`, and `today()`.
+- Gives you a localized `title()` and timezone-aware `visibleRange`.
+- Builds the month, week, or day data you render.
 
-## Add another view
+Your app owns the markup, styles, data fetching, and caching.
+
+## Add week and day views
 
 ```tsx
 const calendar = useCreateCalendar({
   views: {
     month: true,
     week: true,
+    day: true,
   },
   items: events,
   getDate: event => event.date,
 })
 ```
 
-An omitted key is unavailable. `false` is intentionally not accepted: key presence means configured, `true` means defaults, and an object means custom geometry.
+An omitted view is unavailable. Use an options object instead of `true` when a timed week or day needs custom hours or slot length.
+
+[See the complete month/week/day example](/docs/examples/multi-view).
