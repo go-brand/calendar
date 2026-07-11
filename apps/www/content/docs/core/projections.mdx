@@ -1,0 +1,23 @@
+---
+title: View Projections
+description: Build month, week, and day models from controller state and local data.
+---
+
+Core exports `buildMonthView`, `buildWeekView`, and `buildDayView`. Each projection infers its own item type, so one controller can support unrelated query results.
+
+```ts
+const month = buildMonthView({
+  calendar,
+  items: summaries,
+  getDate: summary => summary.date,
+})
+
+const week = buildWeekView({
+  calendar,
+  items: events,
+  getDate: event => event.startsAt.toPlainDate(),
+  getStart: event => event.startsAt,
+})
+```
+
+Calling a projection without `items` returns a data-free grid and needs no accessor or fake item type.

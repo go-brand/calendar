@@ -1,0 +1,21 @@
+---
+title: Visible ranges
+description: Understand Calendar's timezone-aware, half-open query boundary.
+---
+
+Every controller derives a `VisibleRange` from its date, active view, timezone, and week configuration:
+
+```ts
+const { start, end } = calendar.visibleRange
+```
+
+`start` is included. `end` is the local midnight immediately after the visible interval and is excluded.
+
+```sql
+WHERE starts_at >= :start
+  AND starts_at < :end
+```
+
+Month ranges include the complete leading and trailing weeks rendered by the month projection. Week ranges contain seven local dates. Day ranges span one local calendar date—even when DST makes that date 23 or 25 elapsed hours.
+
+Calendar produces `Temporal.ZonedDateTime` boundaries so callers can preserve the timezone or convert explicitly with `.toInstant()` for storage queries.

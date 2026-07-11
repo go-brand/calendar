@@ -1,0 +1,43 @@
+---
+title: Your first calendar
+description: Build a navigable month from ordinary values and inferred item types.
+---
+
+A Calendar view is enabled with `true`. Supply an options object only when the view needs custom geometry.
+
+```tsx
+const calendar = useCreateCalendar({
+  views: { month: true },
+  items: events,
+  getDate: event => event.date,
+})
+```
+
+There is no accessor factory, explicit generic, provider, or cast on the simple path. Because only `month` is configured, `activeView` is a `MonthView` rather than a month/week/day union.
+
+<CalendarPreview name="basic-month" />
+
+## What Calendar owns
+
+- the reference `date` and active `view`;
+- navigation through `previous()`, `next()`, and `today()`;
+- a locale-aware `title()`;
+- the timezone-aware `visibleRange`;
+- month, week, and day geometry.
+
+Your component still owns markup and styles. Your data layer still owns fetching and caching.
+
+## Add another view
+
+```tsx
+const calendar = useCreateCalendar({
+  views: {
+    month: true,
+    week: true,
+  },
+  items: events,
+  getDate: event => event.date,
+})
+```
+
+An omitted key is unavailable. `false` is intentionally not accepted: key presence means configured, `true` means defaults, and an object means custom geometry.

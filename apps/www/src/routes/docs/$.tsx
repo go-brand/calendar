@@ -8,11 +8,7 @@ import defaultMdxComponents from 'fumadocs-ui/mdx';
 import { baseOptions } from '@/lib/layout.shared';
 import { useFumadocsLoader } from 'fumadocs-core/source/client';
 import { Suspense } from 'react';
-import { Preview } from '@/components/preview';
-import { BasicMonthPreview } from '@/components/examples/basic-month';
-import { SimpleWeekViewPreview, WeekViewWithSlotsPreview } from '@/components/examples/week-view';
-import { DayViewPreview } from '@/components/examples/day-view';
-import { MultiViewPreview } from '@/components/examples/multi-view';
+import { CalendarPreview } from '@/components/preview';
 
 export const Route = createFileRoute('/docs/$')({
   component: Page,
@@ -54,12 +50,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
           <MDX
             components={{
               ...defaultMdxComponents,
-              Preview,
-              BasicMonthPreview,
-              SimpleWeekViewPreview,
-              WeekViewWithSlotsPreview,
-              DayViewPreview,
-              MultiViewPreview,
+              CalendarPreview,
             }}
           />
         </DocsBody>
@@ -81,7 +72,7 @@ function Page() {
       links={[]}
       sidebar={{
         tabs: {
-          transform(option, node) {
+          transform(option, _node) {
             return option;
           },
         },

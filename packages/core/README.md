@@ -1,43 +1,30 @@
 # Calendar Core
 
-[![npm version](https://img.shields.io/npm/v/@gobrand/calendar-core.svg)](https://www.npmjs.com/package/@gobrand/calendar-core)
-[![CI](https://github.com/go-brand/calendar/actions/workflows/ci.yml/badge.svg)](https://github.com/go-brand/calendar/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
-**Framework-agnostic calendar utilities built with the Temporal API.** Simple, composable functions for building month, week, and day views.
-
-👉 **[Documentation](https://eng.gobrand.app/calendar)**
-
-- **Built on Temporal API** - No Date objects, no moment.js, no date-fns
-- **Timezone-aware** - Native DST handling with IANA timezones
-- **Type-safe** - Full TypeScript with proper Temporal types
-- **Framework-agnostic** - Use with React, Vue, Svelte, or vanilla JS
-- **Data-agnostic** - Works with any data type through accessor pattern
-
-```typescript
-import { buildMonth, createCalendarAccessor, getWeekdays } from '@gobrand/calendar-core';
-
-const accessor = createCalendarAccessor<Event>({
-  getDate: (e) => e.date,
-});
-
-const month = buildMonth(2025, 1, { weekStartsOn: 1, data: events, accessor });
-
-month.weeks.flat().forEach(day => {
-  console.log(day.date.toString(), day.items.length);
-});
-```
-
-## Install
+Framework-agnostic, headless calendar state and projections built directly on the Temporal API.
 
 ```bash
 pnpm add @gobrand/calendar-core
 ```
 
-## Docs
+```ts
+import { Temporal } from '@js-temporal/polyfill'
+import { buildMonthView, createCalendar } from '@gobrand/calendar-core'
 
-**[eng.gobrand.app/calendar](https://eng.gobrand.app/calendar)** — Full API reference, examples, and guides.
+const calendar = createCalendar({
+  views: { month: true, week: true },
+  date: Temporal.PlainDate.from('2026-07-10'),
+  timeZone: 'America/Asuncion',
+})
 
-## License
+const month = buildMonthView({
+  calendar,
+  items: events,
+  getDate: event => event.date,
+})
+```
+
+The controller owns date, active view, timezone-aware half-open query range, and navigation. Item types stay local to `buildMonthView`, `buildWeekView`, and `buildDayView`.
+
+Full documentation: [eng.gobrand.app/calendar](https://eng.gobrand.app/calendar)
 
 MIT © [Ruben Costa](https://x.com/PonziChad) / [Go Brand](https://gobrand.app)

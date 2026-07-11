@@ -1,0 +1,5 @@
+{
+  "name": "calendar-package-consumer",
+  "private": true,
+  "type": "module"
+}

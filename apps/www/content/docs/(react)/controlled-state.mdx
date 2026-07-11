@@ -1,0 +1,27 @@
+---
+title: Controlled state and routing
+description: Synchronize calendar date and view with URLs or external application state.
+---
+
+Calendar follows standard React controlled and uncontrolled conventions.
+
+| State | Controlled | Uncontrolled initial value |
+| --- | --- | --- |
+| Date | `date` / `onDateChange` | `defaultDate` |
+| View | `view` / `onViewChange` | `defaultView` |
+
+```tsx
+const calendar = useCreateCalendar({
+  views: { month: true, week: true },
+  date: search.date,
+  view: search.view,
+  onDateChange: date => navigate({ search: previous => ({ ...previous, date }) }),
+  onViewChange: view => navigate({ search: previous => ({ ...previous, view }) }),
+})
+```
+
+Prop changes are reflected immediately. This matters for browser back/forward navigation: consumers do not need an effect that mutates a controller after render.
+
+## Geometry changes
+
+Changing `timeZone`, `weekStartsOn`, `dayStart`, `dayEnd`, or `slotDuration` recreates the underlying controller from the new value signature. The visible range therefore cannot retain initial configuration accidentally.

@@ -1,16 +1,32 @@
-// Types
-export * from './types';
+export { createCalendar } from './core/calendar';
+export { buildDayView, buildMonthView, buildWeekView } from './core/projections';
+export { getWeekdays } from './utils/getWeekdays';
 
-// Utils
-export * from './utils';
-export * from './utils/buildMonth';
-export * from './utils/buildWeek';
-export * from './utils/buildDay';
-export * from './utils/dateRanges';
-export * from './utils/getWeekdays';
-
-// Core instances
-export * from './core/calendar';
-
-// Utilities
-export * from './createCalendarViews';
+export type {
+  ActiveView,
+  CalendarController,
+  CalendarDay,
+  CalendarDayView,
+  CalendarMonth,
+  CalendarOptions,
+  CalendarViews,
+  CalendarWeek,
+  CalendarWeekView,
+  ConfiguredView,
+  DayView,
+  MonthView,
+  MonthViewConfig,
+  NonEmptyCalendarViews,
+  ProjectionData,
+  ResolvedCalendarViews,
+  ResolvedViewConfig,
+  TimeSlot,
+  TimedViewConfig,
+  ViewConfig,
+  ViewModel,
+  ViewName,
+  VisibleRange,
+  WeekDay,
+  Weekday,
+  WeekView,
+} from './types';

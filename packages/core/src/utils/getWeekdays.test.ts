@@ -1,7 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, expectTypeOf } from 'vitest';
 import { getWeekdays } from './getWeekdays';
 
+type TemporalWeekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
 describe('getWeekdays', () => {
+  it('uses Temporal weekday numbering (1 Monday through 7 Sunday)', () => {
+    expectTypeOf(getWeekdays).parameter(0).toEqualTypeOf<TemporalWeekday | undefined>();
+  });
+
   describe('weekStartsOn parameter', () => {
     it('should return 7 weekday names starting from Monday (1)', () => {
       const result = getWeekdays(1);
@@ -10,8 +16,8 @@ describe('getWeekdays', () => {
       expect(result[6]).toBe('Sun');
     });
 
-    it('should return 7 weekday names starting from Sunday (0)', () => {
-      const result = getWeekdays(0);
+    it('should return 7 weekday names starting from Sunday (7)', () => {
+      const result = getWeekdays(7);
       expect(result).toHaveLength(7);
       expect(result[0]).toBe('Sun');
       expect(result[6]).toBe('Sat');
@@ -61,7 +67,7 @@ describe('getWeekdays', () => {
 
   describe('sequence correctness', () => {
     it('should return days in correct sequential order for Sunday start', () => {
-      const result = getWeekdays(0);
+      const result = getWeekdays(7);
       expect(result).toEqual(['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']);
     });
 
@@ -76,7 +82,7 @@ describe('getWeekdays', () => {
     });
 
     it('should wrap around correctly for all start days', () => {
-      const weekStarts = [0, 1, 2, 3, 4, 5, 6] as const;
+      const weekStarts = [1, 2, 3, 4, 5, 6, 7] as const;
       const longDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
       weekStarts.forEach((start) => {
@@ -115,7 +121,7 @@ describe('getWeekdays', () => {
     });
 
     it('should return weekdays in Japanese', () => {
-      const result = getWeekdays(0, 'ja-JP');
+      const result = getWeekdays(7, 'ja-JP');
       expect(result).toHaveLength(7);
       // Japanese week typically starts Sunday
       expect(result[0]).toBe('日');
@@ -128,7 +134,7 @@ describe('getWeekdays', () => {
     });
 
     it('should return weekdays in Arabic', () => {
-      const result = getWeekdays(0, 'ar-SA');
+      const result = getWeekdays(7, 'ar-SA');
       expect(result).toHaveLength(7);
       // Arabic starts with Sunday (الأحد)
       expect(result[0]).toContain('الأحد');
@@ -171,7 +177,7 @@ describe('getWeekdays', () => {
     });
 
     it('should return long format in Spanish', () => {
-      const result = getWeekdays(0, 'es-ES', 'long');
+      const result = getWeekdays(7, 'es-ES', 'long');
       expect(result).toHaveLength(7);
       expect(result[0]).toBe('domingo');
       expect(result[6]).toBe('sábado');
@@ -199,7 +205,7 @@ describe('getWeekdays', () => {
 
   describe('combined parameters', () => {
     it('should work with Sunday start, Spanish locale, long format', () => {
-      const result = getWeekdays(0, 'es-ES', 'long');
+      const result = getWeekdays(7, 'es-ES', 'long');
       expect(result).toHaveLength(7);
       expect(result[0]).toBe('domingo');
       expect(result[1]).toBe('lunes');
@@ -254,7 +260,7 @@ describe('getWeekdays', () => {
 
   describe('edge cases', () => {
     it('should always return exactly 7 days', () => {
-      const weekStarts = [0, 1, 2, 3, 4, 5, 6] as const;
+      const weekStarts = [1, 2, 3, 4, 5, 6, 7] as const;
       const formats = ['short', 'long', 'narrow'] as const;
 
       weekStarts.forEach((start) => {
@@ -272,7 +278,7 @@ describe('getWeekdays', () => {
     });
 
     it('should handle narrow format where some letters repeat (T for Tue/Thu, S for Sat/Sun)', () => {
-      const result = getWeekdays(0, 'en-US', 'narrow');
+      const result = getWeekdays(7, 'en-US', 'narrow');
       expect(result).toHaveLength(7);
       // In narrow format, T appears twice (Tuesday, Thursday) and S appears twice (Saturday, Sunday)
       expect(result).toEqual(['S', 'M', 'T', 'W', 'T', 'F', 'S']);
@@ -286,7 +292,7 @@ describe('getWeekdays', () => {
 
     it('should return different results for different start days', () => {
       const monday = getWeekdays(1);
-      const sunday = getWeekdays(0);
+      const sunday = getWeekdays(7);
       expect(monday).not.toEqual(sunday);
       expect(monday[0]).toBe('Mon');
       expect(sunday[0]).toBe('Sun');
@@ -295,7 +301,7 @@ describe('getWeekdays', () => {
 
   describe('backwards compatibility', () => {
     it('should maintain backwards compatibility with single argument', () => {
-      const result = getWeekdays(0);
+      const result = getWeekdays(7);
       expect(result[0]).toBe('Sun');
       expect(result[1]).toBe('Mon');
       expect(result).toHaveLength(7);
@@ -308,7 +314,7 @@ describe('getWeekdays', () => {
     });
 
     it('should maintain backwards compatibility with all three arguments', () => {
-      const result = getWeekdays(0, 'en-US', 'long');
+      const result = getWeekdays(7, 'en-US', 'long');
       expect(result).toEqual([
         'Sunday',
         'Monday',

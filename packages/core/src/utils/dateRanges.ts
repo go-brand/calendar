@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
-import type { DateRange } from '../types';
+import type { VisibleRange, Weekday } from '../types';
 
 export type DateRangeBounds = 'calendar' | 'strict';
 
@@ -14,10 +14,10 @@ export function getMonthDateRange(
   date: Temporal.PlainDate,
   timeZone: string,
   options?: {
-    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    weekStartsOn?: Weekday;
     bounds?: DateRangeBounds;
-  }
-): DateRange {
+  },
+): VisibleRange {
   const weekStartsOn = options?.weekStartsOn ?? 1;
   const bounds = options?.bounds ?? 'calendar';
 
@@ -34,7 +34,8 @@ export function getMonthDateRange(
     start = firstOfMonth.subtract({ days: daysToSubtract });
 
     const endDayOfWeek = lastOfMonth.dayOfWeek;
-    const daysToAdd = (weekStartsOn + 6 - endDayOfWeek) % 7;
+    // +7 keeps the modulo expression non-negative for the Temporal 1..7 weekday values.
+    const daysToAdd = (weekStartsOn + 6 - endDayOfWeek + 7) % 7;
     end = lastOfMonth.add({ days: daysToAdd });
   } else {
     // Strict: only the actual month days
@@ -46,9 +47,9 @@ export function getMonthDateRange(
     timeZone,
     plainTime: Temporal.PlainTime.from('00:00:00'),
   });
-  const endZoned = end.toZonedDateTime({
+  const endZoned = end.add({ days: 1 }).toZonedDateTime({
     timeZone,
-    plainTime: Temporal.PlainTime.from('23:59:59.999'),
+    plainTime: Temporal.PlainTime.from('00:00:00'),
   });
 
   return { start: startZoned, end: endZoned };
@@ -65,9 +66,9 @@ export function getWeekDateRange(
   date: Temporal.PlainDate,
   timeZone: string,
   options?: {
-    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  }
-): DateRange {
+    weekStartsOn?: Weekday;
+  },
+): VisibleRange {
   const weekStartsOn = options?.weekStartsOn ?? 1;
 
   const dayOfWeek = date.dayOfWeek;
@@ -79,9 +80,9 @@ export function getWeekDateRange(
     timeZone,
     plainTime: Temporal.PlainTime.from('00:00:00'),
   });
-  const endZoned = end.toZonedDateTime({
+  const endZoned = end.add({ days: 1 }).toZonedDateTime({
     timeZone,
-    plainTime: Temporal.PlainTime.from('23:59:59.999'),
+    plainTime: Temporal.PlainTime.from('00:00:00'),
   });
 
   return { start: startZoned, end: endZoned };
@@ -93,17 +94,14 @@ export function getWeekDateRange(
  * @param timeZone - IANA timezone identifier or 'UTC'
  * @returns DateRange with start and end as ZonedDateTime
  */
-export function getDayDateRange(
-  date: Temporal.PlainDate,
-  timeZone: string
-): DateRange {
+export function getDayDateRange(date: Temporal.PlainDate, timeZone: string): VisibleRange {
   const startZoned = date.toZonedDateTime({
     timeZone,
     plainTime: Temporal.PlainTime.from('00:00:00'),
   });
-  const endZoned = date.toZonedDateTime({
+  const endZoned = date.add({ days: 1 }).toZonedDateTime({
     timeZone,
-    plainTime: Temporal.PlainTime.from('23:59:59.999'),
+    plainTime: Temporal.PlainTime.from('00:00:00'),
   });
 
   return { start: startZoned, end: endZoned };

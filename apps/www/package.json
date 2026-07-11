@@ -8,6 +8,7 @@
     "build": "vite build && node scripts/restructure-assets.js",
     "start": "node .output/server/index.mjs",
     "deploy": "pnpm build && wrangler deploy",
+    "typecheck": "fumadocs-mdx && tsc --noEmit",
     "types:check": "fumadocs-mdx && tsc --noEmit",
     "postinstall": "fumadocs-mdx"
   },

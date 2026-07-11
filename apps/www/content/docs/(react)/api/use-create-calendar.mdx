@@ -1,147 +1,19 @@
 ---
 title: useCreateCalendar
-description: Creates a calendar instance with React state management
+description: Create a controlled or uncontrolled item-agnostic controller, with optional simple-mode data.
 ---
 
 ```tsx
-function useCreateCalendar<TItem>(
-  options: CalendarOptions<TItem>
-): Calendar<TItem>
+const calendar = useCreateCalendar({
+  views: { month: true, week: true },
+  defaultDate: Temporal.PlainDate.from('2026-07-10'),
+  defaultView: 'month',
+  timeZone: 'America/Asuncion',
+  items: events,
+  getDate: event => event.date,
+})
 ```
 
-Creates and manages a calendar instance with React state. This is the primary way to create a calendar in React applications.
+With `items`, the return value includes the inferred `activeView`. Without `items`, it returns the item-agnostic controller used with `CalendarProvider` and `useCalendarView`.
 
-## Usage
-
-```tsx
-import { useCreateCalendar, CalendarProvider } from '@gobrand/react-calendar';
-import { Temporal } from '@js-temporal/polyfill';
-
-type Event = { id: string; title: string; date: string };
-
-const accessor = { getDate: (e: Event) => Temporal.PlainDate.from(e.date) };
-
-function App() {
-  const calendar = useCreateCalendar<Event>({
-    views: {
-      month: { accessor, weekStartsOn: 1 },
-    },
-  });
-
-  return (
-    <CalendarProvider calendar={calendar}>
-      <Toolbar />
-      <MonthGrid events={events} />
-    </CalendarProvider>
-  );
-}
-```
-
-## Parameters
-
-### `options`
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `views` | `CalendarViewOptions<TItem>` | Yes | View configurations. At least one view required |
-| `timeZone` | `string` | No | IANA timezone identifier. Defaults to system timezone |
-| `state` | `Partial<CalendarState>` | No | Initial state override |
-| `onStateChange` | `(updater: Updater<CalendarState>) => void` | No | Callback when state changes |
-
-### View Options
-
-Each view accepts specific configuration:
-
-**Month View:**
-```tsx
-{
-  accessor: CalendarAccessor<TItem>;  // Required
-  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;  // 0 = Sunday (default)
-}
-```
-
-**Week View:**
-```tsx
-{
-  accessor: CalendarAccessor<TItem>;  // Required
-  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  startHour?: number;   // Default: 0
-  endHour?: number;     // Default: 24
-  slotDuration?: number; // Minutes, default: 60
-}
-```
-
-**Day View:**
-```tsx
-{
-  accessor: CalendarAccessor<TItem>;  // Required
-  startHour?: number;   // Default: 0
-  endHour?: number;     // Default: 24
-  slotDuration?: number; // Minutes, default: 60
-}
-```
-
-## Returns
-
-Returns a [`Calendar`](/docs/api/calendar-instance) instance with methods conditional on configured views.
-
-## Type Safety
-
-TypeScript ensures you can only use views you've configured:
-
-```tsx
-const calendar = useCreateCalendar<Event>({
-  views: {
-    month: { accessor },
-  },
-});
-
-calendar.setCurrentView('month'); // OK
-calendar.setCurrentView('week');  // TypeScript Error - week not configured
-```
-
-## State Management
-
-The hook manages calendar state internally, but you can control it externally:
-
-```tsx
-const [state, setState] = useState<CalendarState>();
-
-const calendar = useCreateCalendar<Event>({
-  views: { month: { accessor } },
-  state,
-  onStateChange: setState,
-});
-```
-
-## Timezone Support
-
-```tsx
-const calendar = useCreateCalendar<Event>({
-  timeZone: 'America/New_York',
-  views: { month: { accessor } },
-});
-
-// dateRange provides ZonedDateTime boundaries for data fetching
-const { start, end } = calendar.dateRange;
-// start: 2025-01-01T00:00:00-05:00[America/New_York]
-```
-
-## Multi-View Configuration
-
-```tsx
-const calendar = useCreateCalendar<Event>({
-  views: {
-    month: { accessor, weekStartsOn: 1 },
-    week: { accessor, startHour: 0, endHour: 24, slotDuration: 60 },
-    day: { accessor, startHour: 0, endHour: 24, slotDuration: 30 },
-  },
-});
-
-// Switch between views
-calendar.setCurrentView('week');
-
-// Navigate based on current view
-calendar.next();     // Goes to next week
-calendar.previous(); // Goes to previous week
-```
+Controlled props are `date`/`onDateChange` and `view`/`onViewChange`; uncontrolled initial props are `defaultDate` and `defaultView`.

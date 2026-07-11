@@ -82,6 +82,7 @@ export function buildDay<T>(
   }
 
   return {
+    view: 'day',
     id: dateStr,
     date,
     isToday: Temporal.PlainDate.compare(date, today) === 0,

@@ -37,15 +37,12 @@ if [[ -n $(git status -s) ]]; then
   exit 1
 fi
 
-# Make sure we're on main branch
+# Release from the branch being reviewed. The tag is what triggers the
+# publish workflow, so there is no reason to silently push a different branch.
 CURRENT_BRANCH=$(git branch --show-current)
-if [ "$CURRENT_BRANCH" != "main" ]; then
-  echo -e "${YELLOW}Warning: You are on branch '$CURRENT_BRANCH', not 'main'${NC}"
-  read -p "Continue anyway? (y/N) " -n 1 -r
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    exit 1
-  fi
+if [ -z "$CURRENT_BRANCH" ]; then
+  echo -e "${RED}Error: Could not determine the current branch${NC}"
+  exit 1
 fi
 
 echo -e "${GREEN}Starting release process...${NC}"
@@ -111,7 +108,7 @@ echo -e "${GREEN}Version bumped to v$NEW_VERSION${NC}"
 
 # Push commit first
 echo "Pushing commit to GitHub..."
-git push origin main
+git push origin "$CURRENT_BRANCH"
 
 # Then push tag separately to ensure it triggers CI
 echo "Pushing tag to GitHub..."

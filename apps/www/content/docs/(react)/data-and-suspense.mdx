@@ -1,0 +1,50 @@
+---
+title: Data and Suspense
+description: Keep controls interactive while each calendar view owns its query and item type.
+---
+
+The controller is item-agnostic, so it can live above a Suspense boundary before any records exist.
+
+```tsx
+function Calendar() {
+  const calendar = useCreateCalendar({
+    views: { month: true, week: true },
+  })
+
+  return (
+    <CalendarProvider calendar={calendar}>
+      <CalendarControls />
+      <Suspense fallback={<CalendarSkeleton />}>
+        <ActiveView />
+      </Suspense>
+    </CalendarProvider>
+  )
+}
+```
+
+`CalendarControls` stays mounted while the active child suspends. The child reads the visible query range and projects the returned records:
+
+```tsx
+function MonthView() {
+  const calendar = useCalendar()
+  const { start, end } = calendar.visibleRange
+  const { data } = useSuspenseQuery({
+    queryKey: ['events', start.toString(), end.toString()],
+    queryFn: () => fetchEvents(start, end),
+  })
+
+  const month = useCalendarView({
+    view: 'month',
+    items: data.events,
+    getDate: event => event.date,
+  })
+
+  return <MonthGrid month={month} />
+}
+```
+
+<CalendarPreview name="multi-view" />
+
+## Independent record types
+
+Each literal `useCalendarView` call infers its own item type. A month can project compact summary rows while a week projects full meetings with start times. The controller and context do not carry either generic.

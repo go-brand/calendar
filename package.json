@@ -10,6 +10,9 @@
     "build": "pnpm -r run build",
     "test": "pnpm --filter \"./packages/*\" run test",
     "typecheck": "pnpm -r run typecheck",
+    "lint": "oxlint packages/core/src packages/react/src scripts apps/www/src --react-plugin --deny-warnings",
+    "format:check": "oxfmt --check packages/core/src/core/calendar.ts packages/core/src/core/projections.ts packages/core/src/index.ts packages/core/src/types.ts packages/core/src/utils/dateRanges.ts packages/react/src/index.ts packages/react/tsup.config.ts scripts/generate-docs.ts scripts/verify-packages.ts",
+    "verify:packages": "tsx scripts/verify-packages.ts",
     "release": "bash scripts/release.sh",
     "generate:docs": "tsx scripts/generate-docs.ts"
   },

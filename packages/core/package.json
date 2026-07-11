@@ -1,6 +1,6 @@
 {
   "name": "@gobrand/calendar-core",
-  "version": "0.0.24",
+  "version": "0.1.0",
   "description": "Lightweight utility library for building calendars using the Temporal API",
   "private": false,
   "publishConfig": {
@@ -42,10 +42,12 @@
     "@tanstack/store": "^0.11.0"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.0.17",
+    "@fast-check/vitest": "^0.4.1",
+    "@vitest/coverage-v8": "^4.1.9",
+    "fast-check": "^4.8.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.3",
-    "vitest": "^2.1.8"
+    "vitest": "^4.1.9"
   },
   "keywords": [
     "temporal",

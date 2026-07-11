@@ -81,7 +81,7 @@ describe('buildMonth', () => {
   });
 
   it('should handle week starting on Sunday', () => {
-    const result = buildMonth(2024, 1, { weekStartsOn: 0 });
+    const result = buildMonth(2024, 1, { weekStartsOn: 7 });
     const firstWeek = result.weeks[0];
     const firstDay = firstWeek[0];
     expect(firstDay.date.dayOfWeek % 7).toBe(0);
@@ -241,12 +241,12 @@ describe('buildMonth', () => {
   });
 
   it('should handle different week start days correctly', () => {
-    const weekStarts = [0, 1, 2, 3, 4, 5, 6] as const;
+    const weekStarts = [1, 2, 3, 4, 5, 6, 7] as const;
 
     weekStarts.forEach((weekStart) => {
       const result = buildMonth(2024, 1, { weekStartsOn: weekStart });
       const firstDay = result.weeks[0][0];
-      expect(firstDay.date.dayOfWeek % 7).toBe(weekStart);
+      expect(firstDay.date.dayOfWeek).toBe(weekStart);
     });
   });
 
@@ -258,12 +258,12 @@ describe('buildMonth', () => {
     }
   });
 
-  it('should not add an extra week after the month ends when last day completes the week (weekStartsOn: 0)', () => {
-    // January 2026 with Sunday start (weekStartsOn: 0)
+  it('should not add an extra week after the month ends when last day completes the week (weekStartsOn: 7)', () => {
+    // January 2026 with Sunday start (weekStartsOn: 7)
     // Jan 1, 2026 is Thursday - grid starts Sunday Dec 28, 2025
     // Jan 31, 2026 is Saturday - this completes the 5th week
     // Bug: code was adding a 6th week (Feb 1-7) unnecessarily
-    const result = buildMonth(2026, 1, { weekStartsOn: 0 });
+    const result = buildMonth(2026, 1, { weekStartsOn: 7 });
 
     // Should have exactly 5 weeks, not 6
     expect(result.weeks.length).toBe(5);

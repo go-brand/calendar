@@ -15,7 +15,7 @@ import { getWeekdays } from '@gobrand/calendar-core';
 getWeekdays();
 // ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
-getWeekdays(0);                    // Sunday start
+getWeekdays(7);                    // Sunday start
 // ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 getWeekdays(1, 'es-ES');           // Spanish
@@ -24,14 +24,14 @@ getWeekdays(1, 'es-ES');           // Spanish
 getWeekdays(1, 'en-US', 'long');   // Full names
 // ["Monday", "Tuesday", ...]
 
-getWeekdays(0, 'en-US', 'narrow'); // Single letter
+getWeekdays(7, 'en-US', 'narrow'); // Single letter
 // ["S", "M", "T", "W", "T", "F", "S"]
 ```
 
 **Signature:**
 ```typescript
 function getWeekdays(
-  weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6, // Default: 1 (Monday)
+  weekStartsOn?: 1 | 2 | 3 | 4 | 5 | 6 | 7, // Temporal: 1 (Monday) through 7 (Sunday)
   locale?: string | string[],                // Default: 'en-US'. Array for fallback locales
   format?: 'long' | 'short' | 'narrow'       // Default: 'short'
 ): string[];

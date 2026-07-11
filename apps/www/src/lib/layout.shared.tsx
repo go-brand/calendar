@@ -6,11 +6,11 @@ export function baseOptions(): BaseLayoutProps {
       title: (
         <span className="flex items-center gap-2">
           <span
-            className="inline-block w-4 h-4 rounded"
-            style={{
-              background: 'linear-gradient(135deg, #0ea5e9, #22d3ee)',
-            }}
-          />
+            aria-hidden="true"
+            className="inline-grid h-5 w-7 place-items-center rounded border border-cyan-300/40 bg-cyan-300/10 font-mono text-[10px] font-semibold tracking-[-0.15em] text-cyan-200"
+          >
+            [ )
+          </span>
           GoBrand Calendar
         </span>
       ),

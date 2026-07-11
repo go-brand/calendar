@@ -1,11 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill';
-import type { CalendarAccessor, CalendarMonth, CalendarWeek } from '../types';
+import type { CalendarAccessor, CalendarMonth, CalendarWeek, Weekday } from '../types';
 
 export function buildMonth<T>(
   year: number,
   month: number,
   options?: {
-    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    weekStartsOn?: Weekday;
     today?: Temporal.PlainDate;
     data?: T[];
     accessor?: CalendarAccessor<T>;
@@ -71,6 +71,7 @@ export function buildMonth<T>(
   }
 
   return {
+    view: 'month',
     weeks,
     month: yearMonth,
   };

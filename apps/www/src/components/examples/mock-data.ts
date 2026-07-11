@@ -99,7 +99,7 @@ export async function fetchEvents(
     const date = Temporal.PlainDate.from(e.date);
     return (
       Temporal.PlainDate.compare(date, start.toPlainDate()) >= 0 &&
-      Temporal.PlainDate.compare(date, end.toPlainDate()) <= 0
+      Temporal.PlainDate.compare(date, end.toPlainDate()) < 0
     );
   });
 }

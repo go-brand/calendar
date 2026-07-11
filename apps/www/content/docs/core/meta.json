@@ -9,11 +9,8 @@
     "installation",
     "---API Reference---",
     "create-calendar",
-    "accessors",
-    "---Standalone Functions---",
-    "build-month",
-    "build-week",
-    "build-day",
+    "projections",
+    "visible-ranges",
     "---Utilities---",
     "utilities"
   ]

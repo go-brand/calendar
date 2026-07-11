@@ -94,7 +94,7 @@ configuration.
 ```ts
 const calendar = createCalendar({
   views: {
-    month: {},
+    month: true,
     week: {
       dayStart: Temporal.PlainTime.from("08:00"),
       dayEnd: Temporal.PlainTime.from("18:00"),
@@ -130,7 +130,7 @@ contains item accessors.
 
 ```ts
 views: {
-  month: {},
+  month: true,
   week: {
     dayStart,
     dayEnd,
@@ -183,13 +183,13 @@ Visible ranges use half-open semantics:
 ```ts
 type VisibleRange = {
   start: Temporal.ZonedDateTime
-  endExclusive: Temporal.ZonedDateTime
+  end: Temporal.ZonedDateTime
 }
 ```
 
-`start` is inclusive. `endExclusive` is the start of the first date after the
+`start` is inclusive. `end` is the start of the first date after the
 visible interval. This preserves Temporal precision and maps directly to queries
-using `>= start` and `< endExclusive`.
+using `>= start` and `< end`.
 
 All range construction, default dates, `today()`, and `isToday` flags use the
 controller's configured timezone. No calendar behavior relies on the host
@@ -204,8 +204,8 @@ The common case uses one hook. Item and view types are inferred from values.
 ```tsx
 const calendar = useCreateCalendar({
   views: {
-    month: {},
-    week: {},
+    month: true,
+    week: true,
   },
   items: events,
   getDate: event => event.date,
@@ -245,8 +245,8 @@ Advanced mode creates the controller above Suspense without items.
 ```tsx
 const calendar = useCreateCalendar({
   views: {
-    month: {},
-    week: {},
+    month: true,
+    week: true,
   },
   date,
   timeZone,
@@ -464,7 +464,7 @@ The design is complete when all of the following are true:
 4. Context exposes no item generic.
 5. Controlled props synchronize on rerender without effects in consumer code.
 6. All today/range calculations honor the configured timezone.
-7. Visible ranges are half-open and use `endExclusive`.
+7. Visible ranges are half-open and use `end`.
 8. The demo, docs, agent examples, and emitted package fixtures compile.
 9. Existing invariant and DST tests remain green.
 10. The published React entry preserves `"use client"` and excludes test

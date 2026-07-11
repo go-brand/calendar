@@ -39,8 +39,17 @@ jobs:
       - name: Type check
         run: pnpm typecheck
 
+      - name: Lint
+        run: pnpm lint
+
+      - name: Check formatting
+        run: pnpm format:check
+
       - name: Run tests
         run: pnpm test --run
+
+      - name: Verify packed packages
+        run: pnpm verify:packages
 
   publish:
     needs: test

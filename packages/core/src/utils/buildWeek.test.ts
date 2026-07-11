@@ -35,9 +35,9 @@ describe('buildWeek', () => {
     expect(result.days[0].date.dayOfWeek).toBe(1);
   });
 
-  it('should start week on Sunday when weekStartsOn is 0', () => {
+  it('should start week on Sunday when weekStartsOn is 7', () => {
     const date = Temporal.PlainDate.from('2024-01-15'); // Monday
-    const result = buildWeek(date, { weekStartsOn: 0 });
+    const result = buildWeek(date, { weekStartsOn: 7 });
     expect(result.weekStart.dayOfWeek % 7).toBe(0);
     expect(result.days[0].date.dayOfWeek % 7).toBe(0);
   });
@@ -170,12 +170,12 @@ describe('buildWeek', () => {
 
   it('should handle different week start days', () => {
     const date = Temporal.PlainDate.from('2024-01-15'); // Monday
-    const weekStarts = [0, 1, 2, 3, 4, 5, 6] as const;
+    const weekStarts = [1, 2, 3, 4, 5, 6, 7] as const;
 
     weekStarts.forEach((weekStart) => {
       const result = buildWeek(date, { weekStartsOn: weekStart });
       expect(result.days).toHaveLength(7);
-      expect(result.days[0].date.dayOfWeek % 7).toBe(weekStart);
+      expect(result.days[0].date.dayOfWeek).toBe(weekStart);
     });
   });
 

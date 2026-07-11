@@ -1,0 +1,22 @@
+---
+title: useCalendarView
+description: Project view-local data through the item-agnostic calendar controller.
+---
+
+`useCalendarView` reads the controller from context unless `calendar` is passed explicitly. Its item type is inferred independently on every call.
+
+```tsx
+function WeekContent() {
+  const { data } = useSuspenseQuery(eventsQuery)
+  const week = useCalendarView({
+    view: 'week',
+    items: data.events,
+    getDate: event => event.startsAt.toPlainDate(),
+    getStart: event => event.startsAt,
+  })
+
+  return week.days.map(day => <div key={day.id}>{day.items.length}</div>)
+}
+```
+
+`getDate` is required when `items` is supplied. `getStart` is optional; without it, items remain on the day collection and are not assigned to timed slots.

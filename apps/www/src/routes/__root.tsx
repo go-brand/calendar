@@ -17,11 +17,16 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'GoBrand Calendar - Build calendars with Temporal API',
+        title: 'GoBrand Calendar — Temporal-first calendar engine',
       },
       {
         name: 'description',
-        content: 'A lightweight TypeScript library for building calendars using the Temporal API. Multi-view support, timezone-aware, fully type-safe.',
+        content:
+          'Build headless month, week, and day calendars with explicit timezone, DST, visible-range, and item-projection contracts powered by Temporal.',
+      },
+      {
+        name: 'theme-color',
+        content: '#121212',
       },
     ],
     links: [
@@ -47,7 +52,7 @@ function RootComponent() {
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     // Force dark theme by adding dark class and disabling theme switching
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="dark" style={{ colorScheme: 'dark' }} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

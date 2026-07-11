@@ -1,11 +1,11 @@
 import { Temporal } from '@js-temporal/polyfill';
-import type { CalendarAccessor, CalendarWeekView, WeekDay } from '../types';
+import type { CalendarAccessor, CalendarWeekView, Weekday } from '../types';
 import { buildDay } from './buildDay';
 
 export function buildWeek<T>(
   date: Temporal.PlainDate,
   options?: {
-    weekStartsOn?: 0 | 1 | 2 | 3 | 4 | 5 | 6;
+    weekStartsOn?: Weekday;
     startHour?: number;
     endHour?: number;
     slotDuration?: number;
@@ -38,7 +38,7 @@ export function buildWeek<T>(
   const daysToSubtract = (dayOfWeek - weekStartsOn + 7) % 7;
   const weekStart = date.subtract({ days: daysToSubtract });
 
-  const days: WeekDay<T>[] = [];
+  const days: CalendarWeekView<T>['days'] = [];
   for (let i = 0; i < 7; i++) {
     const currentDate = weekStart.add({ days: i });
     const dateKey = currentDate.toString();
@@ -68,6 +68,7 @@ export function buildWeek<T>(
   const weekEnd = weekStart.add({ days: 6 });
 
   return {
+    view: 'week',
     days,
     weekStart,
     weekEnd,

@@ -1,0 +1,40 @@
+---
+title: Timezones and visible ranges
+description: Query half-open calendar ranges that remain correct across DST transitions.
+---
+
+Set the calendar timezone once:
+
+```tsx
+const calendar = useCreateCalendar({
+  views: { month: true, week: true },
+  timeZone: 'America/New_York',
+})
+```
+
+That timezone drives the initial date, `today()`, `isToday`, navigation ranges, and local-midnight boundaries. Calendar behavior does not fall back to the host timezone after a timezone is supplied.
+
+## Half-open query contract
+
+```ts
+type VisibleRange = {
+  start: Temporal.ZonedDateTime
+  end: Temporal.ZonedDateTime
+}
+```
+
+Use `>= start` and `< end`. Adjacent ranges meet without gaps or duplicate boundary records, and the code never has to invent the final nanosecond of a day.
+
+```ts
+const { start, end } = calendar.visibleRange
+
+await db.event.findMany({
+  where: {
+    startsAt: { gte: start.toInstant(), lt: end.toInstant() },
+  },
+})
+```
+
+## DST is calendar geometry
+
+A local calendar day may contain 23, 24, or 25 elapsed hours. Calendar constructs each boundary from its own local midnight rather than adding 24 hours to an instant.
