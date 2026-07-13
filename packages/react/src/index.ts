@@ -39,6 +39,7 @@ export * from '@gobrand/calendar-core';
 export type ContextCalendarController = {
   readonly date: Temporal.PlainDate;
   readonly view: ViewName;
+  readonly viewNames: readonly ViewName[];
   readonly views: Readonly<Partial<ResolvedViewConfig>>;
   readonly visibleRange: VisibleRange;
   title(

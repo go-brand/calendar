@@ -1,4 +1,4 @@
 {
   "title": "Examples",
-  "pages": ["basic-month", "week-view", "day-view", "multi-view"]
+  "pages": ["basic-month", "date-picker", "week-view", "day-view", "multi-view", "suspense-query"]
 }

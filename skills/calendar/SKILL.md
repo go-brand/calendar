@@ -31,47 +31,26 @@ const events: Event[] = [
   { id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() },
 ]
 
-const views = ['month', 'week', 'day'] as const
-
 function Calendar() {
   const calendar = useCreateCalendar({
-    views: { month: true, week: true, day: true },
+    views: { month: true },
     items: events,
     getDate: event => event.date,
   })
-  const view = calendar.activeView
+  const month = calendar.activeView
 
   return (
     <section>
       <button onClick={calendar.previous}>Previous</button>
       <button onClick={calendar.today}>Today</button>
       <button onClick={calendar.next}>Next</button>
-
-      {views.map(name => (
-        <button key={name} onClick={() => calendar.setView(name)}>
-          {name}
-        </button>
-      ))}
-
       <h2>{calendar.title()}</h2>
 
-      {view.view === 'month' && view.weeks.flat().map(day => (
+      {month.weeks.flat().map(day => (
         <div key={day.id}>
           {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
         </div>
       ))}
-
-      {view.view === 'week' && view.days.map(day => (
-        <div key={day.id}>
-          {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
-        </div>
-      ))}
-
-      {view.view === 'day' && (
-        <div>
-          {view.date.toString()}: {view.items.map(event => event.title).join(', ')}
-        </div>
-      )}
     </section>
   )
 }
@@ -100,9 +79,11 @@ When each view fetches its own data, keep the controller above the Suspense boun
 | `View Models` | Discriminated month, week, and day models with locally inferred items. |
 | `Range and Configuration Types` | Public types for configured views, geometry, and half-open query ranges. |
 | `Month View` | A complete month with navigation and events. |
+| `Date Picker` | Select a date in a month without event data or accessors. |
 | `Week View` | Build a simple week or add explicit time slots. |
 | `Day View` | A day timeline with explicit Temporal time slots. |
 | `Multi-View Calendar` | One calendar that switches between month, week, and day. |
+| `Suspense Query` | Keep month navigation available while its events load. |
 
 ## Core
 
@@ -116,9 +97,9 @@ When each view fetches its own data, keep the controller above the Suspense boun
 
 ## Key Types
 
-- `CalendarController<TViews>` contains the current date and view, resolved view configuration, visible range, title, navigation methods, setters, and `subscribe`.
+- `CalendarController<TViews>` contains the current date and view, typed `viewNames`, resolved view configuration, visible range, title, navigation methods, setters, and `subscribe`.
 - `VisibleRange` contains `start` and `end` as `Temporal.ZonedDateTime` values in the controller timezone.
-- `MonthView<TItem>`, `WeekView<TItem>`, and `DayView<TItem>` are discriminated by their `view` field.
+- `MonthView<TItem>`, `WeekView<TItem>`, and `DayView<TItem>` are discriminated by their `name` field.
 - `NonEmptyCalendarViews` requires at least one of `month`, `week`, or `day`.
 
 ## Inference rules

@@ -9,7 +9,7 @@ export function buildMonth<T>(
     today?: Temporal.PlainDate;
     data?: T[];
     accessor?: CalendarAccessor<T>;
-  }
+  },
 ): CalendarMonth<T> {
   const weekStartsOn = options?.weekStartsOn ?? 1;
   const today = options?.today ?? Temporal.Now.plainDateISO();
@@ -71,6 +71,7 @@ export function buildMonth<T>(
   }
 
   return {
+    name: 'month',
     view: 'month',
     weeks,
     month: yearMonth,

@@ -17,7 +17,6 @@ export function BasicMonthExample() {
     views: { month: true },
     items: events,
     getDate: accessor.getDate,
-    getStart: accessor.getStart,
   });
   const month = calendar.activeView;
 

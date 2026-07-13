@@ -12,7 +12,7 @@ export function buildWeek<T>(
     today?: Temporal.PlainDate;
     data?: T[];
     accessor?: CalendarAccessor<T>;
-  }
+  },
 ): CalendarWeekView<T> {
   const weekStartsOn = options?.weekStartsOn ?? 1;
   const startHour = options?.startHour;
@@ -22,7 +22,8 @@ export function buildWeek<T>(
   const data = options?.data ?? [];
   const accessor = options?.accessor;
 
-  const hasTimeSlots = startHour !== undefined && endHour !== undefined && slotDuration !== undefined;
+  const hasTimeSlots =
+    startHour !== undefined && endHour !== undefined && slotDuration !== undefined;
 
   const itemsByDate = new Map<string, T[]>();
   if (accessor) {
@@ -68,6 +69,7 @@ export function buildWeek<T>(
   const weekEnd = weekStart.add({ days: 6 });
 
   return {
+    name: 'week',
     view: 'week',
     days,
     weekStart,

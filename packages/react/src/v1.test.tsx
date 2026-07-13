@@ -3,12 +3,7 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { Suspense } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import {
-  CalendarProvider,
-  useCalendar,
-  useCalendarView,
-  useCreateCalendar,
-} from './index';
+import { CalendarProvider, useCalendar, useCalendarView, useCreateCalendar } from './index';
 
 const july = Temporal.PlainDate.from('2026-07-10');
 const august = Temporal.PlainDate.from('2026-08-10');
@@ -23,6 +18,7 @@ describe('calendar v1 React API', () => {
     );
 
     expect(result.current.views).toEqual({ month: {}, week: {} });
+    expect(result.current.viewNames).toEqual(['month', 'week']);
   });
 
   it('infers simple-mode items and updates activeView after navigation', () => {
@@ -36,16 +32,17 @@ describe('calendar v1 React API', () => {
       }),
     );
 
-    expect(result.current.activeView.view).toBe('month');
+    expect(result.current.activeView.name).toBe('month');
+    expect(result.current.activeView.view).toBe(result.current.activeView.name);
     expect(
-      result.current.activeView.view === 'month'
+      result.current.activeView.name === 'month'
         ? result.current.activeView.weeks.flatMap((week) => week.flatMap((day) => day.items))
         : [],
     ).toHaveLength(1);
 
     act(() => result.current.next());
     expect(result.current.date.toString()).toBe('2026-08-10');
-    expect(result.current.activeView.view).toBe('month');
+    expect(result.current.activeView.name).toBe('month');
   });
 
   it('reflects controlled date, view, timezone, and geometry on rerender', () => {
@@ -80,9 +77,10 @@ describe('calendar v1 React API', () => {
       },
     );
 
-    expect(result.current.activeView.view).toBe('week');
-    expect(result.current.activeView.view === 'week' && result.current.activeView.days[0].timeSlots)
-      .toHaveLength(4);
+    expect(result.current.activeView.name).toBe('week');
+    expect(
+      result.current.activeView.name === 'week' && result.current.activeView.days[0].timeSlots,
+    ).toHaveLength(4);
 
     rerender({
       date: august,
@@ -132,8 +130,8 @@ describe('calendar v1 React API', () => {
       { wrapper },
     ).result.current;
 
-    expect(month.view).toBe('month');
-    expect(week.view).toBe('week');
+    expect(month.name).toBe('month');
+    expect(week.name).toBe('week');
   });
 
   it('keeps controls mounted while a child view suspends', () => {

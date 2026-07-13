@@ -122,6 +122,9 @@ export function createCalendar<const TViews extends NonEmptyCalendarViews>(
     get view() {
       return view;
     },
+    get viewNames() {
+      return configuredViews;
+    },
     get views() {
       return views;
     },

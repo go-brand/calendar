@@ -9,49 +9,26 @@ type Event = {
 
 const events: Event[] = [{ id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() }];
 
-const views = ['month', 'week', 'day'] as const;
-
 export function Calendar() {
   const calendar = useCreateCalendar({
-    views: { month: true, week: true, day: true },
+    views: { month: true },
     items: events,
     getDate: (event) => event.date,
   });
-  const view = calendar.activeView;
+  const month = calendar.activeView;
 
   return (
     <section>
       <button onClick={calendar.previous}>Previous</button>
       <button onClick={calendar.today}>Today</button>
       <button onClick={calendar.next}>Next</button>
-
-      {views.map((name) => (
-        <button key={name} onClick={() => calendar.setView(name)}>
-          {name}
-        </button>
-      ))}
-
       <h2>{calendar.title()}</h2>
 
-      {view.view === 'month' &&
-        view.weeks.flat().map((day) => (
-          <div key={day.id}>
-            {day.date.toString()}: {day.items.map((event) => event.title).join(', ')}
-          </div>
-        ))}
-
-      {view.view === 'week' &&
-        view.days.map((day) => (
-          <div key={day.id}>
-            {day.date.toString()}: {day.items.map((event) => event.title).join(', ')}
-          </div>
-        ))}
-
-      {view.view === 'day' && (
-        <div>
-          {view.date.toString()}: {view.items.map((event) => event.title).join(', ')}
+      {month.weeks.flat().map((day) => (
+        <div key={day.id}>
+          {day.date.toString()}: {day.items.map((event) => event.title).join(', ')}
         </div>
-      )}
+      ))}
     </section>
   );
 }

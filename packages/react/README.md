@@ -23,62 +23,40 @@ const events: Event[] = [
   { id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() },
 ]
 
-const views = ['month', 'week', 'day'] as const
-
 function Calendar() {
   const calendar = useCreateCalendar({
-    views: { month: true, week: true, day: true },
+    views: { month: true },
     items: events,
     getDate: event => event.date,
   })
-  const view = calendar.activeView
+  const month = calendar.activeView
 
   return (
     <section>
       <button onClick={calendar.previous}>Previous</button>
       <button onClick={calendar.today}>Today</button>
       <button onClick={calendar.next}>Next</button>
-
-      {views.map(name => (
-        <button key={name} onClick={() => calendar.setView(name)}>
-          {name}
-        </button>
-      ))}
-
       <h2>{calendar.title()}</h2>
 
-      {view.view === 'month' && view.weeks.map(week => (
-        <div key={week[0].id}>
-          {week.map(day => (
-            <div key={day.id}>
-              {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
-            </div>
-          ))}
-        </div>
-      ))}
-
-      {view.view === 'week' && view.days.map(day => (
+      {month.weeks.flat().map(day => (
         <div key={day.id}>
           {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
         </div>
       ))}
-
-      {view.view === 'day' && (
-        <div>
-          {view.date.toString()}: {view.items.map(event => event.title).join(', ')}
-        </div>
-      )}
     </section>
   )
 }
 ```
 
-[See the complete styled, runnable month/week/day example](https://eng.gobrand.app/calendar/docs/examples/multi-view).
+[See the complete styled month example](https://eng.gobrand.app/calendar/docs/examples/basic-month).
+
+Add week or day views when you need them. Timed views can also receive a `getStart` accessor for
+placing events into time slots. [See the multi-view example](https://eng.gobrand.app/calendar/docs/examples/multi-view).
 
 ## Using Suspense
 
-If each view fetches its own data, put the controller and controls above the Suspense boundary.
-Then call `useCalendarView` inside the view after its data is ready. [See the complete Suspense example](https://eng.gobrand.app/calendar/docs/data-and-suspense).
+If a view fetches its own data, put the controller and controls above the Suspense boundary. Then
+call `useCalendarView` after the data is ready. [See the complete Suspense example](https://eng.gobrand.app/calendar/docs/data-and-suspense).
 
 React 18 and 19 are supported. [Read the documentation](https://eng.gobrand.app/calendar/docs).
 

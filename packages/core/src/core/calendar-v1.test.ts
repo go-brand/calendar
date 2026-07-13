@@ -5,11 +5,12 @@ import { createCalendar } from './calendar';
 describe('calendar v1 controller', () => {
   it('normalizes true view shorthand to canonical object configs', () => {
     const calendar = createCalendar({
-      views: { month: true, week: true },
+      views: { week: true, month: true },
       defaultView: 'month',
     });
 
-    expect(calendar.views).toEqual({ month: {}, week: {} });
+    expect(calendar.views).toEqual({ week: {}, month: {} });
+    expect(calendar.viewNames).toEqual(['week', 'month']);
     calendar.setView('week');
     expect(calendar.view).toBe('week');
   });
@@ -93,9 +94,9 @@ describe('calendar v1 controller', () => {
     expect(() => createCalendar({ views: {} } as never)).toThrow(
       'Calendar requires at least one configured view',
     );
-    expect(() =>
-      createCalendar({ views: { month: true }, defaultView: 'week' } as never),
-    ).toThrow('Calendar view "week" is not configured');
+    expect(() => createCalendar({ views: { month: true }, defaultView: 'week' } as never)).toThrow(
+      'Calendar view "week" is not configured',
+    );
     expect(() => createCalendar({ views: { month: false } } as never)).toThrow(
       'Calendar view "month" must be true or an options object',
     );

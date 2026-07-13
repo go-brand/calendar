@@ -1,6 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill';
 import {
   CalendarProvider,
+  type MonthView,
   buildMonthView,
   buildWeekView,
   createCalendar,
@@ -11,6 +12,12 @@ import {
 
 const date = Temporal.PlainDate.from('2026-07-10');
 const posts = [{ id: 'post', date }];
+const manuallyConstructedMonth: MonthView = {
+  name: 'month',
+  view: 'month',
+  month: Temporal.PlainYearMonth.from('2026-07'),
+  weeks: [],
+};
 
 function SimpleCalendar() {
   const calendar = useCreateCalendar({
@@ -24,9 +31,11 @@ function SimpleCalendar() {
   // @ts-expect-error day was not configured
   calendar.setView('day');
 
-  if (calendar.activeView.view === 'month') {
+  if (calendar.activeView.name === 'month') {
     calendar.activeView.weeks.flatMap((week) => week.flatMap((day) => day.items[0]?.id));
   }
+
+  calendar.viewNames.map((name) => calendar.setView(name));
 
   return <CalendarProvider calendar={calendar}>{calendar.title('en-US')}</CalendarProvider>;
 }
@@ -52,7 +61,13 @@ function ContextConsumer() {
     getStart: (event) => event.startsAt,
   });
 
-  return <>{calendar.view}{month.weeks.length}{week.days.length}</>;
+  return (
+    <>
+      {calendar.view}
+      {month.weeks.length}
+      {week.days.length}
+    </>
+  );
 }
 
 const controller = createCalendar({ views: { month: true, week: true }, date });
@@ -84,3 +99,4 @@ useCreateCalendar({ views: { month: true }, items: posts });
 
 void SimpleCalendar;
 void ContextConsumer;
+void manuallyConstructedMonth;

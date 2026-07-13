@@ -53,6 +53,7 @@ export type CalendarOptions<TViews extends NonEmptyCalendarViews> = {
 export type CalendarController<TViews extends NonEmptyCalendarViews = NonEmptyCalendarViews> = {
   readonly date: Temporal.PlainDate;
   readonly view: ConfiguredView<TViews>;
+  readonly viewNames: readonly ConfiguredView<TViews>[];
   readonly views: ResolvedCalendarViews<TViews>;
   readonly visibleRange: VisibleRange;
   title(
@@ -78,6 +79,8 @@ export type CalendarDay<TItem = never> = {
 export type CalendarWeek<TItem = never> = CalendarDay<TItem>[];
 
 export type MonthView<TItem = never> = {
+  name: 'month';
+  /** @deprecated Use `name`. */
   view: 'month';
   weeks: CalendarWeek<TItem>[];
   month: Temporal.PlainYearMonth;
@@ -102,6 +105,8 @@ export type WeekDay<TItem = never> = {
 };
 
 export type WeekView<TItem = never> = {
+  name: 'week';
+  /** @deprecated Use `name`. */
   view: 'week';
   days: WeekDay<TItem>[];
   weekStart: Temporal.PlainDate;
@@ -109,6 +114,8 @@ export type WeekView<TItem = never> = {
 };
 
 export type CalendarWeekView<TItem = never> = {
+  name: 'week';
+  /** @deprecated Use `name`. */
   view: 'week';
   days: Array<Omit<WeekDay<TItem>, 'timeSlots'> & { timeSlots?: TimeSlot<TItem>[] }>;
   weekStart: Temporal.PlainDate;
@@ -116,6 +123,8 @@ export type CalendarWeekView<TItem = never> = {
 };
 
 export type DayView<TItem = never> = {
+  name: 'day';
+  /** @deprecated Use `name`. */
   view: 'day';
   id: string;
   date: Temporal.PlainDate;

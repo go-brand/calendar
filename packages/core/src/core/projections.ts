@@ -137,7 +137,7 @@ export function buildMonthView<TItem>(
     current = current.add({ weeks: 1 });
   }
 
-  return { view: 'month', month, weeks };
+  return { name: 'month', view: 'month', month, weeks };
 }
 
 export function buildWeekView<TViews extends NonEmptyCalendarViews, TItem>(
@@ -174,6 +174,7 @@ export function buildWeekView<TItem>(
   }
 
   return {
+    name: 'week',
     view: 'week',
     days,
     weekStart,
@@ -199,6 +200,7 @@ export function buildDayView<TItem>(
   const dayItems = grouped.get(date.toString()) ?? [];
 
   return {
+    name: 'day',
     view: 'day',
     id: date.toString(),
     date,

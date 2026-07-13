@@ -3,6 +3,6 @@ title: Calendar Controller
 description: Item-agnostic calendar state, navigation, and visible query range.
 ---
 
-`CalendarController<TViews>` exposes `date`, `view`, `views`, `visibleRange`, `title`, `setDate`, `setView`, `next`, `previous`, `today`, and `subscribe`.
+`CalendarController<TViews>` exposes `date`, `view`, typed `viewNames`, resolved `views`, `visibleRange`, `title`, `setDate`, `setView`, `next`, `previous`, `today`, and `subscribe`.
 
 Direct controllers preserve the exact configured-view union. Context exposes the honest built-in `ViewName` boundary because distant consumers cannot infer the provider's exact value.

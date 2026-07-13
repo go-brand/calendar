@@ -34,9 +34,11 @@ temporal-calendar provides type-safe calendar building blocks using the modern T
 ### Examples
 
 - [Month View](https://eng.gobrand.app/calendar/docs/examples/basic-month): A complete month with navigation and events.
+- [Date Picker](https://eng.gobrand.app/calendar/docs/examples/date-picker): Select a date in a month without event data or accessors.
 - [Week View](https://eng.gobrand.app/calendar/docs/examples/week-view): Build a simple week or add explicit time slots.
 - [Day View](https://eng.gobrand.app/calendar/docs/examples/day-view): A day timeline with explicit Temporal time slots.
 - [Multi-View Calendar](https://eng.gobrand.app/calendar/docs/examples/multi-view): One calendar that switches between month, week, and day.
+- [Suspense Query](https://eng.gobrand.app/calendar/docs/examples/suspense-query): Keep month navigation available while its events load.
 
 ## Core
 

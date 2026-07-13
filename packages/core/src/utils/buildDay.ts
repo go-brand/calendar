@@ -10,7 +10,7 @@ export function buildDay<T>(
     today?: Temporal.PlainDate;
     data?: T[];
     accessor?: CalendarAccessor<T>;
-  }
+  },
 ): CalendarDayView<T> {
   const startHour = options?.startHour ?? 0;
   const endHour = options?.endHour ?? 24;
@@ -56,9 +56,10 @@ export function buildDay<T>(
         const slotEnd = Temporal.PlainTime.from({ hour: slotEndHour, minute: slotEndMinute });
 
         const isAfterStart = Temporal.PlainTime.compare(itemTime, slotStart) >= 0;
-        const isBeforeEnd = nextHour >= 24
-          ? Temporal.PlainTime.compare(itemTime, slotEnd) > 0
-          : Temporal.PlainTime.compare(itemTime, slotEnd) < 0;
+        const isBeforeEnd =
+          nextHour >= 24
+            ? Temporal.PlainTime.compare(itemTime, slotEnd) > 0
+            : Temporal.PlainTime.compare(itemTime, slotEnd) < 0;
 
         if (isAfterStart && isBeforeEnd) {
           slotItems.push(item);
@@ -82,6 +83,7 @@ export function buildDay<T>(
   }
 
   return {
+    name: 'day',
     view: 'day',
     id: dateStr,
     date,

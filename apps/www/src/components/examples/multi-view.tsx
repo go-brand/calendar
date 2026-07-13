@@ -1,16 +1,11 @@
 'use client';
 
-import { Suspense } from 'react';
 import {
-  CalendarProvider,
-  type DayView as DayViewModel,
-  type MonthView as MonthViewModel,
-  type WeekView as WeekViewModel,
-  useCalendar,
-  useCalendarView,
+  type DayView,
+  type MonthView,
+  type WeekView,
   useCreateCalendar,
 } from '@gobrand/react-calendar';
-import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   Button,
   Calendar,
@@ -21,21 +16,16 @@ import {
   CalendarToolbar,
   CalendarWeekdays,
 } from './calendar-ui';
-import { accessor, type Event, fetchEvents } from './mock-data';
+import { accessor, events, type Event } from './mock-data';
 
 export function MultiViewExample() {
   const calendar = useCreateCalendar({
     views: { month: true, week: true, day: true },
+    items: events,
+    getDate: accessor.getDate,
   });
-  return (
-    <CalendarProvider calendar={calendar}>
-      <MultiViewCalendar />
-    </CalendarProvider>
-  );
-}
+  const view = calendar.activeView;
 
-function MultiViewCalendar() {
-  const calendar = useCalendar();
   return (
     <Calendar size="month">
       <CalendarToolbar
@@ -45,47 +35,23 @@ function MultiViewCalendar() {
         onPrevious={calendar.previous}
         onNext={calendar.next}
       >
-        {(Object.keys(calendar.views) as (keyof typeof calendar.views)[]).map((view) => (
-          <Button key={view} active={calendar.view === view} onClick={() => calendar.setView(view)}>
-            {view[0].toUpperCase() + view.slice(1)}
+        {calendar.viewNames.map((name) => (
+          <Button key={name} active={calendar.view === name} onClick={() => calendar.setView(name)}>
+            {name[0].toUpperCase() + name.slice(1)}
           </Button>
         ))}
       </CalendarToolbar>
       {calendar.view !== 'day' && (
         <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
       )}
-      <Suspense fallback={<div>Loading…</div>}>
-        <ViewContent />
-      </Suspense>
+      {view.name === 'month' && <MonthCalendar month={view} />}
+      {view.name === 'week' && <WeekCalendar week={view} />}
+      {view.name === 'day' && <DayCalendar day={view} />}
     </Calendar>
   );
 }
 
-function ViewContent() {
-  const calendar = useCalendar();
-  const { start, end } = calendar.visibleRange;
-  const { data: events } = useSuspenseQuery({
-    queryKey: ['events', start.toString(), end.toString()],
-    queryFn: () => fetchEvents(start, end),
-  });
-  const view = useCalendarView({
-    view: calendar.view,
-    items: events,
-    getDate: accessor.getDate,
-    getStart: accessor.getStart,
-  });
-
-  switch (view.view) {
-    case 'month':
-      return <MonthView month={view} />;
-    case 'week':
-      return <WeekView week={view} />;
-    case 'day':
-      return <DayView day={view} />;
-  }
-}
-
-function MonthView({ month }: { month: MonthViewModel<Event> }) {
+function MonthCalendar({ month }: { month: MonthView<Event> }) {
   return (
     <CalendarGrid>
       {month.weeks.map((week) => (
@@ -108,7 +74,7 @@ function MonthView({ month }: { month: MonthViewModel<Event> }) {
   );
 }
 
-function WeekView({ week }: { week: WeekViewModel<Event> }) {
+function WeekCalendar({ week }: { week: WeekView<Event> }) {
   return (
     <CalendarGrid>
       <CalendarRow>
@@ -124,7 +90,7 @@ function WeekView({ week }: { week: WeekViewModel<Event> }) {
   );
 }
 
-function DayView({ day }: { day: DayViewModel<Event> }) {
+function DayCalendar({ day }: { day: DayView<Event> }) {
   return (
     <CalendarGrid>
       <CalendarCell date={day.date} today={day.isToday}>

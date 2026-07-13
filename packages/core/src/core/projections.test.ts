@@ -41,9 +41,7 @@ describe('calendar v1 projections', () => {
       items: [{ id: 'summary', date: Temporal.PlainDate.from('2026-07-10') }],
       getDate: (item) => item.date,
     });
-    const startsAt = Temporal.ZonedDateTime.from(
-      '2026-07-10T08:30:00-03:00[America/Asuncion]',
-    );
+    const startsAt = Temporal.ZonedDateTime.from('2026-07-10T08:30:00-03:00[America/Asuncion]');
     const week = buildWeekView({
       calendar,
       items: [{ id: 42, startsAt }],
@@ -51,11 +49,11 @@ describe('calendar v1 projections', () => {
       getStart: (item) => item.startsAt,
     });
 
-    expect(month.view).toBe('month');
+    expect(month).toMatchObject({ name: 'month', view: 'month' });
     expect(month.weeks.flatMap((days) => days.flatMap((day) => day.items))).toEqual([
       { id: 'summary', date: Temporal.PlainDate.from('2026-07-10') },
     ]);
-    expect(week.view).toBe('week');
+    expect(week).toMatchObject({ name: 'week', view: 'week' });
     expect(week.days.flatMap((day) => day.timeSlots).flatMap((slot) => slot.items)).toEqual([
       { id: 42, startsAt },
     ]);
@@ -68,6 +66,7 @@ describe('calendar v1 projections', () => {
       getDate: (item) => item.date,
     });
 
+    expect(day).toMatchObject({ name: 'day', view: 'day' });
     expect(day.items).toHaveLength(1);
     expect(day.timeSlots).toHaveLength(4);
     expect(day.timeSlots.flatMap((slot) => slot.items)).toEqual([]);
@@ -92,9 +91,9 @@ describe('calendar v1 projections', () => {
   });
 
   it('rejects items without getDate for JavaScript consumers', () => {
-    expect(() =>
-      buildMonthView({ calendar, items: [{}] } as never),
-    ).toThrow('getDate is required when items are supplied');
+    expect(() => buildMonthView({ calendar, items: [{}] } as never)).toThrow(
+      'getDate is required when items are supplied',
+    );
   });
 
   it('rejects projections for views that are not configured', () => {
