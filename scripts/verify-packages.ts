@@ -47,12 +47,17 @@ try {
     react: '19',
     typescript: '5.7',
   };
-  manifest.pnpm = {
-    overrides: {
-      '@gobrand/calendar-core': `file:${coreTarball}`,
-    },
-  };
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFileSync(
+    join(consumerDirectory, 'pnpm-workspace.yaml'),
+    [
+      'overrides:',
+      `  '@gobrand/calendar-core': 'file:${coreTarball}'`,
+      'minimumReleaseAgeExclude:',
+      `  - '@gobrand/calendar-core@${coreVersion}'`,
+      '',
+    ].join('\n'),
+  );
   run('pnpm', ['install'], consumerDirectory);
   run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.json'], consumerDirectory);
   run(
