@@ -34,7 +34,7 @@ Write one concrete `Event` array and a `Calendar` component. Configure `views: {
 
 - [ ] **Step 2: Add exact documentation links**
 
-Link the runnable example to `https://eng.gobrand.app/calendar/docs/examples/multi-view` and the optional Suspense guide to `https://eng.gobrand.app/calendar/docs/data-and-suspense`.
+Link the runnable example to `https://calendar.gobrand.app/docs/examples/multi-view` and the optional Suspense guide to `https://calendar.gobrand.app/docs/data-and-suspense`.
 
 - [ ] **Step 3: Verify package-facing content**
 

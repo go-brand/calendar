@@ -31,7 +31,7 @@
   "bugs": {
     "url": "https://github.com/go-brand/calendar/issues"
   },
-  "homepage": "https://eng.gobrand.app/calendar",
+  "homepage": "https://calendar.gobrand.app",
   "scripts": {
     "build": "tsup",
     "test": "vitest",

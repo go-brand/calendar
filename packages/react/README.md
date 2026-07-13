@@ -48,16 +48,16 @@ function Calendar() {
 }
 ```
 
-[See the complete styled month example](https://eng.gobrand.app/calendar/docs/examples/basic-month).
+[See the complete styled month example](https://calendar.gobrand.app/docs/examples/basic-month).
 
 Add week or day views when you need them. Timed views can also receive a `getStart` accessor for
-placing events into time slots. [See the multi-view example](https://eng.gobrand.app/calendar/docs/examples/multi-view).
+placing events into time slots. [See the multi-view example](https://calendar.gobrand.app/docs/examples/multi-view).
 
 ## Using Suspense
 
 If a view fetches its own data, put the controller and controls above the Suspense boundary. Then
-call `useCalendarView` after the data is ready. [See the complete Suspense example](https://eng.gobrand.app/calendar/docs/data-and-suspense).
+call `useCalendarView` after the data is ready. [See the complete Suspense example](https://calendar.gobrand.app/docs/data-and-suspense).
 
-React 18 and 19 are supported. [Read the documentation](https://eng.gobrand.app/calendar/docs).
+React 18 and 19 are supported. [Read the documentation](https://calendar.gobrand.app/docs).
 
 MIT © [Ruben Costa](https://x.com/PonziChad) / [Go Brand](https://gobrand.app)

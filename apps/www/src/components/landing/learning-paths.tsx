@@ -19,7 +19,7 @@ const paths = [
     label: 'Agent context',
     title: 'Give your agent the contract',
     body: 'Canonical examples, public types, range semantics, and decision rules in one file.',
-    href: 'https://eng.gobrand.app/calendar/llms.txt',
+    href: 'https://calendar.gobrand.app/llms.txt',
     external: true,
   },
 ] as const;

@@ -10,7 +10,7 @@ pnpm install
 pnpm --filter @gobrand/calendar-docs dev
 ```
 
-Open [http://127.0.0.1:3000/calendar/](http://127.0.0.1:3000/calendar/).
+Open [http://127.0.0.1:3000/](http://127.0.0.1:3000/).
 
 Documentation lives in `apps/www/content/docs`. Runnable React examples live in
 `apps/www/src/components/examples`; the preview shows those exact source files.

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://calendar.gobrand.app/</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/installation</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/first-calendar</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/data-and-suspense</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/timezones-and-ranges</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/controlled-state</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/api/use-create-calendar</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/api/use-calendar</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/api/use-calendar-view</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/api/calendar-provider</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/types/calendar</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/types/views</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/types/helpers</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/examples/basic-month</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/examples/date-picker</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/examples/week-view</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/examples/day-view</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/examples/multi-view</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/examples/suspense-query</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/core</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/core/installation</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/core/create-calendar</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/core/projections</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/core/visible-ranges</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/core/utilities</loc></url>
+  <url><loc>https://calendar.gobrand.app/llms.txt</loc></url>
+  <url><loc>https://calendar.gobrand.app/llms-full.txt</loc></url>
+  <url><loc>https://calendar.gobrand.app/.well-known/agent-skills/index.json</loc></url>
+  <url><loc>https://calendar.gobrand.app/.well-known/agent-skills/calendar/SKILL.md</loc></url>
+</urlset>

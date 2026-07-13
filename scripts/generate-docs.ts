@@ -11,11 +11,19 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { createHash } from 'node:crypto';
 
 const DOCS_DIR = 'apps/www/content/docs';
 const LLMS_TXT_PATH = 'apps/www/public/llms.txt';
+const LLMS_FULL_TXT_PATH = 'apps/www/public/llms-full.txt';
+const ROBOTS_TXT_PATH = 'apps/www/public/robots.txt';
+const SITEMAP_XML_PATH = 'apps/www/public/sitemap.xml';
 const SKILL_MD_PATH = 'skills/calendar/SKILL.md';
-const BASE_URL = 'https://eng.gobrand.app/calendar/docs';
+const PUBLISHED_SKILL_PATH = 'apps/www/public/.well-known/agent-skills/calendar/SKILL.md';
+const SKILL_INDEX_PATH = 'apps/www/public/.well-known/agent-skills/index.json';
+const AGENT_MARKDOWN_PATH = 'apps/www/src/generated/agent-markdown.ts';
+const SITE_URL = 'https://calendar.gobrand.app';
+const BASE_URL = `${SITE_URL}/docs`;
 
 interface DocFile {
   slug: string;
@@ -24,6 +32,7 @@ interface DocFile {
   title: string;
   description: string;
   urlPath: string;
+  body: string;
 }
 
 interface MetaJson {
@@ -55,6 +64,10 @@ function parseMdxFrontmatter(content: string): Record<string, string> {
   }
 
   return frontmatter;
+}
+
+function stripMdxFrontmatter(content: string): string {
+  return content.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();
 }
 
 /**
@@ -114,9 +127,6 @@ function loadDocFiles(): DocFile[] {
     const pages = loadPagesFromMeta(categoryMetaPath);
 
     for (const pagePath of pages) {
-      // Skip index pages for llms.txt
-      if (pagePath === 'index' || pagePath.endsWith('/index')) continue;
-
       const mdxPath = path.join(categoryDir, `${pagePath}.mdx`);
       if (!fs.existsSync(mdxPath)) {
         console.warn(`Warning: ${mdxPath} not found`);
@@ -128,7 +138,13 @@ function loadDocFiles(): DocFile[] {
 
       // Parenthesized directories are route groups and do not appear in public URLs.
       const urlCategory = category.startsWith('(') && category.endsWith(')') ? '' : category;
-      const urlPath = [urlCategory, pagePath].filter(Boolean).join('/');
+      const routePath = [urlCategory, pagePath].filter(Boolean).join('/');
+      const urlPath =
+        routePath === 'index'
+          ? ''
+          : routePath.endsWith('/index')
+            ? routePath.slice(0, -'/index'.length)
+            : routePath;
 
       // Determine subcategory from path (e.g., "api/use-calendar" -> "api")
       const subcategory = pagePath.includes('/') ? pagePath.split('/')[0] : undefined;
@@ -140,6 +156,7 @@ function loadDocFiles(): DocFile[] {
         title: frontmatter.title || pagePath,
         description: frontmatter.description || '',
         urlPath,
+        body: stripMdxFrontmatter(content),
       });
     }
   }
@@ -159,6 +176,11 @@ function generateLlmsTxt(docs: DocFile[]): void {
     '> A lightweight utility library for building calendar UIs with the Temporal API.',
     '',
     'temporal-calendar provides type-safe calendar building blocks using the modern Temporal API. It supports month, week, and day views with timezone awareness, DST-safe operations, an item-agnostic controller, and locally inferred view projections.',
+    '',
+    '## Complete reference',
+    '',
+    `- [Complete documentation](${SITE_URL}/llms-full.txt): All Calendar documentation in one Markdown document`,
+    `- [Calendar agent skill](${SITE_URL}/.well-known/agent-skills/calendar/SKILL.md): Reusable instructions for agents building Calendar interfaces`,
     '',
     '## Docs',
     '',
@@ -209,7 +231,7 @@ function generateLlmsTxt(docs: DocFile[]): void {
 /**
  * Generate SKILL.md
  */
-function generateSkillMd(docs: DocFile[]): void {
+function generateSkillMd(docs: DocFile[]): string {
   console.log('Generating SKILL.md...');
 
   const lines: string[] = [
@@ -275,7 +297,7 @@ function generateSkillMd(docs: DocFile[]): void {
     '',
     'When each view fetches its own data, keep the controller above the Suspense boundary and call `useCalendarView` after the data is ready.',
     '',
-    '[See the complete Suspense example](https://eng.gobrand.app/calendar/docs/data-and-suspense).',
+    '[See the complete Suspense example](https://calendar.gobrand.app/docs/data-and-suspense).',
     '',
   ];
 
@@ -364,6 +386,135 @@ function generateSkillMd(docs: DocFile[]): void {
   fs.mkdirSync(skillDir, { recursive: true });
   fs.writeFileSync(SKILL_MD_PATH, content);
   console.log(`  ✓ ${SKILL_MD_PATH}`);
+  return content;
+}
+
+function writeGenerated(file: string, content: string): void {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, content);
+  console.log(`  ✓ ${file}`);
+}
+
+function markdownForDoc(doc: DocFile): string {
+  const route = `/docs${doc.urlPath ? `/${doc.urlPath}` : ''}`;
+  const lines = [`# ${doc.title}`, ''];
+
+  if (doc.description) {
+    lines.push(`> ${doc.description}`, '');
+  }
+
+  lines.push(`Canonical: ${SITE_URL}${route}`, '', doc.body, '');
+  return lines.join('\n');
+}
+
+function generateAgentMarkdown(docs: DocFile[]): Readonly<Record<string, string>> {
+  const markdownByPath: Record<string, string> = {
+    '/': [
+      '# temporal-calendar',
+      '',
+      '> Temporal-first building blocks for month, week, and day calendar interfaces.',
+      '',
+      `Canonical: ${SITE_URL}/`,
+      '',
+      `Read the documentation at ${SITE_URL}/docs.`,
+      '',
+    ].join('\n'),
+  };
+
+  for (const doc of docs) {
+    const route = `/docs${doc.urlPath ? `/${doc.urlPath}` : ''}`;
+    markdownByPath[route] = markdownForDoc(doc);
+  }
+
+  const moduleSource = [
+    '// Generated by scripts/generate-docs.ts. Do not edit.',
+    '',
+    `export const agentMarkdownByPath: Readonly<Record<string, string>> = ${JSON.stringify(markdownByPath, null, 2)};`,
+    '',
+  ].join('\n');
+  writeGenerated(AGENT_MARKDOWN_PATH, moduleSource);
+
+  return markdownByPath;
+}
+
+function generateLlmsFull(markdownByPath: Readonly<Record<string, string>>): void {
+  const docs = Object.entries(markdownByPath)
+    .filter(([route]) => route.startsWith('/docs'))
+    .map(([, markdown]) => markdown.trim());
+  const content = [
+    '# temporal-calendar',
+    '',
+    '> Complete documentation for the Temporal-first Calendar packages.',
+    '',
+    ...docs.flatMap((markdown) => [markdown, '', '---', '']),
+  ].join('\n');
+
+  writeGenerated(LLMS_FULL_TXT_PATH, content);
+}
+
+function generateRobotsTxt(): void {
+  const bots = [
+    '*',
+    'GPTBot',
+    'OAI-SearchBot',
+    'Claude-Web',
+    'Google-Extended',
+    'Amazonbot',
+    'anthropic-ai',
+    'Bytespider',
+    'CCBot',
+    'Applebot-Extended',
+  ];
+  const lines = bots.flatMap((bot) => [
+    `User-agent: ${bot}`,
+    'Allow: /',
+    'Content-Signal: ai-train=no, search=yes, ai-input=yes',
+    '',
+  ]);
+  lines.push(`Sitemap: ${SITE_URL}/sitemap.xml`, '');
+
+  writeGenerated(ROBOTS_TXT_PATH, lines.join('\n'));
+}
+
+function generateSitemap(markdownByPath: Readonly<Record<string, string>>): void {
+  const routes = new Set([
+    ...Object.keys(markdownByPath),
+    '/llms.txt',
+    '/llms-full.txt',
+    '/.well-known/agent-skills/index.json',
+    '/.well-known/agent-skills/calendar/SKILL.md',
+  ]);
+  const urls = [...routes].map((route) => `  <url><loc>${SITE_URL}${route}</loc></url>`).join('\n');
+  const content = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    urls,
+    '</urlset>',
+    '',
+  ].join('\n');
+
+  writeGenerated(SITEMAP_XML_PATH, content);
+}
+
+function publishAgentSkill(skill: string): void {
+  writeGenerated(PUBLISHED_SKILL_PATH, skill);
+
+  const digest = createHash('sha256').update(skill).digest('hex');
+  const index = {
+    $schema: 'https://schemas.agentskills.io/discovery/0.2.0/schema.json',
+    skills: [
+      {
+        name: 'calendar',
+        type: 'skill-md',
+        description:
+          'Build Temporal-first month, week, and day calendar interfaces with @gobrand/calendar-core and @gobrand/react-calendar.',
+        url: '/.well-known/agent-skills/calendar/SKILL.md',
+        digest: `sha256:${digest}`,
+      },
+    ],
+  };
+
+  writeGenerated(SKILL_INDEX_PATH, `${JSON.stringify(index, null, 2)}\n`);
 }
 
 /**
@@ -375,12 +526,20 @@ function main(): void {
   console.log('─'.repeat(50));
 
   const docs = loadDocFiles();
+  const referenceDocs = docs.filter((doc) => doc.slug !== 'index');
   console.log(`\nFound ${docs.length} doc files\n`);
 
-  generateLlmsTxt(docs);
+  generateLlmsTxt(referenceDocs);
   console.log('');
 
-  generateSkillMd(docs);
+  const skill = generateSkillMd(referenceDocs);
+  console.log('');
+
+  const markdownByPath = generateAgentMarkdown(docs);
+  generateLlmsFull(markdownByPath);
+  generateRobotsTxt();
+  generateSitemap(markdownByPath);
+  publishAgentSkill(skill);
   console.log('');
 
   console.log('─'.repeat(50));

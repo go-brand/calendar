@@ -7,7 +7,7 @@ import tailwindcss from '@tailwindcss/vite';
 import mdx from 'fumadocs-mdx/vite';
 
 export default defineConfig({
-  base: '/calendar/',
+  base: '/',
   server: {
     port: 3000,
   },

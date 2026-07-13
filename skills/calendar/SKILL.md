@@ -60,7 +60,7 @@ function Calendar() {
 
 When each view fetches its own data, keep the controller above the Suspense boundary and call `useCalendarView` after the data is ready.
 
-[See the complete Suspense example](https://eng.gobrand.app/calendar/docs/data-and-suspense).
+[See the complete Suspense example](https://calendar.gobrand.app/docs/data-and-suspense).
 
 ## React
 

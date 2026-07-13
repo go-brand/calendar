@@ -5,7 +5,6 @@ import { NotFound } from '@/components/not-found';
 export function getRouter() {
   return createTanStackRouter({
     routeTree,
-    basepath: '/calendar',
     defaultPreload: 'intent',
     scrollRestoration: true,
     defaultNotFoundComponent: NotFound,

@@ -1,13 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "calendar-docs",
-  "main": "@tanstack/react-start/server-entry",
-  "compatibility_date": "2025-01-23",
+  "main": "./src/server.ts",
+  "compatibility_date": "2026-01-20",
   "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "dist/client",
     "binding": "ASSETS",
-    "serve_directly": true
+    "run_worker_first": ["/", "/docs", "/docs/*", "/api/*"]
   },
   "observability": {
     "enabled": true
@@ -15,12 +15,8 @@
   "workers_dev": false,
   "routes": [
     {
-      "pattern": "eng.gobrand.app/calendar",
-      "zone_name": "gobrand.app"
-    },
-    {
-      "pattern": "eng.gobrand.app/calendar/*",
-      "zone_name": "gobrand.app"
+      "pattern": "calendar.gobrand.app",
+      "custom_domain": true
     }
   ]
 }

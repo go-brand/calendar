@@ -2,8 +2,8 @@
 
 ## Goal
 
-Move the Calendar website to `https://calendar.gobrand.app`, remove the old
-`eng.gobrand.app/calendar` deployment completely, and make the documentation
+Move the Calendar website to `https://calendar.gobrand.app`, remove the former
+shared-host deployment completely, and make the documentation
 site as agent-ready as its real capabilities justify.
 
 ## Decisions
@@ -12,8 +12,7 @@ site as agent-ready as its real capabilities justify.
 - The site is served from the hostname root. Documentation lives under `/docs`,
   not `/calendar/docs`.
 - The Cloudflare Worker uses a Custom Domain for `calendar.gobrand.app`.
-- The old `eng.gobrand.app/calendar` and `eng.gobrand.app/calendar/*` Worker
-  routes are removed. They do not redirect.
+- The former shared-host Worker routes are removed. They do not redirect.
 - Every current Calendar URL reference in source, package metadata, READMEs,
   generated documentation, skills, and active project documentation is changed
   to the new hostname and root-based path.
@@ -95,7 +94,7 @@ produces no diff. Generated links use only `https://calendar.gobrand.app`.
 Tests are added before implementation for the behavior that can regress:
 
 - generated discovery files have valid structure and canonical new-domain URLs;
-- no generated artifact contains `eng.gobrand.app` or `/calendar/` site paths;
+- no generated artifact contains the former shared hostname or `/calendar/` site paths;
 - Markdown negotiation selects Markdown only when requested and preserves normal
   SSR behavior otherwise;
 - response headers include discovery links, `Vary: Accept`, and content signals;

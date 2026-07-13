@@ -203,7 +203,7 @@ Run targeted searches for the former shared hostname, `/calendar/`, old Worker r
 
 - [ ] **Step 3: Deploy the Worker**
 
-Run: `pnpm --filter @gobrand/calendar-docs deploy`
+Run: `pnpm --filter @gobrand/calendar-docs run deploy`
 
 Expected: Wrangler creates or updates the `calendar.gobrand.app` Custom Domain and reports a successful deployment.
 

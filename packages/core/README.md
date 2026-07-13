@@ -40,6 +40,6 @@ for (const day of month.weeks.flat()) {
 The controller owns the current date, active view, timezone-aware visible range, and navigation.
 `buildMonthView`, `buildWeekView`, and `buildDayView` add your events to the dates you render.
 
-[Read the Core documentation](https://eng.gobrand.app/calendar/docs/core).
+[Read the Core documentation](https://calendar.gobrand.app/docs/core).
 
 MIT © [Ruben Costa](https://x.com/PonziChad) / [Go Brand](https://gobrand.app)

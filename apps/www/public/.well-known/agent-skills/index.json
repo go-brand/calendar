@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "calendar",
+      "type": "skill-md",
+      "description": "Build Temporal-first month, week, and day calendar interfaces with @gobrand/calendar-core and @gobrand/react-calendar.",
+      "url": "/.well-known/agent-skills/calendar/SKILL.md",
+      "digest": "sha256:bfeafcf66f3f5cb56905725a064f358b7f708d77321f8435bc85cfdc2005aee9"
+    }
+  ]
+}

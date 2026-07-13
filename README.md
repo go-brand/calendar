@@ -6,7 +6,7 @@
 
 Headless month, week, and day calendars built directly on the Temporal API.
 
-[Read the documentation](https://eng.gobrand.app/calendar/docs).
+[Read the documentation](https://calendar.gobrand.app/docs).
 
 - `@gobrand/react-calendar` provides React state, context, and view hooks.
 - `@gobrand/calendar-core` provides the framework-independent controller and projections.
@@ -24,9 +24,9 @@ pnpm add @gobrand/calendar-core @js-temporal/polyfill
 
 ## Start here
 
-- [Build a React calendar](https://eng.gobrand.app/calendar/docs/first-calendar)
-- [Use Calendar Core](https://eng.gobrand.app/calendar/docs/core)
-- [Browse runnable examples](https://eng.gobrand.app/calendar/docs/examples/multi-view)
+- [Build a React calendar](https://calendar.gobrand.app/docs/first-calendar)
+- [Use Calendar Core](https://calendar.gobrand.app/docs/core)
+- [Browse runnable examples](https://calendar.gobrand.app/docs/examples/multi-view)
 
 ## License
 

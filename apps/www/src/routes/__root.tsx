@@ -31,11 +31,11 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
-      { rel: 'icon', type: 'image/svg+xml', href: '/calendar/favicon.svg' },
-      { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/calendar/favicon-96x96.png' },
-      { rel: 'shortcut icon', href: '/calendar/favicon.ico' },
-      { rel: 'apple-touch-icon', sizes: '180x180', href: '/calendar/apple-touch-icon.png' },
-      { rel: 'manifest', href: '/calendar/site.webmanifest' },
+      { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/favicon-96x96.png' },
+      { rel: 'shortcut icon', href: '/favicon.ico' },
+      { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+      { rel: 'manifest', href: '/site.webmanifest' },
     ],
   }),
   component: RootComponent,
@@ -74,7 +74,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             }}
             search={{
               options: {
-                api: '/calendar/api/search',
+                api: '/api/search',
               },
             }}
           >

@@ -197,7 +197,7 @@ Tiempo appears once after the Calendar boundary is clear:
 
 > Fighting timezone or DST bugs? Try `@gobrand/tiempo`—familiar, date-fns-style utilities built on Temporal for timezone-safe date math.
 
-The line links to `https://eng.gobrand.app/tiempo`. It does not appear inside Calendar code examples or installation commands.
+The line links to the `@gobrand/tiempo` npm package. It does not appear inside Calendar code examples or installation commands.
 
 ## Documentation structure
 

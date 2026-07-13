@@ -4,46 +4,51 @@
 
 temporal-calendar provides type-safe calendar building blocks using the modern Temporal API. It supports month, week, and day views with timezone awareness, DST-safe operations, an item-agnostic controller, and locally inferred view projections.
 
+## Complete reference
+
+- [Complete documentation](https://calendar.gobrand.app/llms-full.txt): All Calendar documentation in one Markdown document
+- [Calendar agent skill](https://calendar.gobrand.app/.well-known/agent-skills/calendar/SKILL.md): Reusable instructions for agents building Calendar interfaces
+
 ## Docs
 
-- [Introduction](https://eng.gobrand.app/calendar/docs): Overview of temporal-calendar and key features
-- [Core Installation](https://eng.gobrand.app/calendar/docs/core/installation): Getting started with @gobrand/calendar-core
-- [React Installation](https://eng.gobrand.app/calendar/docs/installation): Getting started with @gobrand/react-calendar
+- [Introduction](https://calendar.gobrand.app/docs): Overview of temporal-calendar and key features
+- [Core Installation](https://calendar.gobrand.app/docs/core/installation): Getting started with @gobrand/calendar-core
+- [React Installation](https://calendar.gobrand.app/docs/installation): Getting started with @gobrand/react-calendar
 
 ## React
 
-- [Installation](https://eng.gobrand.app/calendar/docs/installation): Get started with GoBrand React Calendar
-- [Your first calendar](https://eng.gobrand.app/calendar/docs/first-calendar): Build a navigable month with one hook.
-- [Data and Suspense](https://eng.gobrand.app/calendar/docs/data-and-suspense): Keep calendar controls available while a view loads its events.
-- [Timezones and visible ranges](https://eng.gobrand.app/calendar/docs/timezones-and-ranges): Query half-open calendar ranges that remain correct across DST transitions.
-- [Controlled state and routing](https://eng.gobrand.app/calendar/docs/controlled-state): Synchronize calendar date and view with URLs or external application state.
+- [Installation](https://calendar.gobrand.app/docs/installation): Get started with GoBrand React Calendar
+- [Your first calendar](https://calendar.gobrand.app/docs/first-calendar): Build a navigable month with one hook.
+- [Data and Suspense](https://calendar.gobrand.app/docs/data-and-suspense): Keep calendar controls available while a view loads its events.
+- [Timezones and visible ranges](https://calendar.gobrand.app/docs/timezones-and-ranges): Query half-open calendar ranges that remain correct across DST transitions.
+- [Controlled state and routing](https://calendar.gobrand.app/docs/controlled-state): Synchronize calendar date and view with URLs or external application state.
 
 ### Api
 
-- [useCreateCalendar](https://eng.gobrand.app/calendar/docs/api/use-create-calendar): Create a controlled or uncontrolled item-agnostic controller, with optional simple-mode data.
-- [useCalendar](https://eng.gobrand.app/calendar/docs/api/use-calendar): Read the item-agnostic calendar controller from context.
-- [useCalendarView](https://eng.gobrand.app/calendar/docs/api/use-calendar-view): Put events into one view from a shared calendar controller.
-- [CalendarProvider](https://eng.gobrand.app/calendar/docs/api/calendar-provider): Share one calendar controller with child components.
+- [useCreateCalendar](https://calendar.gobrand.app/docs/api/use-create-calendar): Create a controlled or uncontrolled item-agnostic controller, with optional simple-mode data.
+- [useCalendar](https://calendar.gobrand.app/docs/api/use-calendar): Read the item-agnostic calendar controller from context.
+- [useCalendarView](https://calendar.gobrand.app/docs/api/use-calendar-view): Put events into one view from a shared calendar controller.
+- [CalendarProvider](https://calendar.gobrand.app/docs/api/calendar-provider): Share one calendar controller with child components.
 
 ### Types
 
-- [Calendar Controller](https://eng.gobrand.app/calendar/docs/types/calendar): Item-agnostic calendar state, navigation, and visible query range.
-- [View Models](https://eng.gobrand.app/calendar/docs/types/views): Discriminated month, week, and day models with locally inferred items.
-- [Range and Configuration Types](https://eng.gobrand.app/calendar/docs/types/helpers): Public types for configured views, geometry, and half-open query ranges.
+- [Calendar Controller](https://calendar.gobrand.app/docs/types/calendar): Item-agnostic calendar state, navigation, and visible query range.
+- [View Models](https://calendar.gobrand.app/docs/types/views): Discriminated month, week, and day models with locally inferred items.
+- [Range and Configuration Types](https://calendar.gobrand.app/docs/types/helpers): Public types for configured views, geometry, and half-open query ranges.
 
 ### Examples
 
-- [Month View](https://eng.gobrand.app/calendar/docs/examples/basic-month): A complete month with navigation and events.
-- [Date Picker](https://eng.gobrand.app/calendar/docs/examples/date-picker): Select a date in a month without event data or accessors.
-- [Week View](https://eng.gobrand.app/calendar/docs/examples/week-view): Build a simple week or add explicit time slots.
-- [Day View](https://eng.gobrand.app/calendar/docs/examples/day-view): A day timeline with explicit Temporal time slots.
-- [Multi-View Calendar](https://eng.gobrand.app/calendar/docs/examples/multi-view): One calendar that switches between month, week, and day.
-- [Suspense Query](https://eng.gobrand.app/calendar/docs/examples/suspense-query): Keep month navigation available while its events load.
+- [Month View](https://calendar.gobrand.app/docs/examples/basic-month): A complete month with navigation and events.
+- [Date Picker](https://calendar.gobrand.app/docs/examples/date-picker): Select a date in a month without event data or accessors.
+- [Week View](https://calendar.gobrand.app/docs/examples/week-view): Build a simple week or add explicit time slots.
+- [Day View](https://calendar.gobrand.app/docs/examples/day-view): A day timeline with explicit Temporal time slots.
+- [Multi-View Calendar](https://calendar.gobrand.app/docs/examples/multi-view): One calendar that switches between month, week, and day.
+- [Suspense Query](https://calendar.gobrand.app/docs/examples/suspense-query): Keep month navigation available while its events load.
 
 ## Core
 
-- [Installation](https://eng.gobrand.app/calendar/docs/core/installation): Get started with GoBrand Calendar Core
-- [createCalendar](https://eng.gobrand.app/calendar/docs/core/create-calendar): Create an item-agnostic controller from a non-empty view configuration.
-- [View Projections](https://eng.gobrand.app/calendar/docs/core/projections): Build month, week, and day models from controller state and local data.
-- [Visible ranges](https://eng.gobrand.app/calendar/docs/core/visible-ranges): Understand Calendar's timezone-aware, half-open query boundary.
-- [Utilities](https://eng.gobrand.app/calendar/docs/core/utilities): Formatting, navigation, and timezone helpers
+- [Installation](https://calendar.gobrand.app/docs/core/installation): Get started with GoBrand Calendar Core
+- [createCalendar](https://calendar.gobrand.app/docs/core/create-calendar): Create an item-agnostic controller from a non-empty view configuration.
+- [View Projections](https://calendar.gobrand.app/docs/core/projections): Build month, week, and day models from controller state and local data.
+- [Visible ranges](https://calendar.gobrand.app/docs/core/visible-ranges): Understand Calendar's timezone-aware, half-open query boundary.
+- [Utilities](https://calendar.gobrand.app/docs/core/utilities): Formatting, navigation, and timezone helpers
