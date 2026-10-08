@@ -1,0 +1,188 @@
+[
+  {
+    "file": "README.md",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "packages/core/README.md",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "packages/react/README.md",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "skills/calendar/SKILL.md",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/api/calendar-provider.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/api/use-calendar-view.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/api/use-calendar.mdx",
+    "fence": 0,
+    "classification": "contextual",
+    "harness": "react-controller"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/api/use-create-calendar.mdx",
+    "fence": 0,
+    "classification": "contextual",
+    "harness": "react-items"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/controlled-state.mdx",
+    "fence": 0,
+    "classification": "contextual",
+    "harness": "routing"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/controlled-state.mdx",
+    "fence": 1,
+    "classification": "contextual",
+    "harness": "subscription"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/data-and-suspense.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/first-calendar.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/first-calendar.mdx",
+    "fence": 1,
+    "classification": "contextual",
+    "harness": "react-items"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/index.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/installation.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/timezones-and-ranges.mdx",
+    "fence": 0,
+    "classification": "contextual",
+    "harness": "react-controller"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/timezones-and-ranges.mdx",
+    "fence": 1,
+    "classification": "contextual",
+    "harness": "temporal-types"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/timezones-and-ranges.mdx",
+    "fence": 2,
+    "classification": "contextual",
+    "harness": "query"
+  },
+  {
+    "file": "apps/www/content/docs/(react)/timezones-and-ranges.mdx",
+    "fence": 3,
+    "classification": "complete",
+    "harness": "timezone"
+  },
+  {
+    "file": "apps/www/content/docs/core/create-calendar.mdx",
+    "fence": 0,
+    "classification": "contextual",
+    "harness": "create-core"
+  },
+  {
+    "file": "apps/www/content/docs/core/index.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/core/installation.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/core/projections.mdx",
+    "fence": 0,
+    "classification": "contextual",
+    "harness": "projections"
+  },
+  {
+    "file": "apps/www/content/docs/core/utilities.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/core/utilities.mdx",
+    "fence": 1,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/core/utilities.mdx",
+    "fence": 2,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/core/utilities.mdx",
+    "fence": 3,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/core/utilities.mdx",
+    "fence": 4,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/core/utilities.mdx",
+    "fence": 5,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/core/utilities.mdx",
+    "fence": 6,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
+    "file": "apps/www/content/docs/core/visible-ranges.mdx",
+    "fence": 0,
+    "classification": "contextual",
+    "harness": "core-controller"
+  }
+]
