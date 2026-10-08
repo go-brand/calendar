@@ -63,6 +63,7 @@ try {
     '@types/react': '19',
     react: '19.2.3',
     typescript: '5.7',
+    'typescript-targeted': 'npm:typescript@5.9.3',
   };
   manifest.devDependencies = {
     '@types/react-dom': '19',
@@ -105,6 +106,18 @@ try {
     ].join('\n'),
   );
   run('pnpm', ['install'], consumerDirectory);
+  run(
+    'node',
+    ['node_modules/typescript-targeted/bin/tsc', '-p', 'tsconfig.node16.json'],
+    consumerDirectory,
+  );
+  run(
+    'node',
+    ['node_modules/typescript-targeted/bin/tsc', '-p', 'tsconfig.nodenext.json'],
+    consumerDirectory,
+  );
+  run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.node16.json'], consumerDirectory);
+  run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.nodenext.json'], consumerDirectory);
   run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.json'], consumerDirectory);
   run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.examples.json'], consumerDirectory);
   const compiledFiles = execFileSync(
@@ -169,23 +182,84 @@ try {
   expectCompileFailure('examples/cn.ts', undefined, /Cannot find module.*cn/);
   run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.examples.json'], consumerDirectory);
   run('pnpm', ['exec', 'vitest', 'run', '--config', 'vitest.runtime.config.ts'], consumerDirectory);
-  run(
-    'node',
-    [
-      '--input-type=module',
-      '--eval',
-      "import('@gobrand/react-calendar').then((value) => { if (typeof value.useCreateCalendar !== 'function') process.exit(1) })",
-    ],
-    consumerDirectory,
-  );
-  run(
-    'node',
-    [
-      '--eval',
-      "const value = require('@gobrand/calendar-core'); if (typeof value.createCalendar !== 'function') process.exit(1)",
-    ],
-    consumerDirectory,
-  );
+  for (const format of ['import', 'require']) {
+    for (const name of ['@gobrand/calendar-core', '@gobrand/react-calendar']) {
+      const load = format === 'import' ? `await import('${name}')` : `require('${name}')`;
+      run(
+        'node',
+        [
+          '--input-type=' + (format === 'import' ? 'module' : 'commonjs'),
+          '--eval',
+          `
+        const assert = ${format === 'import' ? "(await import('node:assert/strict')).default" : "require('node:assert/strict')"};
+        const { Temporal } = ${format === 'import' ? "await import('@js-temporal/polyfill')" : "require('@js-temporal/polyfill')"};
+        const values = ${load};
+        const date = Temporal.PlainDate.from('2026-07-10');
+        const calendar = values.createCalendar({ views: { month: true }, date });
+        const month = values.buildMonthView({ calendar, items: [{ id: 'item', date }], getDate: item => item.date });
+        assert.equal(month.month.toString(), '2026-07');
+        assert.equal(month.weeks.flat().find(day => day.date.equals(date)).items[0].id, 'item');
+        calendar.next();
+        assert.equal(values.buildMonthView({ calendar }).month.toString(), '2026-08');
+      `,
+        ],
+        consumerDirectory,
+      );
+    }
+  }
+
+  function verifyPeer(directory: string, major: string) {
+    run(
+      'node',
+      [
+        '--input-type=module',
+        '--eval',
+        `
+      import assert from 'node:assert/strict';
+      import { createRequire } from 'node:module';
+      import { realpathSync } from 'node:fs';
+      const require = createRequire(import.meta.url);
+      const react = require.resolve('react');
+      for (const name of ['@gobrand/react-calendar', 'react-dom', '@testing-library/react']) {
+        assert.equal(realpathSync(createRequire(require.resolve(name)).resolve('react')), realpathSync(react));
+      }
+      for (const name of ['react', 'react-dom', '@types/react', '@types/react-dom']) {
+        assert.equal(require(name + '/package.json').version.split('.')[0], '${major}');
+      }
+    `,
+      ],
+      directory,
+    );
+    run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.peer.json'], directory);
+    run('pnpm', ['exec', 'vitest', 'run', '--config', 'vitest.peer.config.ts'], directory);
+  }
+  verifyPeer(consumerDirectory, '19');
+  const peerDirectory = join(temporaryRoot, 'react18');
+  mkdirSync(peerDirectory);
+  for (const file of [
+    'react-peer.test.tsx',
+    'tsconfig.peer.json',
+    'vitest.peer.config.ts',
+    'pnpm-workspace.yaml',
+  ]) {
+    cpSync(join(consumerDirectory, file), join(peerDirectory, file));
+  }
+  const peerManifest = {
+    ...manifest,
+    dependencies: {
+      '@gobrand/calendar-core': `file:${coreTarball}`,
+      '@gobrand/react-calendar': `file:${reactTarball}`,
+      '@js-temporal/polyfill': '0.5.1',
+      react: '18.3.1',
+      'react-dom': '18.3.1',
+      '@types/react': '18',
+      typescript: '5.7',
+    },
+    devDependencies: { ...manifest.devDependencies, '@types/react-dom': '18' },
+  };
+  writeFileSync(join(peerDirectory, 'package.json'), `${JSON.stringify(peerManifest, null, 2)}\n`);
+  run('pnpm', ['install'], peerDirectory);
+  verifyPeer(peerDirectory, '18');
 
   const coreValues: string[] = JSON.parse(
     execFileSync(
