@@ -2,7 +2,7 @@
 
 Audited on 2026-10-08 against commit `6d6decd` (`chore: upgrade to pnpm 11.12.0`).
 
-No existing implementation review file was present in the checkout. This document audits the seven findings and two smaller edge cases from the preceding chat review. No library implementation was changed.
+No existing implementation review file was present in the checkout. This document audits the seven findings and two smaller edge cases from the preceding chat review. No library implementation was changed during that audit. The subsequently approved fixes are now implemented on `codex/calendar-reliability`; see [implementation status and evidence](plans/README.md#implementation-evidence). The observations below describe the audited baseline, not the repaired branch.
 
 The observed behaviors reproduce. However, the original review overstated several findings as high-priority correctness bugs. A reproduction establishes behavior; the documented API contract and supported usage determine whether that behavior is a defect.
 

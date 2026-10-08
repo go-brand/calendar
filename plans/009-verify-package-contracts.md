@@ -1,6 +1,6 @@
 # Plan 009: Match emitted declarations to the supported module entrypoints
 
-- Status TODO; priority P2; effort S/M; risk low-medium; category distribution/types.
+- Status DONE; priority P2; effort S/M; risk low-medium; category distribution/types.
 - Planned at `6d6decd`, 2026-10-08. Depends on plan 006. Reconcile plan 007's expected verifier/fixture changes if already landed.
 - Suggested branch `codex/package-contracts`; conventional commits. No version bump or publication.
 - Drift check: `git diff --stat 6d6decd..HEAD -- packages/core/package.json packages/react/package.json packages/react/tsup.config.ts scripts/verify-packages.ts scripts/verify-packages.test.ts fixtures/package-consumer`. Preserve canonical example verification introduced by other plans.

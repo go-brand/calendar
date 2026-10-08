@@ -2,19 +2,29 @@
 
 ## Current direction review — 2026-10-08
 
-The [recursive decision record](2026-10-08-library-direction.md) assesses every finding from the October review against the existing headless, Temporal-first design and the goal of easy, reliable AI-assisted adoption. It records accepted remedies, counterarguments, rejected API expansion, and deferred edge cases. Plans below are recommendations, not implemented changes.
+The [recursive decision record](2026-10-08-library-direction.md) assesses every finding from the October review against the existing headless, Temporal-first design and the goal of easy, reliable AI-assisted adoption. It records accepted remedies, counterarguments, rejected API expansion, and deferred edge cases. The five plans have now been implemented on `codex/calendar-reliability`; the original decision record remains the rationale for their scope.
 
 | Plan | Outcome | Priority | Effort | Risk | Depends on | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| [006](006-restore-verification.md) | Compatible tooling, full runtime coverage, docs/release verification | P1 | S | Medium | — | TODO |
-| [007](007-trustworthy-agent-docs.md) | Truthful public guidance and usable, checked example source | P1 | M | Medium | 006 | TODO |
-| [008](008-preserve-react-composition.md) | Bounded core/React interoperability repairs | P2 | M | Medium | 006 | TODO |
-| [009](009-verify-package-contracts.md) | Correct dual-format declarations and packed-consumer contracts | P2 | S/M | Low–medium | 006 | TODO |
-| [010](010-public-behavior-and-learning-checks.md) | Public projection laws; optional bounded learning evaluation | P2 / experiment | M | Low | 006; compare docs around 007 | TODO |
+| [006](006-restore-verification.md) | Compatible tooling, full runtime coverage, docs/release verification | P1 | S | Medium | — | IMPLEMENTED — local Node 20/22 passed; remote CI pending |
+| [007](007-trustworthy-agent-docs.md) | Truthful public guidance and usable, checked example source | P1 | M | Medium | 006 | DONE |
+| [008](008-preserve-react-composition.md) | Bounded core/React interoperability repairs | P2 | M | Medium | 006 | DONE |
+| [009](009-verify-package-contracts.md) | Correct dual-format declarations and packed-consumer contracts | P2 | S/M | Low–medium | 006 | DONE |
+| [010](010-public-behavior-and-learning-checks.md) | Public projection laws; optional bounded learning evaluation | P2 / experiment | M | Low | 006; compare docs around 007 | DONE — deterministic checks; model evaluation not run |
 
-Execute 006 first. 007–009 are independently deliverable, but 007 and 009 share the package verifier and must preserve each other's checks. 008 has its own regression and characterization tests; 010 must not delay a proven fix. The learning evaluation is optional and must be reported separately from deterministic verification.
+Execution followed 006 first. 007–009 are independently deliverable, but 007 and 009 share the package verifier and must preserve each other's checks. 008 has its own regression and characterization tests; 010 must not delay a proven fix. The learning evaluation is optional and must be reported separately from deterministic verification.
 
-The user requested autonomous recursive selection, so these five bounded plans were selected by evidence and value rather than expanding every review point into a task. No implementation, deployment, release, or paid evaluation occurred in this planning pass.
+The user requested autonomous recursive selection, so these five bounded plans were selected by evidence and value rather than expanding every review point into a task. The planning pass made no implementation changes. Subsequent execution implemented the five selected plans; no deployment, release, push, or paid evaluation was performed.
+
+### Implementation evidence
+
+- Verification restored with pnpm 11.13.1, frozen installs, generated-document checks, and isolated release-gate tests. Local Node 20/22 verification passes; actual GitHub Actions/Linux execution remains unverified.
+- All seven preview names publish complete source bundles. The consumer verifier compiles 31 exact published snippets and 10 source files against tarballs, checks deliberate invalid cases, and runs 10 example integration checks.
+- Core builders accept the React item-bearing wrapper. External controllers update React consumers, with controlled-state, StrictMode, Suspense transition, subscription cleanup, and hydration regressions.
+- ESM/CommonJS exports select matching declarations. Packed checks explicitly assert TypeScript 5.7.3 and 5.9.3 and use isolated React 18/19 consumers.
+- Public projection laws pass and detected a deliberate exclusive-boundary mutation. Package tests total 189 (162 core, 27 React); docs checks total 25. The [five learning tasks](evaluations/public-calendar-learning.md) are defined; actual model sample size is 0.
+
+Existing host-tool deprecation and website bundle-size advisories remain. These checks do not establish an AI recommendation ranking. Unchanged public APIs, caller-owned timezone normalization, and per-render React controller lifetimes remain intentional.
 
 ### Considered and rejected or deferred
 

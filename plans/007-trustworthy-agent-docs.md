@@ -1,6 +1,6 @@
 # Plan 007: Make agent-facing documentation truthful and examples usable
 
-- Status TODO; priority P1; effort M; risk medium; category docs/DX.
+- Status DONE; priority P1; effort M; risk medium; category docs/DX.
 - Planned at `6d6decd`, 2026-10-08. Depends on plan 006 for working verification.
 - Suggested branch `codex/trustworthy-agent-docs`; conventional commits. No deployment or package release.
 - Drift check: `git diff --stat 6d6decd..HEAD -- apps/www/content/docs apps/www/src/components/examples apps/www/src/lib/cn.ts scripts/generate-docs.ts scripts/generate-docs.test.ts scripts/verify-packages.ts fixtures/package-consumer skills/calendar README.md packages/core/README.md packages/react/README.md CLAUDE.md`. Reconcile plan 006's expected tooling changes; compare all other changes with the evidence below.

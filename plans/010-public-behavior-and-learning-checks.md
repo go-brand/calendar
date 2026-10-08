@@ -1,6 +1,6 @@
 # Plan 010: Verify public calendar behavior and measure learning success
 
-- Status TODO; priority P2 for public behavior coverage, optional experiment for model evaluation; effort M; risk low; category tests/direction.
+- Status DONE for deterministic checks and evaluation definitions; model runs not executed; priority P2 for public behavior coverage, optional experiment for model evaluation; effort M; risk low; category tests/direction.
 - Planned at `6d6decd`, 2026-10-08. Depends on plan 006. Fixes in 007–009 carry their own regressions and do not wait for this plan. Run a before/after learning comparison around 007 when practical.
 - Suggested branch `codex/public-calendar-laws`; conventional commits. No production/API changes, deployments, or automatic paid model calls.
 - Drift check: `git diff --stat 6d6decd..HEAD -- packages/core/src/invariants.test.ts packages/core/src/core/projections.test.ts packages/core/src/index.ts packages/react/src/v1.test.tsx fixtures/package-consumer`. Reconcile expected predecessor tests rather than duplicating them.

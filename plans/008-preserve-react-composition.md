@@ -1,6 +1,6 @@
 # Plan 008: Repair React composition without replacing its state model
 
-- Status TODO; priority P2; effort M; risk medium; category correctness.
+- Status DONE; priority P2; effort M; risk medium; category correctness.
 - Planned at `6d6decd`, 2026-10-08. Depends on plan 006. Plan 007 may land independently; synchronize final public wording.
 - Suggested branch `codex/react-composition`; conventional commits. No publishing or broad refactor.
 - Drift check: `git diff --stat 6d6decd..HEAD -- packages/core/src/core/calendar.ts packages/core/src/core/projections.ts packages/react/src/index.ts packages/react/src/v1.test.tsx packages/core/src/core/projections.test.ts`. Compare current behavior with the excerpts below; account for completed predecessor plans.

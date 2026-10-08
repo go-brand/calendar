@@ -285,7 +285,9 @@ describe('dateRange invariants', () => {
 });
 
 // Minute-aligned, positive intraday geometry; no calendar units or >24-hour durations.
-const minuteRangeArb = fc.tuple(fc.integer({ min: 0, max: 1380 }), fc.integer({ min: 1, max: 59 }));
+const minuteRangeArb = fc
+  .integer({ min: 0, max: 1380 })
+  .chain((start) => fc.tuple(fc.constant(start), fc.integer({ min: 1, max: 1439 - start })));
 const timeAt = (minute: number) =>
   Temporal.PlainTime.from({ hour: Math.floor(minute / 60), minute: minute % 60 });
 

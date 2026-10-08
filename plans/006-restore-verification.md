@@ -1,6 +1,6 @@
 # Plan 006: Restore the verification workflow without reducing consumer coverage
 
-- Status: TODO; priority P1; effort S; risk medium; category tooling.
+- Status: IMPLEMENTED locally; actual GitHub Actions/Linux matrix pending; priority P1; effort S; risk medium; category tooling.
 - Planned at `6d6decd`, 2026-10-08. Dependencies: none.
 - Work from repository root. Suggested branch: `codex/restore-verification`. Match existing conventional commit style. Do not publish, push, or invoke `pnpm release` to test this plan.
 - Drift check: `git diff --stat 6d6decd..HEAD -- package.json pnpm-workspace.yaml pnpm-lock.yaml .github/workflows/ci.yml scripts/release.sh scripts/generate-docs.test.ts README.md`. Compare changed files against the facts below before proceeding; expected predecessor changes are not automatic blockers.
