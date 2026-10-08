@@ -30,6 +30,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Verify toolchain runtimes
         env:
           EXPECTED_NODE: ${{ matrix.node-version }}
@@ -39,9 +42,6 @@ jobs:
           pnpm exec node -p process.versions.node
           node -e "require('node:assert/strict').equal(process.versions.node.split('.')[0], process.env.EXPECTED_NODE.split('.')[0])"
           pnpm exec node -e "require('node:assert/strict').equal(process.versions.node.split('.')[0], process.env.EXPECTED_NODE.split('.')[0])"
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
