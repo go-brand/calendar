@@ -32,3 +32,5 @@ function WeekContent({ events }: { events: Event[] }) {
 ```
 
 `getDate` is required when you pass `items`. `getStart` is optional. Add it when events should appear in timed slots.
+
+Both provider and explicit `calendar` inputs react to navigation on a core `createCalendar` controller. The requested `view` determines the projection's type: a `view: 'week'` projection stays a week projection when the controller's active view changes. Replacing the controller releases the old subscription.

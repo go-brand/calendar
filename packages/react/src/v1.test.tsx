@@ -3,7 +3,15 @@ import { act, render, renderHook, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { Suspense } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { CalendarProvider, useCalendar, useCalendarView, useCreateCalendar } from './index';
+import {
+  CalendarProvider,
+  useCalendar,
+  useCalendarView,
+  useCreateCalendar,
+  buildMonthView,
+  buildWeekView,
+  buildDayView,
+} from './index';
 
 const july = Temporal.PlainDate.from('2026-07-10');
 const august = Temporal.PlainDate.from('2026-08-10');
@@ -167,5 +175,79 @@ describe('calendar v1 React API', () => {
     expect(() => renderHook(() => useCalendar())).toThrow(
       'useCalendar must be used within CalendarProvider',
     );
+  });
+});
+
+describe('item-bearing controller composition', () => {
+  const items = [{ id: 'first', date: july }];
+  function useItemCalendar(source = items) {
+    return useCreateCalendar({
+      views: { month: true, week: true, day: true },
+      defaultDate: july,
+      timeZone: 'UTC',
+      items: source,
+      getDate: (item) => item.date,
+    });
+  }
+
+  it('passes the item-bearing result directly to the month builder', () => {
+    const { result, rerender } = renderHook(
+      ({ source }) => {
+        const calendar = useItemCalendar(source);
+        return buildMonthView({ calendar, items: source, getDate: (item) => item.date });
+      },
+      { initialProps: { source: items } },
+    );
+    expect(
+      result.current.weeks
+        .flat(2)
+        .flatMap((day) => day.items)
+        .map((item) => item.id),
+    ).toEqual(['first']);
+    rerender({ source: [{ id: 'replacement', date: july }] });
+    expect(
+      result.current.weeks
+        .flat(2)
+        .flatMap((day) => day.items)
+        .map((item) => item.id),
+    ).toEqual(['replacement']);
+  });
+
+  it('passes the item-bearing result directly to the week builder', () => {
+    const { result } = renderHook(() => {
+      const calendar = useItemCalendar();
+      return buildWeekView({ calendar, items, getDate: (item) => item.date });
+    });
+    expect(result.current.days.flatMap((day) => day.items).map((item) => item.id)).toEqual([
+      'first',
+    ]);
+  });
+
+  it('passes the item-bearing result directly to the day builder', () => {
+    const { result } = renderHook(() => {
+      const calendar = useItemCalendar();
+      return buildDayView({ calendar, items, getDate: (item) => item.date });
+    });
+    expect(result.current.items.map((item) => item.id)).toEqual(['first']);
+  });
+
+  it('continues to project through the React hook and provider', () => {
+    function View() {
+      const day = useCalendarView({ view: 'day', items, getDate: (item) => item.date });
+      return <span>{day.items[0]?.id}</span>;
+    }
+    function App() {
+      const calendar = useItemCalendar();
+      const week = useCalendarView({ calendar, view: 'week', items, getDate: (item) => item.date });
+      return (
+        <CalendarProvider calendar={calendar}>
+          <span>{week.name}</span>
+          <View />
+        </CalendarProvider>
+      );
+    }
+    render(<App />);
+    expect(screen.getByText('first')).not.toBeNull();
+    expect(screen.getByText('week')).not.toBeNull();
   });
 });

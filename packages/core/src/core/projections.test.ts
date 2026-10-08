@@ -78,6 +78,15 @@ describe('calendar v1 projections', () => {
     expect(buildDayView({ calendar }).items).toEqual([]);
   });
 
+  it('accepts only an immediate descendant of a registered controller', () => {
+    const wrapper: typeof calendar = Object.create(calendar);
+    expect(buildDayView({ calendar: wrapper }).date.toString()).toBe('2026-07-10');
+    const nested: typeof calendar = Object.create(wrapper);
+    expect(() => buildDayView({ calendar: nested })).toThrow('Unknown calendar controller');
+    const unrelated: typeof calendar = Object.create(null);
+    expect(() => buildDayView({ calendar: unrelated })).toThrow();
+  });
+
   it('uses the configured timezone for isToday', () => {
     const timeZone = 'Pacific/Kiritimati';
     const today = Temporal.Now.zonedDateTimeISO(timeZone).toPlainDate();
