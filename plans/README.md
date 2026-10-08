@@ -1,5 +1,37 @@
 # Implementation Plans
 
+## Current direction review — 2026-10-08
+
+The [recursive decision record](2026-10-08-library-direction.md) assesses every finding from the October review against the existing headless, Temporal-first design and the goal of easy, reliable AI-assisted adoption. It records accepted remedies, counterarguments, rejected API expansion, and deferred edge cases. Plans below are recommendations, not implemented changes.
+
+| Plan | Outcome | Priority | Effort | Risk | Depends on | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| [006](006-restore-verification.md) | Compatible tooling, full runtime coverage, docs/release verification | P1 | S | Medium | — | TODO |
+| [007](007-trustworthy-agent-docs.md) | Truthful public guidance and usable, checked example source | P1 | M | Medium | 006 | TODO |
+| [008](008-preserve-react-composition.md) | Bounded core/React interoperability repairs | P2 | M | Medium | 006 | TODO |
+| [009](009-verify-package-contracts.md) | Correct dual-format declarations and packed-consumer contracts | P2 | S/M | Low–medium | 006 | TODO |
+| [010](010-public-behavior-and-learning-checks.md) | Public projection laws; optional bounded learning evaluation | P2 / experiment | M | Low | 006; compare docs around 007 | TODO |
+
+Execute 006 first. 007–009 are independently deliverable, but 007 and 009 share the package verifier and must preserve each other's checks. 008 has its own regression and characterization tests; 010 must not delay a proven fix. The learning evaluation is optional and must be reported separately from deterministic verification.
+
+The user requested autonomous recursive selection, so these five bounded plans were selected by evidence and value rather than expanding every review point into a task. No implementation, deployment, release, or paid evaluation occurred in this planning pass.
+
+### Considered and rejected or deferred
+
+- Reject automatic timezone normalization: `TODO.md:31` assigns conversion to the data layer. Document consistent accessors instead.
+- Reject a stable-controller/action rewrite: normal React lifetimes work, and the rewrite risks controlled-state and Suspense semantics.
+- Reject blanket external-store subscriptions: characterize ownership and preserve the hook-owned path; a constant snapshot is required for the no-op branch.
+- Reject public unwrap/registration helpers and recursive prototype traversal to repair the one-layer React wrapper.
+- Reject adding nonexistent formatting/layout/navigation exports to make stale documentation look correct.
+- Reject AI-specific runtime APIs, MCP/A2A services, native/polyfill switching, or a UI kit in this batch.
+- Defer duration-domain validation, the final-nanosecond edge, and live view-order synchronization to small separately justified patches.
+- Defer unused TanStack-store dependency removal until the React integration approach is settled; do not add a store merely to justify the dependencies.
+- Preserve existing consumer support; package-manager runtime requirements alone do not justify dropping Node coverage or CJS.
+
+## Historical plans — June/July 2026
+
+Plans 001–005 below record work completed against earlier APIs. Their DONE status is historical, not a claim that the current v1 implementation still uses those mechanisms or that current documentation is correct. In particular, 002's TanStack subscription implementation was superseded, and the docs consistency claim in 005 does not cover the later v1 documentation drift addressed by 007.
+
 > Historical audit record. For the current API and examples, use the package READMEs and
 > [calendar.gobrand.app/docs](https://calendar.gobrand.app/docs).
 
