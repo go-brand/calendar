@@ -12,6 +12,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { createHash } from 'node:crypto';
+import { exampleManifest, exampleFiles, sourceMarkdown, resolvePreviews } from './example-sources';
 
 const DOCS_DIR = 'apps/www/content/docs';
 const LLMS_TXT_PATH = 'apps/www/public/llms.txt';
@@ -313,15 +314,13 @@ function generateSkillMd(docs: DocFile[]): string {
   for (const [category, categoryDocs] of byCategory) {
     lines.push(`## ${category}`);
     lines.push('');
-    lines.push('| Function | Description |');
+    lines.push('| Documentation topic | Description |');
     lines.push('|----------|-------------|');
 
     for (const doc of categoryDocs) {
-      const displayName =
-        doc.title.includes('use') || doc.title.includes('create')
-          ? `\`${doc.title}()\``
-          : `\`${doc.title}\``;
-      lines.push(`| ${displayName} | ${doc.description} |`);
+      lines.push(
+        `| [${doc.title}](${BASE_URL}${doc.urlPath ? `/${doc.urlPath}` : ''}) | ${doc.description} |`,
+      );
     }
 
     lines.push('');
@@ -361,6 +360,18 @@ function generateSkillMd(docs: DocFile[]): string {
   );
   lines.push(
     '- Omit a key to make that view unavailable. `false` is intentionally rejected so key presence always means configured.',
+  );
+  lines.push('');
+  lines.push('## Controller lifetime and event mapping');
+  lines.push('');
+  lines.push(
+    'Controller and action identities can change across renders. Subscribe in an effect with `[calendar]` and return the unsubscribe function.',
+  );
+  lines.push(
+    'The controller timezone sets calendar geometry; event accessors own conversion. Derive getDate and getStart from the same normalized ZonedDateTime.',
+  );
+  lines.push(
+    `[Timezone conversion recipe](${BASE_URL}/timezones-and-ranges). [Controller lifetime](${BASE_URL}/controlled-state).`,
   );
   lines.push('');
   lines.push('## Initialization and timezone');
@@ -403,11 +414,29 @@ function markdownForDoc(doc: DocFile): string {
     lines.push(`> ${doc.description}`, '');
   }
 
-  lines.push(`Canonical: ${SITE_URL}${route}`, '', doc.body, '');
+  lines.push(`Canonical: ${SITE_URL}${route}`, '', resolvePreviews(doc.body), '');
   return lines.join('\n');
 }
 
 function generateAgentMarkdown(docs: DocFile[]): Readonly<Record<string, string>> {
+  for (const example of exampleManifest) {
+    writeGenerated(
+      `apps/www/public/examples/${example.name}.md`,
+      [
+        `# ${example.name}`,
+        '',
+        `Render the exported ${example.bootstrap ? 'StandaloneSuspenseMonth from ' + example.bootstrap : example.export + ' from ' + example.entry} in your React application.`,
+        '',
+        'Keep the files together in one directory. Install @gobrand/react-calendar and the dependencies below. CSS utility classes are optional; rendering and controls work without them. Website appearance requires the website styles.',
+        '',
+        `Dependencies: ${Object.entries(example.dependencies)
+          .map(([name, version]) => `${name}@${version}`)
+          .join(', ')}.`,
+        '',
+        sourceMarkdown(exampleFiles(example)),
+      ].join('\n'),
+    );
+  }
   const markdownByPath: Record<string, string> = {
     '/': [
       '# temporal-calendar',
@@ -453,6 +482,20 @@ function generateLlmsFull(markdownByPath: Readonly<Record<string, string>>): voi
     '> Complete documentation for the Temporal-first Calendar packages.',
     '',
     ...docs.flatMap((markdown) => [markdown, '', '---', '']),
+    '# Example sources',
+    '',
+    'All files below belong in the same directory. CSS classes are optional. The Suspense bootstrap supplies a stable QueryClientProvider.',
+    '',
+    ...exampleManifest.map(
+      (example) =>
+        `- ${example.name}: ${example.export} in ${example.entry}${example.bootstrap ? `; mount StandaloneSuspenseMonth from ${example.bootstrap}` : ''}. Dependencies: ${Object.entries(
+          example.dependencies,
+        )
+          .map(([name, version]) => `${name}@${version}`)
+          .join(', ')}.`,
+    ),
+    '',
+    sourceMarkdown([...new Set(exampleManifest.flatMap(exampleFiles))]),
   ].join('\n');
 
   writeGenerated(LLMS_FULL_TXT_PATH, content);

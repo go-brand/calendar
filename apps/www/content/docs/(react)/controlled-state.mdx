@@ -25,3 +25,15 @@ Prop changes are reflected immediately. This matters for browser back/forward na
 ## Geometry changes
 
 Changing `timeZone`, `weekStartsOn`, `dayStart`, `dayEnd`, or `slotDuration` recreates the underlying controller from the new value signature. The visible range therefore cannot retain initial configuration accidentally.
+
+## Controller and action lifetime
+
+Controller and action identities can change across renders. Read actions from the current controller. Subscriptions must follow that controller and clean up when it changes:
+
+```tsx
+useEffect(() => calendar.subscribe(() => {
+  console.log(calendar.date.toString());
+}), [calendar]);
+```
+
+The callback reads the controller subscribed by that effect. Do not capture the first controller or an action indefinitely.

@@ -38,3 +38,23 @@ await db.event.findMany({
 ## DST is calendar geometry
 
 A local calendar day may contain 23, 24, or 25 elapsed hours. Calendar constructs each boundary from its own local midnight rather than adding 24 hours to an instant.
+
+## Event mapping belongs to your data layer
+
+The controller timezone defines geometry. Accessors decide which local date and start time each item belongs to; setting `timeZone` does not convert your items. Normalize an event once, then derive both accessors from that same value:
+
+```ts
+import { Temporal } from '@js-temporal/polyfill';
+
+const normalizedEvent = {
+  title: 'Late UTC meeting',
+  start: Temporal.Instant.from('2026-07-10T23:30:00Z')
+    .toZonedDateTimeISO('Europe/Madrid'),
+};
+const getDate = (event: typeof normalizedEvent) => event.start.toPlainDate();
+const getStart = (event: typeof normalizedEvent) => event.start;
+// getDate(normalizedEvent).toString() === '2026-07-11'
+// getStart(normalizedEvent).hour === 1
+```
+
+Pass these accessors with the normalized items to the projection. The UTC date is July 10; the Madrid calendar date is July 11.

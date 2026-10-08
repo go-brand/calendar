@@ -120,7 +120,7 @@ function Calendar({ events }: { events: Event[] }) {
 
 That is the whole setup. TypeScript infers the event type, and `calendar.activeView` is a `MonthView` because month is the only enabled view.
 
-<CalendarPreview name="basic-month" />
+[Complete basic-month source](https://calendar.gobrand.app/examples/basic-month.md) (export `BasicMonthExample`).
 
 The preview is live. Its source uses small website-only components for markup and styles; its calendar state and month data come directly from `useCreateCalendar`.
 
@@ -150,6 +150,8 @@ const calendar = useCreateCalendar({
 An omitted view is unavailable. Use an options object instead of `true` when a timed week or day needs custom hours or slot length.
 
 [See the complete month/week/day example](/docs/examples/multi-view).
+
+For application integration, see [event timezone mapping](/docs/timezones-and-ranges) and [controller lifetime and controlled state](/docs/controlled-state).
 
 ---
 
@@ -243,7 +245,7 @@ The example assumes your app already has TanStack Query's `QueryClientProvider`.
 
 Each `useCalendarView` call infers its own item type. A month view can use summaries while a timed week view uses full event records. The shared controller does not need to know either type.
 
-<CalendarPreview name="suspense-month" />
+[Complete suspense-month source](https://calendar.gobrand.app/examples/suspense-month.md) (export `SuspenseMonthExample`).
 
 ---
 
@@ -289,6 +291,26 @@ await db.event.findMany({
 
 A local calendar day may contain 23, 24, or 25 elapsed hours. Calendar constructs each boundary from its own local midnight rather than adding 24 hours to an instant.
 
+## Event mapping belongs to your data layer
+
+The controller timezone defines geometry. Accessors decide which local date and start time each item belongs to; setting `timeZone` does not convert your items. Normalize an event once, then derive both accessors from that same value:
+
+```ts
+import { Temporal } from '@js-temporal/polyfill';
+
+const normalizedEvent = {
+  title: 'Late UTC meeting',
+  start: Temporal.Instant.from('2026-07-10T23:30:00Z')
+    .toZonedDateTimeISO('Europe/Madrid'),
+};
+const getDate = (event: typeof normalizedEvent) => event.start.toPlainDate();
+const getStart = (event: typeof normalizedEvent) => event.start;
+// getDate(normalizedEvent).toString() === '2026-07-11'
+// getStart(normalizedEvent).hour === 1
+```
+
+Pass these accessors with the normalized items to the projection. The UTC date is July 10; the Madrid calendar date is July 11.
+
 ---
 
 # Controlled state and routing
@@ -319,6 +341,18 @@ Prop changes are reflected immediately. This matters for browser back/forward na
 ## Geometry changes
 
 Changing `timeZone`, `weekStartsOn`, `dayStart`, `dayEnd`, or `slotDuration` recreates the underlying controller from the new value signature. The visible range therefore cannot retain initial configuration accidentally.
+
+## Controller and action lifetime
+
+Controller and action identities can change across renders. Read actions from the current controller. Subscriptions must follow that controller and clean up when it changes:
+
+```tsx
+useEffect(() => calendar.subscribe(() => {
+  console.log(calendar.date.toString());
+}), [calendar]);
+```
+
+The callback reads the controller subscribed by that effect. Do not capture the first controller or an action indefinitely.
 
 ---
 
@@ -493,7 +527,7 @@ Canonical: https://calendar.gobrand.app/docs/types/helpers
 
 Canonical: https://calendar.gobrand.app/docs/examples/basic-month
 
-<CalendarPreview name="basic-month" />
+[Complete basic-month source](https://calendar.gobrand.app/examples/basic-month.md) (export `BasicMonthExample`).
 
 The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
 
@@ -507,7 +541,7 @@ This example needs only `getDate` because month cells group events by calendar d
 
 Canonical: https://calendar.gobrand.app/docs/examples/date-picker
 
-<CalendarPreview name="date-picker" />
+[Complete date-picker source](https://calendar.gobrand.app/examples/date-picker.md) (export `DatePickerExample`).
 
 The controller owns the selected date and navigation. A data-free month projection supplies the dates to render.
 
@@ -523,13 +557,13 @@ Canonical: https://calendar.gobrand.app/docs/examples/week-view
 
 Events appear on each day.
 
-<CalendarPreview name="simple-week" />
+[Complete simple-week source](https://calendar.gobrand.app/examples/simple-week.md) (export `SimpleWeekExample`).
 
 ## Week with time slots
 
 Timed events appear in an hourly grid.
 
-<CalendarPreview name="week-slots" />
+[Complete week-slots source](https://calendar.gobrand.app/examples/week-slots.md) (export `WeekSlotsExample`).
 
 Both sources import small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
 
@@ -541,7 +575,7 @@ Both sources import small website-only components from `./calendar-ui` for marku
 
 Canonical: https://calendar.gobrand.app/docs/examples/day-view
 
-<CalendarPreview name="day-view" />
+[Complete day-view source](https://calendar.gobrand.app/examples/day-view.md) (export `DayViewExample`).
 
 The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
 
@@ -553,7 +587,7 @@ The source imports small website-only components from `./calendar-ui` for markup
 
 Canonical: https://calendar.gobrand.app/docs/examples/multi-view
 
-<CalendarPreview name="multi-view" />
+[Complete multi-view source](https://calendar.gobrand.app/examples/multi-view.md) (export `MultiViewExample`).
 
 The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
 
@@ -567,7 +601,7 @@ This example uses local events so view switching is the only new concept. See [S
 
 Canonical: https://calendar.gobrand.app/docs/examples/suspense-query
 
-<CalendarPreview name="suspense-month" />
+[Complete suspense-month source](https://calendar.gobrand.app/examples/suspense-month.md) (export `SuspenseMonthExample`).
 
 The controller and toolbar stay above the Suspense boundary. The query and month projection run below it after data is ready.
 
@@ -721,189 +755,964 @@ Calendar produces `Temporal.ZonedDateTime` boundaries so callers can preserve th
 
 # Utilities
 
-> Formatting, navigation, and timezone helpers
+> Weekday labels and direct Temporal recipes for formatting, navigation, and timezone conversion.
 
 Canonical: https://calendar.gobrand.app/docs/core/utilities
+
+The core package exports five values: `createCalendar`, `buildMonthView`, `buildWeekView`, `buildDayView`, and `getWeekdays`. Use Temporal directly for other date operations.
 
 ## Formatting
 
 ### getWeekdays
 
-Get localized weekday names in the correct order for your calendar header.
+Get localized weekday names in calendar order. Temporal uses `1` for Monday through `7` for Sunday.
 
 ```typescript
 import { getWeekdays } from '@gobrand/calendar-core';
 
-getWeekdays();
-// ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-
-getWeekdays(7);                    // Sunday start
-// ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-
-getWeekdays(1, 'es-ES');           // Spanish
-// ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
-
-getWeekdays(1, 'en-US', 'long');   // Full names
-// ["Monday", "Tuesday", ...]
-
-getWeekdays(7, 'en-US', 'narrow'); // Single letter
-// ["S", "M", "T", "W", "T", "F", "S"]
-```
-
-**Signature:**
-```typescript
-function getWeekdays(
-  weekStartsOn?: 1 | 2 | 3 | 4 | 5 | 6 | 7, // Temporal: 1 (Monday) through 7 (Sunday)
-  locale?: string | string[],                // Default: 'en-US'. Array for fallback locales
-  format?: 'long' | 'short' | 'narrow'       // Default: 'short'
-): string[];
+getWeekdays(); // Monday start, short English names
+getWeekdays(7); // Sunday start
+getWeekdays(1, 'es-ES');
+getWeekdays(1, 'en-US', 'long');
+getWeekdays(7, 'en-US', 'narrow');
 ```
 
 ### getMonthName
 
-Get localized month name from a `PlainYearMonth`.
+Format a Temporal month directly; there is no `getMonthName` package export.
 
 ```typescript
-import { getMonthName } from '@gobrand/calendar-core';
 import { Temporal } from '@js-temporal/polyfill';
 
 const month = Temporal.PlainYearMonth.from('2025-01');
-
-getMonthName(month);          // "January"
-getMonthName(month, 'es-ES'); // "enero"
-getMonthName(month, 'ja-JP'); // "1月"
+month.toLocaleString('es-ES', { month: 'long' }); // enero
 ```
 
 ### formatTime
 
-Format a `PlainTime` for display.
-
 ```typescript
-import { formatTime } from '@gobrand/calendar-core';
 import { Temporal } from '@js-temporal/polyfill';
 
 const time = Temporal.PlainTime.from('14:30');
-
-formatTime(time);          // "2:30 PM"
-formatTime(time, 'en-GB'); // "14:30"
+time.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
 ```
 
 ## Timezone
 
 ### getCurrentTimeZone
 
-Get the system's IANA timezone.
-
-```typescript
-import { getCurrentTimeZone } from '@gobrand/calendar-core';
-
-getCurrentTimeZone(); // "America/New_York"
-```
+Use `Temporal.Now.timeZoneId()` to obtain the system timezone.
 
 ### convertToTimezone
 
-Convert a `ZonedDateTime` to a different timezone.
-
 ```typescript
-import { convertToTimezone } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
 
 const ny = Temporal.ZonedDateTime.from('2025-01-15T14:00:00-05:00[America/New_York]');
-const tokyo = convertToTimezone(ny, 'Asia/Tokyo');
+const tokyo = ny.withTimeZone('Asia/Tokyo');
 // 2025-01-16T04:00:00+09:00[Asia/Tokyo]
 ```
 
 ### createZonedDateTime
 
-Create a `ZonedDateTime` from date and time components.
-
 ```typescript
-import { createZonedDateTime } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
 
 const date = Temporal.PlainDate.from('2025-01-15');
 const time = Temporal.PlainTime.from('14:30');
-const zdt = createZonedDateTime(date, time, 'America/New_York');
-// 2025-01-15T14:30:00-05:00[America/New_York]
+const zoned = date.toZonedDateTime({ timeZone: 'America/New_York', plainTime: time });
 ```
 
 ## Navigation
 
-Standalone navigation functions for use outside `createCalendar`:
+Use controller `next()`, `previous()`, and `today()` for the active view. For standalone calculations, Temporal supports explicit units:
 
 ```typescript
-import {
-  nextMonth,
-  previousMonth,
-  nextWeek,
-  previousWeek,
-  nextDay,
-  previousDay,
-} from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
 
-// Month navigation
-const jan = Temporal.PlainYearMonth.from('2025-01');
-nextMonth(jan);     // 2025-02
-previousMonth(jan); // 2024-12
-
-// Week navigation
 const date = Temporal.PlainDate.from('2025-01-15');
-nextWeek(date);     // 2025-01-22
-previousWeek(date); // 2025-01-08
-
-// Day navigation
-nextDay(date);      // 2025-01-16
-previousDay(date);  // 2025-01-14
+date.add({ months: 1 });
+date.subtract({ weeks: 1 });
+date.add({ days: 1 });
 ```
 
 ## Date Ranges
 
-Get date ranges for the current period. Useful for data fetching.
+Use the controller's half-open visible range for querying data:
 
 ```typescript
-import {
-  getMonthRange,
-  getWeekRange,
-  getDayRange,
-} from '@gobrand/calendar-core';
+import { createCalendar } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
 
-// Ranges are aligned to week boundaries
-const monthRange = getMonthRange('America/New_York', 1); // Monday start
-// { start: PlainDate, end: PlainDate }
-
-const weekRange = getWeekRange('America/New_York', 1);
-const dayRange = getDayRange('America/New_York');
+const calendar = createCalendar({
+  views: { month: true },
+  date: Temporal.PlainDate.from('2025-01-15'),
+  timeZone: 'America/New_York',
+});
+const { start, end } = calendar.visibleRange;
 ```
+
+Query `>= start` and `< end`. See [timezones and ranges](/docs/timezones-and-ranges).
 
 ## Layout Helpers
 
-For rendering events in time-based views:
-
-### getEventPosition
-
-Calculate CSS position for an event block.
-
-```typescript
-import { getEventPosition } from '@gobrand/calendar-core';
-
-const position = getEventPosition(
-  eventStart,   // ZonedDateTime
-  eventEnd,     // ZonedDateTime
-  8,            // Day starts at 8 AM
-  60            // 60px per hour
-);
-// { top: 60, height: 90 }
-// Event starts 1 hour after 8 AM (top: 60px)
-// Event is 1.5 hours long (height: 90px)
-```
-
-### getTimeSlotHeight
-
-Calculate height for time slots.
-
-```typescript
-import { getTimeSlotHeight } from '@gobrand/calendar-core';
-
-getTimeSlotHeight(30, 60);  // 30px (half-hour slot at 60px/hour)
-getTimeSlotHeight(15, 60);  // 15px (quarter-hour slot)
-```
+Calendar is headless. Week and day projections provide Temporal geometry and items; your rendering code chooses CSS dimensions and event layout. The package does not export CSS positioning helpers. See the [complete week example](/docs/examples/week-view).
 
 ---
+
+# Example sources
+
+All files below belong in the same directory. CSS classes are optional. The Suspense bootstrap supplies a stable QueryClientProvider.
+
+- basic-month: BasicMonthExample in basic-month.tsx. Dependencies: @gobrand/react-calendar@*, @js-temporal/polyfill@0.5.1, react@19, tailwind-merge@^3.3.1, react-dom@19.
+- date-picker: DatePickerExample in date-picker.tsx. Dependencies: @gobrand/react-calendar@*, @js-temporal/polyfill@0.5.1, react@19, tailwind-merge@^3.3.1, react-dom@19.
+- simple-week: SimpleWeekExample in week-view.tsx. Dependencies: @gobrand/react-calendar@*, @js-temporal/polyfill@0.5.1, react@19, tailwind-merge@^3.3.1, react-dom@19.
+- week-slots: WeekSlotsExample in week-view.tsx. Dependencies: @gobrand/react-calendar@*, @js-temporal/polyfill@0.5.1, react@19, tailwind-merge@^3.3.1, react-dom@19.
+- day-view: DayViewExample in day-view.tsx. Dependencies: @gobrand/react-calendar@*, @js-temporal/polyfill@0.5.1, react@19, tailwind-merge@^3.3.1, react-dom@19.
+- multi-view: MultiViewExample in multi-view.tsx. Dependencies: @gobrand/react-calendar@*, @js-temporal/polyfill@0.5.1, react@19, tailwind-merge@^3.3.1, react-dom@19.
+- suspense-month: SuspenseMonthExample in suspense-month.tsx; mount StandaloneSuspenseMonth from suspense-standalone.tsx. Dependencies: @gobrand/react-calendar@*, @js-temporal/polyfill@0.5.1, react@19, tailwind-merge@^3.3.1, @tanstack/react-query@^5.90.0, react-dom@19.
+
+### basic-month.tsx
+
+```tsx
+'use client';
+
+import { useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, events } from './mock-data';
+
+export function BasicMonthExample() {
+  const calendar = useCreateCalendar({
+    views: { month: true },
+    items: events,
+    getDate: accessor.getDate,
+  });
+  const month = calendar.activeView;
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous month"
+        nextLabel="Next month"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <CalendarGrid>
+        {month.weeks.map((week) => (
+          <CalendarRow key={week[0].id}>
+            {week.map((day) => (
+              <CalendarCell
+                key={day.id}
+                date={day.date}
+                current={day.isCurrentMonth}
+                today={day.isToday}
+              >
+                {day.items.map((event) => (
+                  <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+                ))}
+              </CalendarCell>
+            ))}
+          </CalendarRow>
+        ))}
+      </CalendarGrid>
+    </Calendar>
+  );
+}
+```
+
+### calendar-ui.tsx
+
+```tsx
+import type { Temporal } from "@js-temporal/polyfill";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { cn } from "./cn";
+
+export function Button({
+  active,
+  className,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { active?: boolean }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      className={cn(
+        "rounded-lg px-3 py-2 text-sm text-fd-muted-foreground transition-colors",
+        "hover:bg-fd-muted hover:text-fd-foreground",
+        "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400",
+        active && "bg-fd-primary text-fd-primary-foreground",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export function Calendar({
+  children,
+  size = "month",
+}: {
+  children: ReactNode;
+  size?: "month" | "day" | "wide";
+}) {
+  const widths = { month: "max-w-2xl", day: "max-w-md", wide: "max-w-3xl" };
+  return <div className={cn("w-full min-w-0", widths[size])}>{children}</div>;
+}
+
+export function CalendarToolbar({
+  title,
+  onPrevious,
+  onNext,
+  previousLabel,
+  nextLabel,
+  children,
+}: {
+  title: string;
+  onPrevious: () => void;
+  onNext: () => void;
+  previousLabel: string;
+  nextLabel: string;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="mb-4 space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <Button aria-label={previousLabel} onClick={onPrevious}>
+          ←
+        </Button>
+        <h2 className="text-lg font-semibold">{title}</h2>
+        <Button aria-label={nextLabel} onClick={onNext}>
+          →
+        </Button>
+      </div>
+      {children && <div className="flex justify-center gap-1">{children}</div>}
+    </div>
+  );
+}
+
+export function CalendarWeekdays({ start }: { start: Temporal.PlainDate }) {
+  const days = Array.from({ length: 7 }, (_, index) =>
+    start.add({ days: index }).toLocaleString("en-US", { weekday: "short" }),
+  );
+  return (
+    <div className="mb-2 grid grid-cols-7">
+      {days.map((day) => (
+        <div key={day} className="py-2 text-center text-xs text-fd-muted-foreground">
+          {day}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function CalendarGrid({ children }: { children: ReactNode }) {
+  return <div className="space-y-1">{children}</div>;
+}
+
+export function CalendarRow({ children }: { children: ReactNode }) {
+  return <div className="grid grid-cols-7 gap-1">{children}</div>;
+}
+
+export function CalendarCell({
+  date,
+  current = true,
+  today = false,
+  children,
+}: {
+  date: Temporal.PlainDate;
+  current?: boolean;
+  today?: boolean;
+  children?: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "min-h-20 rounded-lg border p-2",
+        current ? "border-fd-border bg-fd-card" : "border-transparent opacity-40",
+      )}
+    >
+      <span
+        className={cn(
+          "inline-grid size-6 place-items-center rounded-full text-sm",
+          today && "bg-sky-500 font-medium text-white",
+        )}
+      >
+        {date.day}
+      </span>
+      {children && <div className="mt-1 space-y-1">{children}</div>}
+    </div>
+  );
+}
+
+export function CalendarEvent({ children }: { children: ReactNode }) {
+  return (
+    <div className="truncate rounded bg-sky-500 px-1.5 py-0.5 text-xs text-white">
+      {children}
+    </div>
+  );
+}
+
+export function CalendarTimeline({ children }: { children: ReactNode }) {
+  return (
+    <div className="max-h-96 overflow-y-auto rounded-lg border border-fd-border">
+      {children}
+    </div>
+  );
+}
+
+export function CalendarTimeRow({ label, children }: { label: string; children?: ReactNode }) {
+  return (
+    <div className="grid min-h-12 grid-cols-[4.5rem_1fr] border-b border-fd-border last:border-b-0">
+      <div className="border-r border-fd-border p-2 text-xs text-fd-muted-foreground">
+        {label}
+      </div>
+      <div className="min-w-0 p-2">{children}</div>
+    </div>
+  );
+}
+
+type WeekHeaderDay = {
+  id: string;
+  date: Temporal.PlainDate;
+  isToday: boolean;
+};
+
+export function CalendarWeekHeader({ days }: { days: readonly WeekHeaderDay[] }) {
+  return (
+    <div className="grid grid-cols-[3.75rem_repeat(7,minmax(0,1fr))] border-b border-fd-border bg-fd-muted/20">
+      <div />
+      {days.map((day) => (
+        <div key={day.id} className="border-l border-fd-border p-2 text-center">
+          <div className="text-xs text-fd-muted-foreground">
+            {day.date.toLocaleString("en", { weekday: "short" })}
+          </div>
+          <div
+            className={cn(
+              "mx-auto mt-1 grid size-8 place-items-center rounded-full",
+              day.isToday && "bg-sky-500 text-white",
+            )}
+          >
+            {day.date.day}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function CalendarTimeGrid({
+  header,
+  children,
+}: {
+  header: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <div className="overflow-hidden rounded-lg border border-fd-border">
+      {header}
+      <div className="max-h-96 overflow-y-auto">{children}</div>
+    </div>
+  );
+}
+
+export function CalendarTimeGridRow({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="grid grid-cols-[3.75rem_repeat(7,minmax(0,1fr))] border-b border-fd-border last:border-b-0">
+      <div className="border-r border-fd-border bg-fd-muted/10 p-2 text-xs text-fd-muted-foreground">
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+export function CalendarTimeCell({ children }: { children?: ReactNode }) {
+  return <div className="min-h-12 min-w-0 border-l border-fd-border p-1">{children}</div>;
+}
+```
+
+### mock-data.ts
+
+```ts
+import { Temporal } from '@js-temporal/polyfill';
+
+export type Event = {
+  id: string;
+  date: string;
+  start?: string; // ISO ZonedDateTime string for time-aware events
+  title: string;
+};
+
+const titles = [
+  'Standup',
+  'Planning',
+  'Review',
+  'Launch',
+  'Demo',
+  'Retro',
+  'Sprint',
+  'Deploy',
+  'Sync',
+  'Lunch',
+];
+
+// Generate events around the current date so calendars are never empty
+function generateEvents(): Event[] {
+  const timeZone = Temporal.Now.timeZoneId();
+  const today = Temporal.Now.plainDateISO();
+  const events: Event[] = [];
+
+  // Generate events for -2 months to +2 months
+  for (let monthOffset = -2; monthOffset <= 2; monthOffset++) {
+    const month = today.add({ months: monthOffset });
+    const daysInMonth = month.daysInMonth;
+
+    // Add events on various days throughout each month
+    const eventDays = [3, 5, 8, 12, 15, 18, 22, 25, 28].filter((d) => d <= daysInMonth);
+    eventDays.forEach((day, i) => {
+      const date = month.with({ day });
+      events.push({
+        id: `${monthOffset}-${day}`,
+        date: date.toString(),
+        title: titles[(monthOffset + 2 + i) % titles.length],
+      });
+    });
+  }
+
+  // Add 2 events for today at specific times (9 AM and 11 AM - visible in week view's first 5 slots)
+  const todayAt9am = today.toZonedDateTime({
+    timeZone,
+    plainTime: Temporal.PlainTime.from('09:00'),
+  });
+  const todayAt11am = today.toZonedDateTime({
+    timeZone,
+    plainTime: Temporal.PlainTime.from('11:00'),
+  });
+
+  events.push({
+    id: 'today-9am',
+    date: today.toString(),
+    start: todayAt9am.toString(),
+    title: 'Team Sync',
+  });
+
+  events.push({
+    id: 'today-11am',
+    date: today.toString(),
+    start: todayAt11am.toString(),
+    title: 'Project Review',
+  });
+
+  // Add extra events around today for day/week views (excluding today itself)
+  // Give them times within the 8-18 range so they show in time slots
+  for (let dayOffset = -3; dayOffset <= 3; dayOffset++) {
+    if (dayOffset === 0) continue; // Skip today, we already added specific events
+    const date = today.add({ days: dayOffset });
+    const hour = 9 + Math.abs(dayOffset); // Vary the time: 10, 11, 12 AM
+    const startTime = date.toZonedDateTime({
+      timeZone,
+      plainTime: Temporal.PlainTime.from({ hour, minute: 0 }),
+    });
+    events.push({
+      id: `nearby-${dayOffset}`,
+      date: date.toString(),
+      start: startTime.toString(),
+      title: titles[(dayOffset + 3) % titles.length],
+    });
+  }
+
+  return events;
+}
+
+export const events = generateEvents();
+
+export async function fetchEvents(
+  start: Temporal.ZonedDateTime,
+  end: Temporal.ZonedDateTime,
+): Promise<Event[]> {
+  await new Promise((r) => setTimeout(r, 300));
+  return events.filter((e) => {
+    const date = Temporal.PlainDate.from(e.date);
+    return (
+      Temporal.PlainDate.compare(date, start.toPlainDate()) >= 0 &&
+      Temporal.PlainDate.compare(date, end.toPlainDate()) < 0
+    );
+  });
+}
+
+// Get the browser's timezone for consistent time handling
+const browserTimeZone = Temporal.Now.timeZoneId();
+
+export const accessor = {
+  getDate: (e: Event) => Temporal.PlainDate.from(e.date),
+  getStart: (e: Event) => {
+    if (e.start) {
+      return Temporal.ZonedDateTime.from(e.start);
+    }
+    // Default to midnight in browser timezone for events without specific time
+    return Temporal.PlainDate.from(e.date).toZonedDateTime({
+      timeZone: browserTimeZone,
+      plainTime: Temporal.PlainTime.from('00:00'),
+    });
+  },
+};
+```
+
+### cn.ts
+
+```ts
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: (string | undefined | null | false)[]) {
+  return twMerge(inputs.filter(Boolean).join(' '));
+}
+```
+
+### date-picker.tsx
+
+```tsx
+'use client';
+
+import { useCalendarView, useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Button,
+  Calendar,
+  CalendarCell,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+
+export function DatePickerExample() {
+  const calendar = useCreateCalendar({ views: { month: true } });
+  const month = useCalendarView({ calendar, view: 'month' });
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous month"
+        nextLabel="Next month"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <CalendarGrid>
+        {month.weeks.map((week) => (
+          <CalendarRow key={week[0].id}>
+            {week.map((day) => (
+              <CalendarCell
+                key={day.id}
+                date={day.date}
+                current={day.isCurrentMonth}
+                today={day.isToday}
+              >
+                <Button
+                  active={day.date.equals(calendar.date)}
+                  aria-label={`Select ${day.date.toString()}`}
+                  onClick={() => calendar.setDate(day.date)}
+                >
+                  Select
+                </Button>
+              </CalendarCell>
+            ))}
+          </CalendarRow>
+        ))}
+      </CalendarGrid>
+    </Calendar>
+  );
+}
+```
+
+### week-view.tsx
+
+```tsx
+'use client';
+
+import { Temporal } from '@js-temporal/polyfill';
+import { useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarTimeCell,
+  CalendarTimeGrid,
+  CalendarTimeGridRow,
+  CalendarToolbar,
+  CalendarWeekHeader,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, events } from './mock-data';
+
+export function SimpleWeekExample() {
+  const calendar = useCreateCalendar({
+    views: { week: true },
+    items: events,
+    getDate: accessor.getDate,
+  });
+  const week = calendar.activeView;
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous week"
+        nextLabel="Next week"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <CalendarGrid>
+        <CalendarRow>
+          {week.days.map((day) => (
+            <CalendarCell key={day.id} date={day.date} today={day.isToday}>
+              {day.items.map((event) => (
+                <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+              ))}
+            </CalendarCell>
+          ))}
+        </CalendarRow>
+      </CalendarGrid>
+    </Calendar>
+  );
+}
+
+export function WeekSlotsExample() {
+  const calendar = useCreateCalendar({
+    views: {
+      week: {
+        dayStart: Temporal.PlainTime.from('00:00'),
+        dayEnd: Temporal.PlainTime.from('23:59:59.999999999'),
+        slotDuration: Temporal.Duration.from({ hours: 1 }),
+      },
+    },
+    items: events,
+    getDate: accessor.getDate,
+    getStart: accessor.getStart,
+  });
+  const week = calendar.activeView;
+  const timeSlots = week.days[0]?.timeSlots ?? [];
+
+  return (
+    <Calendar size="wide">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous week"
+        nextLabel="Next week"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarTimeGrid header={<CalendarWeekHeader days={week.days} />}>
+        {timeSlots.map((slot, slotIndex) => (
+          <CalendarTimeGridRow
+            key={slot.id}
+            label={slot.time.toLocaleString('en', { hour: 'numeric' })}
+          >
+            {week.days.map((day) => {
+              const daySlot = day.timeSlots[slotIndex];
+              return (
+                <CalendarTimeCell key={day.id}>
+                  {daySlot?.items.map((event) => (
+                    <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+                  ))}
+                </CalendarTimeCell>
+              );
+            })}
+          </CalendarTimeGridRow>
+        ))}
+      </CalendarTimeGrid>
+    </Calendar>
+  );
+}
+```
+
+### day-view.tsx
+
+```tsx
+'use client';
+
+import { Temporal } from '@js-temporal/polyfill';
+import { useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Calendar,
+  CalendarEvent,
+  CalendarTimeline,
+  CalendarTimeRow,
+  CalendarToolbar,
+} from './calendar-ui';
+import { accessor, events } from './mock-data';
+
+export function DayViewExample() {
+  const calendar = useCreateCalendar({
+    views: {
+      day: {
+        dayStart: Temporal.PlainTime.from('00:00'),
+        dayEnd: Temporal.PlainTime.from('23:59:59.999999999'),
+        slotDuration: Temporal.Duration.from({ hours: 1 }),
+      },
+    },
+    items: events,
+    getDate: accessor.getDate,
+    getStart: accessor.getStart,
+  });
+  const day = calendar.activeView;
+
+  return (
+    <Calendar size="day">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous day"
+        nextLabel="Next day"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarTimeline>
+        {day.timeSlots.map((slot) => (
+          <CalendarTimeRow
+            key={slot.id}
+            label={slot.time.toLocaleString('en-US', { timeStyle: 'short' })}
+          >
+            {slot.items.map((event) => (
+              <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+            ))}
+          </CalendarTimeRow>
+        ))}
+      </CalendarTimeline>
+    </Calendar>
+  );
+}
+```
+
+### multi-view.tsx
+
+```tsx
+'use client';
+
+import {
+  type DayView,
+  type MonthView,
+  type WeekView,
+  useCreateCalendar,
+} from '@gobrand/react-calendar';
+import {
+  Button,
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, events, type Event } from './mock-data';
+
+export function MultiViewExample() {
+  const calendar = useCreateCalendar({
+    views: { month: true, week: true, day: true },
+    items: events,
+    getDate: accessor.getDate,
+  });
+  const view = calendar.activeView;
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous date range"
+        nextLabel="Next date range"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      >
+        {calendar.viewNames.map((name) => (
+          <Button key={name} active={calendar.view === name} onClick={() => calendar.setView(name)}>
+            {name[0].toUpperCase() + name.slice(1)}
+          </Button>
+        ))}
+      </CalendarToolbar>
+      {calendar.view !== 'day' && (
+        <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      )}
+      {view.name === 'month' && <MonthCalendar month={view} />}
+      {view.name === 'week' && <WeekCalendar week={view} />}
+      {view.name === 'day' && <DayCalendar day={view} />}
+    </Calendar>
+  );
+}
+
+function MonthCalendar({ month }: { month: MonthView<Event> }) {
+  return (
+    <CalendarGrid>
+      {month.weeks.map((week) => (
+        <CalendarRow key={week[0].id}>
+          {week.map((day) => (
+            <CalendarCell
+              key={day.id}
+              date={day.date}
+              current={day.isCurrentMonth}
+              today={day.isToday}
+            >
+              {day.items.map((event) => (
+                <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+              ))}
+            </CalendarCell>
+          ))}
+        </CalendarRow>
+      ))}
+    </CalendarGrid>
+  );
+}
+
+function WeekCalendar({ week }: { week: WeekView<Event> }) {
+  return (
+    <CalendarGrid>
+      <CalendarRow>
+        {week.days.map((day) => (
+          <CalendarCell key={day.id} date={day.date} today={day.isToday}>
+            {day.items.map((event) => (
+              <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+            ))}
+          </CalendarCell>
+        ))}
+      </CalendarRow>
+    </CalendarGrid>
+  );
+}
+
+function DayCalendar({ day }: { day: DayView<Event> }) {
+  return (
+    <CalendarGrid>
+      <CalendarCell date={day.date} today={day.isToday}>
+        {day.items.length > 0
+          ? day.items.map((event) => <CalendarEvent key={event.id}>{event.title}</CalendarEvent>)
+          : 'No events'}
+      </CalendarCell>
+    </CalendarGrid>
+  );
+}
+```
+
+### suspense-month.tsx
+
+```tsx
+'use client';
+
+import { Suspense } from 'react';
+import {
+  CalendarProvider,
+  useCalendar,
+  useCalendarView,
+  useCreateCalendar,
+} from '@gobrand/react-calendar';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import {
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, fetchEvents } from './mock-data';
+
+export function SuspenseMonthExample() {
+  const calendar = useCreateCalendar({ views: { month: true } });
+
+  return (
+    <CalendarProvider calendar={calendar}>
+      <MonthCalendar />
+    </CalendarProvider>
+  );
+}
+
+function MonthCalendar() {
+  const calendar = useCalendar();
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous month"
+        nextLabel="Next month"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <Suspense fallback={<div>Loading events…</div>}>
+        <MonthContent />
+      </Suspense>
+    </Calendar>
+  );
+}
+
+function MonthContent() {
+  const calendar = useCalendar();
+  const { start, end } = calendar.visibleRange;
+  const { data: events } = useSuspenseQuery({
+    queryKey: ['events', start.toString(), end.toString()],
+    queryFn: () => fetchEvents(start, end),
+  });
+  const month = useCalendarView({
+    view: 'month',
+    items: events,
+    getDate: accessor.getDate,
+  });
+
+  return (
+    <CalendarGrid>
+      {month.weeks.map((week) => (
+        <CalendarRow key={week[0].id}>
+          {week.map((day) => (
+            <CalendarCell
+              key={day.id}
+              date={day.date}
+              current={day.isCurrentMonth}
+              today={day.isToday}
+            >
+              {day.items.map((event) => (
+                <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+              ))}
+            </CalendarCell>
+          ))}
+        </CalendarRow>
+      ))}
+    </CalendarGrid>
+  );
+}
+```
+
+### suspense-standalone.tsx
+
+```tsx
+import { useState } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SuspenseMonthExample } from './suspense-month';
+
+export function StandaloneSuspenseMonth() {
+  const [client] = useState(() => new QueryClient());
+  return (
+    <QueryClientProvider client={client}>
+      <SuspenseMonthExample />
+    </QueryClientProvider>
+  );
+}
+```
