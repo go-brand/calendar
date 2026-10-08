@@ -59,6 +59,21 @@ pnpm typecheck
 echo "Building..."
 pnpm build
 
+# Validate generated docs and packed consumers before version changes.
+echo "Testing documentation..."
+pnpm test:docs
+
+echo "Verifying packed packages..."
+pnpm verify:packages
+
+# Validation may regenerate tracked documentation.
+if [[ -n $(git status -s) ]]; then
+  echo -e "${RED}Error: Validation left uncommitted changes${NC}"
+  echo "Please review and commit generated changes before releasing"
+  git status -s
+  exit 1
+fi
+
 # Get current version from core package
 CURRENT_VERSION=$(node -p "require('./packages/core/package.json').version")
 echo "Current version: $CURRENT_VERSION"

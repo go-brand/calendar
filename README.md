@@ -31,3 +31,18 @@ pnpm add @gobrand/calendar-core @js-temporal/polyfill
 ## License
 
 MIT © [Ruben Costa](https://x.com/PonziChad) / [Go Brand](https://gobrand.app)
+
+## Contributing
+
+The contributor toolchain is pinned in `package.json` to pnpm 11.13.1. Ordinary
+pnpm requires Node 22.13 or newer; the standalone `@pnpm/exe` distribution bundles
+its own Node for pnpm. CI uses `pnpm/action-setup` with `standalone: true` and
+checks that package tests still run on the selected Node 20 or 22 runtime.
+The action now recommends its successor `pnpm/setup` for pnpm 11 and newer.
+These toolchain requirements do not change the packages' runtime support.
+
+Run `pnpm install --frozen-lockfile`, then `pnpm build`, `pnpm typecheck`,
+`pnpm lint`, `pnpm format:check`, `pnpm test --run`, `pnpm test:docs`, and
+`pnpm verify:packages`. After documentation generation, check
+`git diff --exit-code -- apps/www/public apps/www/src/generated skills/calendar`
+and commit any intentional generated changes before releasing.
