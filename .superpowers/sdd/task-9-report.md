@@ -47,3 +47,15 @@ Logs are retained in .superpowers/sdd/task-9-logs/ (local ignored evidence). The
 Changed both package manifests and scripts/verify-packages.ts. Added module-boundary.cts, module-boundary.mts, tsconfig.node16.json, tsconfig.nodenext.json, react-peer.test.tsx, tsconfig.peer.json, vitest.peer.config.ts under fixtures/package-consumer.
 
 Reviewed export order, compiler modes, invalid API assertions, installed-tarball imports, isolated peer manifests, exact-source checks, temporary cleanup, and the diff. Public signatures and legacy fields are unchanged; no hand edits to dist. No unresolved correctness concerns. User-owned untracked AGENTS.md is preserved.
+
+## Review correction: explicit compiler selection
+
+The original baseline coverage claim above was invalid: installing the TypeScript 5.9.3 alias alongside TypeScript 5.7 allowed pnpm's shared `tsc` executable to select the alias. Corrected every baseline invocation to `node node_modules/typescript/bin/tsc`, including Node16/NodeNext/bundler compilation, exact examples/snippets, `--listFilesOnly`, deliberate failure probes, restored-source compilation, and React 18/19 peer compilation. Targeted boundary checks use `node node_modules/typescript-targeted/bin/tsc`. Both temporary consumer manifests now pin the baseline to 5.7.3, and runtime version assertions fail on any unexpected compiler version and print evidence of the selected compiler.
+
+Validation after correction:
+
+- `npm exec --yes --package=@pnpm/exe@11.13.1 --package=node@22 -- sh -c 'node --version; pnpm exec node --version; pnpm verify:packages'`: exit 0; both Node probes report v22.23.3. Log explicitly records baseline `Version 5.7.3`, targeted `Version 5.9.3`, and baseline `Version 5.7.3` again for BOTH peer consumers. Retained examples: 10 tests pass; React 19 and React 18: one boundary navigation test each passes; final `Packed package verification passed`.
+- `pnpm test:docs`: exit 0; all 25 tests pass, including verifier and release-gate checks.
+- `pnpm lint`, `pnpm format:check`, and `git diff --check`: exit 0. Formatting was corrected before the final checks.
+
+Logs: `.superpowers/sdd/task-9-logs/compiler-selection-{node22,docs,lint,format}.log` (ignored local evidence). Host docs execution retains the previously documented Node module.register deprecation warning; maintained Node 22 packed verification passes. No runtime source, package policy, lockfile, public API, release version, or user-owned AGENTS.md changes.

@@ -24,6 +24,18 @@ const coreVersion = JSON.parse(readFileSync(join(root, 'packages/core/package.js
 const reactVersion = JSON.parse(readFileSync(join(root, 'packages/react/package.json'), 'utf8'))
   .version as string;
 
+const baselineCompiler = 'node_modules/typescript/bin/tsc';
+const targetedCompiler = 'node_modules/typescript-targeted/bin/tsc';
+
+function assertCompilerVersion(directory: string, compiler: string, expected: string) {
+  const version = execFileSync('node', [compiler, '--version'], {
+    cwd: directory,
+    encoding: 'utf8',
+  }).trim();
+  assert.equal(version, `Version ${expected}`, `Unexpected compiler at ${compiler}`);
+  console.log(`${compiler}: ${version}`);
+}
+
 function run(command: string, args: string[], cwd = root) {
   execFileSync(command, args, { cwd, stdio: 'inherit' });
 }
@@ -62,7 +74,7 @@ try {
     '@js-temporal/polyfill': '0.5.1',
     '@types/react': '19',
     react: '19.2.3',
-    typescript: '5.7',
+    typescript: '5.7.3',
     'typescript-targeted': 'npm:typescript@5.9.3',
   };
   manifest.devDependencies = {
@@ -106,23 +118,17 @@ try {
     ].join('\n'),
   );
   run('pnpm', ['install'], consumerDirectory);
-  run(
-    'node',
-    ['node_modules/typescript-targeted/bin/tsc', '-p', 'tsconfig.node16.json'],
-    consumerDirectory,
-  );
-  run(
-    'node',
-    ['node_modules/typescript-targeted/bin/tsc', '-p', 'tsconfig.nodenext.json'],
-    consumerDirectory,
-  );
-  run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.node16.json'], consumerDirectory);
-  run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.nodenext.json'], consumerDirectory);
-  run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.json'], consumerDirectory);
-  run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.examples.json'], consumerDirectory);
+  assertCompilerVersion(consumerDirectory, baselineCompiler, '5.7.3');
+  assertCompilerVersion(consumerDirectory, targetedCompiler, '5.9.3');
+  run('node', [targetedCompiler, '-p', 'tsconfig.node16.json'], consumerDirectory);
+  run('node', [targetedCompiler, '-p', 'tsconfig.nodenext.json'], consumerDirectory);
+  run('node', [baselineCompiler, '-p', 'tsconfig.node16.json'], consumerDirectory);
+  run('node', [baselineCompiler, '-p', 'tsconfig.nodenext.json'], consumerDirectory);
+  run('node', [baselineCompiler, '-p', 'tsconfig.json'], consumerDirectory);
+  run('node', [baselineCompiler, '-p', 'tsconfig.examples.json'], consumerDirectory);
   const compiledFiles = execFileSync(
-    'pnpm',
-    ['exec', 'tsc', '-p', 'tsconfig.examples.json', '--listFilesOnly'],
+    'node',
+    [baselineCompiler, '-p', 'tsconfig.examples.json', '--listFilesOnly'],
     { cwd: consumerDirectory, encoding: 'utf8' },
   ).split(/\r?\n/);
   for (const file of [
@@ -142,7 +148,7 @@ try {
       else writeFileSync(path, source);
       let output = '';
       try {
-        execFileSync('pnpm', ['exec', 'tsc', '-p', 'tsconfig.examples.json'], {
+        execFileSync('node', [baselineCompiler, '-p', 'tsconfig.examples.json'], {
           cwd: consumerDirectory,
           encoding: 'utf8',
           stdio: 'pipe',
@@ -180,7 +186,7 @@ try {
     /invalidView/,
   );
   expectCompileFailure('examples/cn.ts', undefined, /Cannot find module.*cn/);
-  run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.examples.json'], consumerDirectory);
+  run('node', [baselineCompiler, '-p', 'tsconfig.examples.json'], consumerDirectory);
   run('pnpm', ['exec', 'vitest', 'run', '--config', 'vitest.runtime.config.ts'], consumerDirectory);
   for (const format of ['import', 'require']) {
     for (const name of ['@gobrand/calendar-core', '@gobrand/react-calendar']) {
@@ -209,6 +215,7 @@ try {
   }
 
   function verifyPeer(directory: string, major: string) {
+    assertCompilerVersion(directory, baselineCompiler, '5.7.3');
     run(
       'node',
       [
@@ -230,7 +237,7 @@ try {
       ],
       directory,
     );
-    run('pnpm', ['exec', 'tsc', '-p', 'tsconfig.peer.json'], directory);
+    run('node', [baselineCompiler, '-p', 'tsconfig.peer.json'], directory);
     run('pnpm', ['exec', 'vitest', 'run', '--config', 'vitest.peer.config.ts'], directory);
   }
   verifyPeer(consumerDirectory, '19');
@@ -253,7 +260,7 @@ try {
       react: '18.3.1',
       'react-dom': '18.3.1',
       '@types/react': '18',
-      typescript: '5.7',
+      typescript: '5.7.3',
     },
     devDependencies: { ...manifest.devDependencies, '@types/react-dom': '18' },
   };
