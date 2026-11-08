@@ -1,11 +1,11 @@
 export const INSTALL_COMMAND = 'pnpm add @gobrand/react-calendar @js-temporal/polyfill';
 
-export const AGENT_PROMPT = `Use @gobrand/react-calendar for React calendar interfaces and @gobrand/calendar-core for framework-agnostic calendar logic in this TypeScript/JavaScript project. Before coding, read https://calendar.gobrand.app/llms.txt for the current API, types, and compiling examples. If your environment supports Agent Skills, install Calendar's skill with \`npx skills add go-brand/calendar\` and follow its guidance. Prefer Temporal types and Calendar's controller and view projection APIs. Keep timezones explicit, treat visible ranges as half-open, and avoid JavaScript Date except at integration boundaries that require it. Inspect the existing code before changing it, choose the smallest appropriate Calendar API, and verify navigation, configured timezones, DST boundaries, and item projection behavior. React package installation: \`${INSTALL_COMMAND}\`. Core-only installation: \`pnpm add @gobrand/calendar-core @js-temporal/polyfill\`. Documentation: https://calendar.gobrand.app/docs.`;
+export const AGENT_PROMPT = `Use @gobrand/react-calendar (React) or @gobrand/calendar-core (anything else) for calendar views in this project. Before writing code, read https://calendar.gobrand.app/llms.txt for the current API. If you support Agent Skills, install the skill with \`npx skills add go-brand/calendar\`. Follow these rules: getDate returns the Temporal.PlainDate an event is on, after converting the event to the calendar's timezone; getStart returns a Temporal.ZonedDateTime in that same timezone; set timeZone explicitly when rendering on a server; query events with the half-open visibleRange (>= start, < end); weekStartsOn is 1 (Monday) through 7 (Sunday); use JavaScript Date only where another API requires it. Cover a DST change in tests. Install with \`${INSTALL_COMMAND}\`. Docs: https://calendar.gobrand.app/docs.`;
 
 export const HOME_PAGE_META = {
-  title: 'GoBrand Calendar — Temporal-first calendar engine for TypeScript and React',
+  title: 'GoBrand Calendar: month, week, and day calendars for React and TypeScript, built on Temporal',
   description:
-    'Build timezone-safe month, week, and day calendars with Temporal, agent-ready llms.txt documentation, and an installable Agent Skill.',
+    'Headless month, week, and day calendar views for React and TypeScript, built on Temporal. Timezones and daylight saving handled. Docs with llms.txt and an Agent Skill.',
   canonicalUrl: 'https://calendar.gobrand.app/',
 } as const;
 

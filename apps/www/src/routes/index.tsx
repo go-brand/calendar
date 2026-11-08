@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { HomeLayout } from 'fumadocs-ui/layouts/home';
-import { CalendarBenefits } from '@/components/landing/calendar-benefits';
+import { CalendarBugs } from '@/components/landing/calendar-bugs';
+import { CalendarCode } from '@/components/landing/calendar-code';
 import { CalendarHero } from '@/components/landing/calendar-hero';
-import { LearningPaths } from '@/components/landing/learning-paths';
 import { TiempoCallout } from '@/components/landing/tiempo-callout';
 import { HOME_PAGE_META, HOME_PAGE_STRUCTURED_DATA } from '@/lib/homepage';
 import { baseOptions } from '@/lib/layout.shared';
@@ -38,8 +38,8 @@ function Home() {
       <main id="main-content" className="calendar-landing">
         <div className="landing-shell">
           <CalendarHero />
-          <CalendarBenefits />
-          <LearningPaths />
+          <CalendarBugs />
+          <CalendarCode />
           <TiempoCallout />
         </div>
       </main>
