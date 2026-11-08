@@ -23,11 +23,10 @@ export function CalendarHero() {
   return (
     <section className="landing-hero">
       <div className="landing-intro">
-        <p className="landing-kicker">Temporal-first calendar engine</p>
-        <h1>Build calendars without timezone bugs.</h1>
+        <h1>Build the calendar, not the date math.</h1>
         <p className="landing-description">
-          Headless month, week, and day views with explicit timezone, range, and projection
-          contracts.
+          Month, week, and day views for React, built on Temporal. Navigation, timezones, and
+          daylight saving handled. You write the markup.
         </p>
 
         <div className="landing-actions">
@@ -56,10 +55,10 @@ export function CalendarHero() {
         </div>
 
         <p className="landing-agent-note">
-          The prompt points your coding agent to Calendar's{' '}
-          <a href="https://calendar.gobrand.app/llms.txt">llms.txt</a> and installable{' '}
+          Made for you and your agent. The prompt points it to{' '}
+          <a href="https://calendar.gobrand.app/llms.txt">llms.txt</a> and the{' '}
           <a href="https://calendar.gobrand.app/.well-known/agent-skills/calendar/SKILL.md">
-            Agent Skill
+            Calendar skill
           </a>
           .
         </p>

@@ -62,16 +62,6 @@
     text-wrap: balance;
   }
 
-  .landing-kicker {
-    margin-bottom: 1rem;
-    font-family: 'SFMono-Regular', Consolas, monospace;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--landing-sky);
-  }
-
   .landing-description {
     max-width: 44rem;
     margin-top: 1.5rem;
@@ -148,8 +138,7 @@
     color: #e5e5e5;
   }
 
-  .landing-actions :where(a, button):hover,
-  .landing-learning-link:hover {
+  .landing-actions :where(a, button):hover {
     border-color: rgb(56 189 248 / 0.55);
     color: #ffffff;
   }
@@ -191,13 +180,8 @@
     border-color: rgb(255 255 255 / 0.18);
   }
 
-  .landing-benefits > h2,
-  .landing-heading {
+  .landing-title {
     max-width: 46rem;
-  }
-
-  .landing-benefits > h2,
-  .landing-heading h2 {
     font-size: clamp(1.75rem, 4vw, 2.75rem);
     font-weight: 600;
     letter-spacing: -0.025em;
@@ -205,84 +189,71 @@
     text-wrap: balance;
   }
 
-  .landing-heading > p:last-child {
-    max-width: 42rem;
-    margin-top: 1rem;
-    color: #a3a3a3;
-    line-height: 1.7;
-  }
-
-  .landing-benefit-list {
-    margin-top: 2rem;
-    border-block: 1px solid rgb(255 255 255 / 0.1);
-  }
-
-  .landing-benefit-row {
+  .landing-bugs {
     display: grid;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .landing-bug {
     min-width: 0;
-    gap: 0.5rem;
-    padding-block: 1.25rem;
-    border-bottom: 1px solid rgb(255 255 255 / 0.1);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 1rem;
+    padding: 1.25rem;
   }
 
-  .landing-benefit-row:last-child {
-    border-bottom: 0;
-  }
-
-  .landing-benefit-row h3 {
+  .landing-bug h3 {
     font-weight: 600;
     color: #f5f5f5;
   }
 
-  .landing-benefit-row p {
+  .landing-bug p {
+    margin-top: 0.5rem;
     color: #a3a3a3;
     line-height: 1.6;
   }
 
-  .landing-learning-links {
-    display: grid;
-    gap: 0.75rem;
+  .landing-code {
+    max-width: 46rem;
     margin-top: 2rem;
+    overflow-x: auto;
+    border: 1px solid rgb(255 255 255 / 0.1);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    background: #0a0a0a;
+    color: #e5e5e5;
+    font-size: 0.875rem;
+    line-height: 1.7;
   }
 
-  .landing-learning-link {
+  .landing-cta {
     display: flex;
-    min-width: 0;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    border: 1px solid rgb(255 255 255 / 0.1);
+  }
+
+  .landing-cta p {
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-weight: 600;
+  }
+
+  .landing-cta a {
     border-radius: 0.75rem;
-    padding: 1rem;
-    color: #d4d4d4;
-    transition:
-      border-color 150ms ease,
-      color 150ms ease;
-  }
-
-  .landing-learning-copy {
-    display: grid;
-    min-width: 0;
-    gap: 0.25rem;
-  }
-
-  .landing-learning-copy > span:first-child {
-    color: var(--landing-sky);
-    font-family: 'SFMono-Regular', Consolas, monospace;
-    font-size: 0.6875rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .landing-learning-copy > span:last-child {
-    color: #737373;
+    padding: 0.75rem 1.25rem;
+    background: var(--landing-sky);
+    color: #082f49;
     font-size: 0.875rem;
-    line-height: 1.5;
+    font-weight: 600;
+  }
+
+  .landing-cta a:hover {
+    background: #7dd3fc;
   }
 
   .landing-tiempo {
-    border-top: 1px solid rgb(255 255 255 / 0.1);
-    padding-block: 2rem 3.5rem;
+    padding-block: 0 3.5rem;
     color: #737373;
     font-size: 0.875rem;
     line-height: 1.6;
@@ -301,10 +272,9 @@
     color: #cffafe;
   }
 
-  @media (min-width: 640px) {
-    .landing-benefit-row {
-      grid-template-columns: minmax(10rem, 0.35fr) minmax(0, 1fr);
-      gap: 2rem;
+  @media (min-width: 768px) {
+    .landing-bugs {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
   }
 
