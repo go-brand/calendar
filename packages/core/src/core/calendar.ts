@@ -79,7 +79,10 @@ function rangeFor(
 }
 
 export function getCalendarMetadata(calendar: CalendarController): ControllerMetadata {
-  const metadata = controllerMetadata.get(calendar);
+  // React's item-bearing result is an immediate wrapper around a registered controller.
+  // Only that one prototype layer is supported, not arbitrary wrapper chains.
+  const metadata =
+    controllerMetadata.get(calendar) ?? controllerMetadata.get(Object.getPrototypeOf(calendar));
   if (!metadata) throw new Error('Unknown calendar controller');
   return metadata;
 }

@@ -50,7 +50,7 @@
   }
 
   .landing-intro {
-    max-width: 56rem;
+    max-width: 64rem;
   }
 
   .landing-intro h1 {
@@ -106,18 +106,38 @@
     display: flex;
     max-width: 100%;
     align-items: center;
-    gap: 1rem;
+    justify-content: space-between;
+    gap: 0.75rem;
     background: #171717;
     color: #d4d4d4;
     text-align: left;
   }
 
-  .landing-actions button code {
+  .landing-actions button code,
+  .landing-actions button span {
     overflow-wrap: anywhere;
   }
 
-  .landing-actions button span {
+  .landing-actions button svg {
+    width: 1rem;
+    height: 1rem;
     flex-shrink: 0;
+  }
+
+  .landing-actions .landing-agent-action {
+    justify-content: center;
+    border-color: var(--landing-sky);
+    background: var(--landing-sky);
+    color: #082f49;
+  }
+
+  .landing-actions .landing-agent-action:hover {
+    border-color: #7dd3fc;
+    background: #7dd3fc;
+    color: #082f49;
+  }
+
+  .landing-actions .landing-install-action svg {
     color: var(--landing-cyan);
   }
 
@@ -131,6 +151,24 @@
   .landing-actions :where(a, button):hover,
   .landing-learning-link:hover {
     border-color: rgb(56 189 248 / 0.55);
+    color: #ffffff;
+  }
+
+  .landing-agent-note {
+    margin-top: 1rem;
+    color: #737373;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+
+  .landing-agent-note a {
+    color: #d4d4d4;
+    text-decoration: underline;
+    text-decoration-color: rgb(56 189 248 / 0.45);
+    text-underline-offset: 0.2rem;
+  }
+
+  .landing-agent-note a:hover {
     color: #ffffff;
   }
 
@@ -280,6 +318,10 @@
       justify-content: center;
     }
 
+    .landing-actions button,
+    .landing-actions a {
+      width: 100%;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

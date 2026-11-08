@@ -1,7 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
-import { describe, expect, it } from 'vitest';
-import { createCalendar } from './calendar';
-import { buildDayView, buildMonthView, buildWeekView } from './projections';
+import { describe, expect, it, vi } from 'vitest';
+import { createCalendar, buildDayView, buildMonthView, buildWeekView } from '../index';
 
 describe('calendar v1 projections', () => {
   it('uses default timed geometry from true shorthand', () => {
@@ -78,16 +77,32 @@ describe('calendar v1 projections', () => {
     expect(buildDayView({ calendar }).items).toEqual([]);
   });
 
+  it('accepts only an immediate descendant of a registered controller', () => {
+    const wrapper: typeof calendar = Object.create(calendar);
+    expect(buildDayView({ calendar: wrapper }).date.toString()).toBe('2026-07-10');
+    const nested: typeof calendar = Object.create(wrapper);
+    expect(() => buildDayView({ calendar: nested })).toThrow('Unknown calendar controller');
+    const unrelated: typeof calendar = Object.create(null);
+    expect(() => buildDayView({ calendar: unrelated })).toThrow();
+  });
+
   it('uses the configured timezone for isToday', () => {
     const timeZone = 'Pacific/Kiritimati';
-    const today = Temporal.Now.zonedDateTimeISO(timeZone).toPlainDate();
+    const now = Temporal.ZonedDateTime.from('2026-07-10T00:30:00+14:00[Pacific/Kiritimati]');
+    const clock = vi.spyOn(Temporal.Now, 'zonedDateTimeISO').mockReturnValue(now);
+    const today = now.toPlainDate();
     const zonedCalendar = createCalendar({
       views: { day: true },
       date: today,
       timeZone,
     });
 
-    expect(buildDayView({ calendar: zonedCalendar }).isToday).toBe(true);
+    try {
+      expect(buildDayView({ calendar: zonedCalendar }).isToday).toBe(true);
+      expect(clock).toHaveBeenCalledWith(timeZone);
+    } finally {
+      clock.mockRestore();
+    }
   });
 
   it('rejects items without getDate for JavaScript consumers', () => {

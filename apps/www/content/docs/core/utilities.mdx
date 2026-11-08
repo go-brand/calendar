@@ -1,185 +1,103 @@
 ---
 title: Utilities
-description: Formatting, navigation, and timezone helpers
+description: Weekday labels and direct Temporal recipes for formatting, navigation, and timezone conversion.
 ---
+
+The core package exports five values: `createCalendar`, `buildMonthView`, `buildWeekView`, `buildDayView`, and `getWeekdays`. Use Temporal directly for other date operations.
 
 ## Formatting
 
 ### getWeekdays
 
-Get localized weekday names in the correct order for your calendar header.
+Get localized weekday names in calendar order. Temporal uses `1` for Monday through `7` for Sunday.
 
 ```typescript
 import { getWeekdays } from '@gobrand/calendar-core';
 
-getWeekdays();
-// ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-
-getWeekdays(7);                    // Sunday start
-// ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-
-getWeekdays(1, 'es-ES');           // Spanish
-// ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
-
-getWeekdays(1, 'en-US', 'long');   // Full names
-// ["Monday", "Tuesday", ...]
-
-getWeekdays(7, 'en-US', 'narrow'); // Single letter
-// ["S", "M", "T", "W", "T", "F", "S"]
-```
-
-**Signature:**
-```typescript
-function getWeekdays(
-  weekStartsOn?: 1 | 2 | 3 | 4 | 5 | 6 | 7, // Temporal: 1 (Monday) through 7 (Sunday)
-  locale?: string | string[],                // Default: 'en-US'. Array for fallback locales
-  format?: 'long' | 'short' | 'narrow'       // Default: 'short'
-): string[];
+getWeekdays(); // Monday start, short English names
+getWeekdays(7); // Sunday start
+getWeekdays(1, 'es-ES');
+getWeekdays(1, 'en-US', 'long');
+getWeekdays(7, 'en-US', 'narrow');
 ```
 
 ### getMonthName
 
-Get localized month name from a `PlainYearMonth`.
+Format a Temporal month directly; there is no `getMonthName` package export.
 
 ```typescript
-import { getMonthName } from '@gobrand/calendar-core';
 import { Temporal } from '@js-temporal/polyfill';
 
 const month = Temporal.PlainYearMonth.from('2025-01');
-
-getMonthName(month);          // "January"
-getMonthName(month, 'es-ES'); // "enero"
-getMonthName(month, 'ja-JP'); // "1月"
+month.toLocaleString('es-ES', { month: 'long' }); // enero
 ```
 
 ### formatTime
 
-Format a `PlainTime` for display.
-
 ```typescript
-import { formatTime } from '@gobrand/calendar-core';
 import { Temporal } from '@js-temporal/polyfill';
 
 const time = Temporal.PlainTime.from('14:30');
-
-formatTime(time);          // "2:30 PM"
-formatTime(time, 'en-GB'); // "14:30"
+time.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
 ```
 
 ## Timezone
 
 ### getCurrentTimeZone
 
-Get the system's IANA timezone.
-
-```typescript
-import { getCurrentTimeZone } from '@gobrand/calendar-core';
-
-getCurrentTimeZone(); // "America/New_York"
-```
+Use `Temporal.Now.timeZoneId()` to obtain the system timezone.
 
 ### convertToTimezone
 
-Convert a `ZonedDateTime` to a different timezone.
-
 ```typescript
-import { convertToTimezone } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
 
 const ny = Temporal.ZonedDateTime.from('2025-01-15T14:00:00-05:00[America/New_York]');
-const tokyo = convertToTimezone(ny, 'Asia/Tokyo');
+const tokyo = ny.withTimeZone('Asia/Tokyo');
 // 2025-01-16T04:00:00+09:00[Asia/Tokyo]
 ```
 
 ### createZonedDateTime
 
-Create a `ZonedDateTime` from date and time components.
-
 ```typescript
-import { createZonedDateTime } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
 
 const date = Temporal.PlainDate.from('2025-01-15');
 const time = Temporal.PlainTime.from('14:30');
-const zdt = createZonedDateTime(date, time, 'America/New_York');
-// 2025-01-15T14:30:00-05:00[America/New_York]
+const zoned = date.toZonedDateTime({ timeZone: 'America/New_York', plainTime: time });
 ```
 
 ## Navigation
 
-Standalone navigation functions for use outside `createCalendar`:
+Use controller `next()`, `previous()`, and `today()` for the active view. For standalone calculations, Temporal supports explicit units:
 
 ```typescript
-import {
-  nextMonth,
-  previousMonth,
-  nextWeek,
-  previousWeek,
-  nextDay,
-  previousDay,
-} from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
 
-// Month navigation
-const jan = Temporal.PlainYearMonth.from('2025-01');
-nextMonth(jan);     // 2025-02
-previousMonth(jan); // 2024-12
-
-// Week navigation
 const date = Temporal.PlainDate.from('2025-01-15');
-nextWeek(date);     // 2025-01-22
-previousWeek(date); // 2025-01-08
-
-// Day navigation
-nextDay(date);      // 2025-01-16
-previousDay(date);  // 2025-01-14
+date.add({ months: 1 });
+date.subtract({ weeks: 1 });
+date.add({ days: 1 });
 ```
 
 ## Date Ranges
 
-Get date ranges for the current period. Useful for data fetching.
+Use the controller's half-open visible range for querying data:
 
 ```typescript
-import {
-  getMonthRange,
-  getWeekRange,
-  getDayRange,
-} from '@gobrand/calendar-core';
+import { createCalendar } from '@gobrand/calendar-core';
+import { Temporal } from '@js-temporal/polyfill';
 
-// Ranges are aligned to week boundaries
-const monthRange = getMonthRange('America/New_York', 1); // Monday start
-// { start: PlainDate, end: PlainDate }
-
-const weekRange = getWeekRange('America/New_York', 1);
-const dayRange = getDayRange('America/New_York');
+const calendar = createCalendar({
+  views: { month: true },
+  date: Temporal.PlainDate.from('2025-01-15'),
+  timeZone: 'America/New_York',
+});
+const { start, end } = calendar.visibleRange;
 ```
+
+Query `>= start` and `< end`. See [timezones and ranges](/docs/timezones-and-ranges).
 
 ## Layout Helpers
 
-For rendering events in time-based views:
-
-### getEventPosition
-
-Calculate CSS position for an event block.
-
-```typescript
-import { getEventPosition } from '@gobrand/calendar-core';
-
-const position = getEventPosition(
-  eventStart,   // ZonedDateTime
-  eventEnd,     // ZonedDateTime
-  8,            // Day starts at 8 AM
-  60            // 60px per hour
-);
-// { top: 60, height: 90 }
-// Event starts 1 hour after 8 AM (top: 60px)
-// Event is 1.5 hours long (height: 90px)
-```
-
-### getTimeSlotHeight
-
-Calculate height for time slots.
-
-```typescript
-import { getTimeSlotHeight } from '@gobrand/calendar-core';
-
-getTimeSlotHeight(30, 60);  // 30px (half-hour slot at 60px/hour)
-getTimeSlotHeight(15, 60);  // 15px (quarter-hour slot)
-```
+Calendar is headless. Week and day projections provide Temporal geometry and items; your rendering code chooses CSS dimensions and event layout. The package does not export CSS positioning helpers. See the [complete week example](/docs/examples/week-view).

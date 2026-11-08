@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import test, { before } from 'node:test';
+import { exampleManifest, exampleFiles, sourceMarkdown, resolvePreviews } from './example-sources';
 
 const siteUrl = 'https://calendar.gobrand.app';
 const generatedFiles = [
@@ -13,6 +14,7 @@ const generatedFiles = [
   'apps/www/public/.well-known/agent-skills/calendar/SKILL.md',
   'apps/www/src/generated/agent-markdown.ts',
   'skills/calendar/SKILL.md',
+  ...exampleManifest.map((example) => `apps/www/public/examples/${example.name}.md`),
 ];
 
 function generate(): void {
@@ -83,4 +85,28 @@ test('generation is deterministic', () => {
   for (const file of generatedFiles) {
     assert.equal(text(file), beforeGeneration.get(file), file);
   }
+});
+
+test('publishes complete example bytes and resolves every preview', () => {
+  const full = text('apps/www/public/llms-full.txt');
+  const negotiated = text('apps/www/src/generated/agent-markdown.ts');
+  assert.doesNotMatch(full, /<CalendarPreview/);
+  assert.doesNotMatch(negotiated, /<CalendarPreview/);
+  for (const file of new Set(exampleManifest.flatMap(exampleFiles))) {
+    assert.equal(full.split(`### ${file}\n`).length - 1, 1, `deduplicated ${file}`);
+    assert.ok(full.includes(sourceMarkdown([file])));
+  }
+  const registry = text('apps/www/src/components/examples/registry.tsx');
+  const names = [...registry.matchAll(/^  '([^']+)': \{/gm)].map((match) => match[1]).sort();
+  assert.deepEqual(exampleManifest.map((example) => example.name).sort(), names);
+  for (const example of exampleManifest) {
+    const bundle = text(`apps/www/public/examples/${example.name}.md`);
+    assert.ok(bundle.includes(sourceMarkdown(exampleFiles(example))));
+    assert.doesNotMatch(bundle, /from ["']@\//);
+  }
+  assert.throws(
+    () => resolvePreviews('<CalendarPreview name="missing-preview" />'),
+    /Unknown CalendarPreview name: missing-preview/,
+  );
+  assert.throws(() => sourceMarkdown(['missing-helper.ts']), /missing-helper/);
 });

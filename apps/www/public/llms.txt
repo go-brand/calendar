@@ -51,4 +51,4 @@ temporal-calendar provides type-safe calendar building blocks using the modern T
 - [createCalendar](https://calendar.gobrand.app/docs/core/create-calendar): Create an item-agnostic controller from a non-empty view configuration.
 - [View Projections](https://calendar.gobrand.app/docs/core/projections): Build month, week, and day models from controller state and local data.
 - [Visible ranges](https://calendar.gobrand.app/docs/core/visible-ranges): Understand Calendar's timezone-aware, half-open query boundary.
-- [Utilities](https://calendar.gobrand.app/docs/core/utilities): Formatting, navigation, and timezone helpers
+- [Utilities](https://calendar.gobrand.app/docs/core/utilities): Weekday labels and direct Temporal recipes for formatting, navigation, and timezone conversion.

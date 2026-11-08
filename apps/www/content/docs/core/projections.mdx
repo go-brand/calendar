@@ -21,3 +21,5 @@ const week = buildWeekView({
 ```
 
 Calling a projection without `items` returns a data-free grid and needs no accessor or fake item type.
+
+The builders also accept the item-bearing controller returned by React `useCreateCalendar`, without unwrapping it. Pass the current render's controller and the items and accessors for the projection you want to build.

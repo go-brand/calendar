@@ -31,6 +31,7 @@ import {
   useMemo,
   useReducer,
   useState,
+  useSyncExternalStore,
 } from 'react';
 import type { ReactNode } from 'react';
 
@@ -89,6 +90,24 @@ export type CalendarWithActiveView<
 
 const CalendarContext = createContext<AnyCalendarController | null>(null);
 const calendarAliases = new WeakMap<object, AnyCalendarController>();
+const ownedCalendars = new WeakSet<object>();
+const noSubscription = () => () => {};
+const constantSnapshot = () => '';
+
+function useCalendarSubscription(calendar: AnyCalendarController | null) {
+  const source = useMemo(() => {
+    // Hook-owned state is synchronized by useCreateCalendar. Never observe its
+    // transient controlled proposals through an external-store snapshot.
+    if (!calendar || ownedCalendars.has(calendar)) {
+      return { subscribe: noSubscription, snapshot: constantSnapshot };
+    }
+    return {
+      subscribe: (listener: () => void) => calendar.subscribe(listener),
+      snapshot: () => `${calendar.date.toString()}|${calendar.view}`,
+    };
+  }, [calendar]);
+  useSyncExternalStore(source.subscribe, source.snapshot, source.snapshot);
+}
 
 function unwrapCalendar(calendar: AnyCalendarController) {
   return calendarAliases.get(calendar) ?? calendar;
@@ -163,14 +182,17 @@ export function useCreateCalendar<const TViews extends NonEmptyCalendarViews, TI
     controlledDate !== undefined || controlledView !== undefined ? revision : 0;
 
   const calendar = useMemo(
-    () =>
-      createCalendar({
+    () => {
+      const created = createCalendar({
         views,
         date: resolvedDate,
         view: resolvedView,
         timeZone,
         weekStartsOn,
-      }),
+      });
+      ownedCalendars.add(created);
+      return created;
+    },
     // View geometry and Temporal values use stable value signatures intentionally.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [signature, dateSignature, resolvedView, timeZone, weekStartsOn, controlledRevision],
@@ -232,6 +254,7 @@ export function CalendarProvider({
 
 export function useCalendar(): ContextCalendarController {
   const calendar = useContext(CalendarContext);
+  useCalendarSubscription(calendar);
   if (!calendar) {
     throw new Error('useCalendar must be used within CalendarProvider');
   }
@@ -255,6 +278,7 @@ export function useCalendarView<TName extends ViewName, TItem>(
 ): ViewModel<TName, TItem> {
   const contextCalendar = useContext(CalendarContext);
   const calendar = options.calendar ? unwrapCalendar(options.calendar) : contextCalendar;
+  useCalendarSubscription(calendar);
   if (!calendar) {
     throw new Error('useCalendarView must be used within CalendarProvider or receive a calendar');
   }

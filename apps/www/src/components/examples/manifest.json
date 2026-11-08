@@ -1,0 +1,123 @@
+[
+  {
+    "name": "basic-month",
+    "entry": "basic-month.tsx",
+    "export": "BasicMonthExample",
+    "support": [
+      "calendar-ui.tsx",
+      "mock-data.ts",
+      "cn.ts"
+    ],
+    "dependencies": {
+      "@gobrand/react-calendar": "*",
+      "@js-temporal/polyfill": "0.5.1",
+      "react": "19",
+      "tailwind-merge": "^3.3.1",
+      "react-dom": "19"
+    }
+  },
+  {
+    "name": "date-picker",
+    "entry": "date-picker.tsx",
+    "export": "DatePickerExample",
+    "support": [
+      "calendar-ui.tsx",
+      "mock-data.ts",
+      "cn.ts"
+    ],
+    "dependencies": {
+      "@gobrand/react-calendar": "*",
+      "@js-temporal/polyfill": "0.5.1",
+      "react": "19",
+      "tailwind-merge": "^3.3.1",
+      "react-dom": "19"
+    }
+  },
+  {
+    "name": "simple-week",
+    "entry": "week-view.tsx",
+    "export": "SimpleWeekExample",
+    "support": [
+      "calendar-ui.tsx",
+      "mock-data.ts",
+      "cn.ts"
+    ],
+    "dependencies": {
+      "@gobrand/react-calendar": "*",
+      "@js-temporal/polyfill": "0.5.1",
+      "react": "19",
+      "tailwind-merge": "^3.3.1",
+      "react-dom": "19"
+    }
+  },
+  {
+    "name": "week-slots",
+    "entry": "week-view.tsx",
+    "export": "WeekSlotsExample",
+    "support": [
+      "calendar-ui.tsx",
+      "mock-data.ts",
+      "cn.ts"
+    ],
+    "dependencies": {
+      "@gobrand/react-calendar": "*",
+      "@js-temporal/polyfill": "0.5.1",
+      "react": "19",
+      "tailwind-merge": "^3.3.1",
+      "react-dom": "19"
+    }
+  },
+  {
+    "name": "day-view",
+    "entry": "day-view.tsx",
+    "export": "DayViewExample",
+    "support": [
+      "calendar-ui.tsx",
+      "mock-data.ts",
+      "cn.ts"
+    ],
+    "dependencies": {
+      "@gobrand/react-calendar": "*",
+      "@js-temporal/polyfill": "0.5.1",
+      "react": "19",
+      "tailwind-merge": "^3.3.1",
+      "react-dom": "19"
+    }
+  },
+  {
+    "name": "multi-view",
+    "entry": "multi-view.tsx",
+    "export": "MultiViewExample",
+    "support": [
+      "calendar-ui.tsx",
+      "mock-data.ts",
+      "cn.ts"
+    ],
+    "dependencies": {
+      "@gobrand/react-calendar": "*",
+      "@js-temporal/polyfill": "0.5.1",
+      "react": "19",
+      "tailwind-merge": "^3.3.1",
+      "react-dom": "19"
+    }
+  },
+  {
+    "name": "suspense-month",
+    "entry": "suspense-month.tsx",
+    "export": "SuspenseMonthExample",
+    "support": [
+      "calendar-ui.tsx",
+      "mock-data.ts",
+      "cn.ts"
+    ],
+    "dependencies": {
+      "@gobrand/react-calendar": "*",
+      "@js-temporal/polyfill": "0.5.1",
+      "react": "19",
+      "tailwind-merge": "^3.3.1",
+      "@tanstack/react-query": "^5.90.0",
+      "react-dom": "19"
+    },
+    "bootstrap": "suspense-standalone.tsx"
+  }
+]

@@ -1,11 +1,8 @@
-import { test, fc } from "@fast-check/vitest";
-import { describe, expect } from "vitest";
-import { Temporal } from "@js-temporal/polyfill";
-import { buildMonth } from "./utils/buildMonth";
-import { buildWeek } from "./utils/buildWeek";
-import { buildDay } from "./utils/buildDay";
-import { getWeekDateRange, getMonthDateRange } from "./utils/dateRanges";
-import type { CalendarAccessor } from "./types";
+import { test, fc } from '@fast-check/vitest';
+import { describe, expect } from 'vitest';
+import { Temporal } from '@js-temporal/polyfill';
+import { createCalendar, buildMonthView, buildWeekView, buildDayView } from './index';
+import { getWeekDateRange, getMonthDateRange } from './utils/dateRanges';
 
 /**
  * Property-based invariants.
@@ -35,11 +32,17 @@ const plainDateArb = fc
 
 // --- buildMonth -------------------------------------------------------------
 
-describe("buildMonth invariants", () => {
+describe('public month invariants', () => {
   test.prop([yearArb, monthArb, weekStartArb])(
-    "every week contains exactly 7 days",
+    'every week contains exactly 7 days',
     (year, month, weekStartsOn) => {
-      const { weeks } = buildMonth(year, month, { weekStartsOn });
+      const { weeks } = buildMonthView({
+        calendar: createCalendar({
+          views: { month: true },
+          date: Temporal.PlainDate.from({ year, month, day: 1 }),
+          weekStartsOn,
+        }),
+      });
       for (const week of weeks) {
         expect(week).toHaveLength(7);
       }
@@ -47,27 +50,45 @@ describe("buildMonth invariants", () => {
   );
 
   test.prop([yearArb, monthArb, weekStartArb])(
-    "a month grid is always 4 to 6 weeks",
+    'a month grid is always 4 to 6 weeks',
     (year, month, weekStartsOn) => {
-      const { weeks } = buildMonth(year, month, { weekStartsOn });
+      const { weeks } = buildMonthView({
+        calendar: createCalendar({
+          views: { month: true },
+          date: Temporal.PlainDate.from({ year, month, day: 1 }),
+          weekStartsOn,
+        }),
+      });
       expect(weeks.length).toBeGreaterThanOrEqual(4);
       expect(weeks.length).toBeLessThanOrEqual(6);
     },
   );
 
   test.prop([yearArb, monthArb, weekStartArb])(
-    "the grid begins on the configured weekStartsOn",
+    'the grid begins on the configured weekStartsOn',
     (year, month, weekStartsOn) => {
-      const { weeks } = buildMonth(year, month, { weekStartsOn });
+      const { weeks } = buildMonthView({
+        calendar: createCalendar({
+          views: { month: true },
+          date: Temporal.PlainDate.from({ year, month, day: 1 }),
+          weekStartsOn,
+        }),
+      });
       // Temporal dayOfWeek and weekStartsOn are both 1..7 (Mon..Sun).
       expect(weeks[0][0].date.dayOfWeek).toBe(weekStartsOn);
     },
   );
 
   test.prop([yearArb, monthArb, weekStartArb])(
-    "days are strictly contiguous with no gaps or repeats",
+    'days are strictly contiguous with no gaps or repeats',
     (year, month, weekStartsOn) => {
-      const days = buildMonth(year, month, { weekStartsOn }).weeks.flat();
+      const days = buildMonthView({
+        calendar: createCalendar({
+          views: { month: true },
+          date: Temporal.PlainDate.from({ year, month, day: 1 }),
+          weekStartsOn,
+        }),
+      }).weeks.flat();
       for (let i = 1; i < days.length; i++) {
         const expected = days[i - 1].date.add({ days: 1 });
         expect(days[i].date.equals(expected)).toBe(true);
@@ -76,9 +97,15 @@ describe("buildMonth invariants", () => {
   );
 
   test.prop([yearArb, monthArb, weekStartArb])(
-    "the count of current-month days equals daysInMonth",
+    'the count of current-month days equals daysInMonth',
     (year, month, weekStartsOn) => {
-      const { weeks } = buildMonth(year, month, { weekStartsOn });
+      const { weeks } = buildMonthView({
+        calendar: createCalendar({
+          views: { month: true },
+          date: Temporal.PlainDate.from({ year, month, day: 1 }),
+          weekStartsOn,
+        }),
+      });
       const daysInMonth = Temporal.PlainYearMonth.from({ year, month }).daysInMonth;
       const currentMonthDays = weeks.flat().filter((d) => d.isCurrentMonth);
       expect(currentMonthDays).toHaveLength(daysInMonth);
@@ -86,9 +113,15 @@ describe("buildMonth invariants", () => {
   );
 
   test.prop([yearArb, monthArb, weekStartArb])(
-    "isCurrentMonth is true exactly for days in the target month",
+    'isCurrentMonth is true exactly for days in the target month',
     (year, month, weekStartsOn) => {
-      const days = buildMonth(year, month, { weekStartsOn }).weeks.flat();
+      const days = buildMonthView({
+        calendar: createCalendar({
+          views: { month: true },
+          date: Temporal.PlainDate.from({ year, month, day: 1 }),
+          weekStartsOn,
+        }),
+      }).weeks.flat();
       for (const day of days) {
         const inTargetMonth = day.date.year === year && day.date.month === month;
         expect(day.isCurrentMonth).toBe(inTargetMonth);
@@ -97,12 +130,18 @@ describe("buildMonth invariants", () => {
   );
 
   test.prop([yearArb, monthArb, weekStartArb])(
-    "the grid contains both the first and last day of the month",
+    'the grid contains both the first and last day of the month',
     (year, month, weekStartsOn) => {
       const ym = Temporal.PlainYearMonth.from({ year, month });
       const first = ym.toPlainDate({ day: 1 });
       const last = ym.toPlainDate({ day: ym.daysInMonth });
-      const days = buildMonth(year, month, { weekStartsOn }).weeks.flat();
+      const days = buildMonthView({
+        calendar: createCalendar({
+          views: { month: true },
+          date: Temporal.PlainDate.from({ year, month, day: 1 }),
+          weekStartsOn,
+        }),
+      }).weeks.flat();
       expect(days.some((d) => d.date.equals(first))).toBe(true);
       expect(days.some((d) => d.date.equals(last))).toBe(true);
     },
@@ -112,14 +151,21 @@ describe("buildMonth invariants", () => {
 // --- buildMonth data binding ------------------------------------------------
 
 type Ev = { date: Temporal.PlainDate };
-const accessor: CalendarAccessor<Ev> = { getDate: (e) => e.date };
 
-describe("buildMonth data-binding invariants", () => {
+describe('public month data-binding invariants', () => {
   test.prop([yearArb, monthArb, weekStartArb, fc.array(plainDateArb, { maxLength: 40 })])(
-    "each event appears on exactly its own date and nowhere else",
+    'each event appears on exactly its own date and nowhere else',
     (year, month, weekStartsOn, dates) => {
       const events: Ev[] = dates.map((date) => ({ date }));
-      const days = buildMonth(year, month, { weekStartsOn, data: events, accessor }).weeks.flat();
+      const days = buildMonthView({
+        calendar: createCalendar({
+          views: { month: true },
+          date: Temporal.PlainDate.from({ year, month, day: 1 }),
+          weekStartsOn,
+        }),
+        items: events,
+        getDate: (event) => event.date,
+      }).weeks.flat();
 
       // Group events by date string for the expected count per visible day.
       const expectedByDate = new Map<string, number>();
@@ -149,11 +195,13 @@ describe("buildMonth data-binding invariants", () => {
 
 // --- buildWeek --------------------------------------------------------------
 
-describe("buildWeek invariants", () => {
+describe('public week invariants', () => {
   test.prop([plainDateArb, weekStartArb])(
-    "a week always has 7 days starting on weekStartsOn",
+    'a week always has 7 days starting on weekStartsOn',
     (date, weekStartsOn) => {
-      const { days, weekStart, weekEnd } = buildWeek(date, { weekStartsOn });
+      const { days, weekStart, weekEnd } = buildWeekView({
+        calendar: createCalendar({ views: { week: true }, date, weekStartsOn }),
+      });
       expect(days).toHaveLength(7);
       expect(weekStart.dayOfWeek).toBe(weekStartsOn);
       expect(weekEnd.equals(weekStart.add({ days: 6 }))).toBe(true);
@@ -161,9 +209,11 @@ describe("buildWeek invariants", () => {
   );
 
   test.prop([plainDateArb, weekStartArb])(
-    "days run contiguously from weekStart to weekEnd",
+    'days run contiguously from weekStart to weekEnd',
     (date, weekStartsOn) => {
-      const { days, weekStart, weekEnd } = buildWeek(date, { weekStartsOn });
+      const { days, weekStart, weekEnd } = buildWeekView({
+        calendar: createCalendar({ views: { week: true }, date, weekStartsOn }),
+      });
       expect(days[0].date.equals(weekStart)).toBe(true);
       expect(days[6].date.equals(weekEnd)).toBe(true);
       for (let i = 1; i < days.length; i++) {
@@ -173,59 +223,24 @@ describe("buildWeek invariants", () => {
   );
 
   test.prop([plainDateArb, weekStartArb])(
-    "the reference date always falls within its own week",
+    'the reference date always falls within its own week',
     (date, weekStartsOn) => {
-      const { weekStart, weekEnd } = buildWeek(date, { weekStartsOn });
+      const { weekStart, weekEnd } = buildWeekView({
+        calendar: createCalendar({ views: { week: true }, date, weekStartsOn }),
+      });
       expect(Temporal.PlainDate.compare(date, weekStart)).toBeGreaterThanOrEqual(0);
       expect(Temporal.PlainDate.compare(date, weekEnd)).toBeLessThanOrEqual(0);
     },
   );
 });
 
-// --- buildDay time slots ----------------------------------------------------
-
-const slotDurationArb = fc.constantFrom(15, 30, 60, 120);
-const hourRangeArb = fc
-  .tuple(fc.integer({ min: 0, max: 22 }), fc.integer({ min: 1, max: 24 }))
-  .filter(([start, end]) => start < end);
-
-describe("buildDay time-slot invariants", () => {
-  test.prop([plainDateArb, hourRangeArb, slotDurationArb])(
-    "the first slot starts exactly at startHour:00",
-    (date, [startHour, endHour], slotDuration) => {
-      const { timeSlots } = buildDay(date, { startHour, endHour, slotDuration });
-      expect(timeSlots.length).toBeGreaterThan(0);
-      expect(timeSlots[0].hour).toBe(startHour);
-      expect(timeSlots[0].minute).toBe(0);
-    },
-  );
-
-  test.prop([plainDateArb, hourRangeArb, slotDurationArb])(
-    "slots are strictly increasing in time and stay within [startHour, endHour)",
-    (date, [startHour, endHour], slotDuration) => {
-      const { timeSlots } = buildDay(date, { startHour, endHour, slotDuration });
-      for (const slot of timeSlots) {
-        expect(slot.hour).toBeGreaterThanOrEqual(startHour);
-        expect(slot.hour).toBeLessThan(endHour);
-      }
-      for (let i = 1; i < timeSlots.length; i++) {
-        const prev = timeSlots[i - 1];
-        const cur = timeSlots[i];
-        const prevTotal = prev.hour * 60 + prev.minute;
-        const curTotal = cur.hour * 60 + cur.minute;
-        expect(curTotal).toBeGreaterThan(prevTotal);
-      }
-    },
-  );
-});
-
 // --- dateRanges -------------------------------------------------------------
 
-describe("dateRange invariants", () => {
+describe('dateRange invariants', () => {
   test.prop([plainDateArb, weekStartArb])(
-    "week range spans exactly 7 days, start <= end, timezone preserved",
+    'week range spans exactly 7 days, start <= end, timezone preserved',
     (date, weekStartsOn) => {
-      const tz = "UTC";
+      const tz = 'UTC';
       const range = getWeekDateRange(date, tz, { weekStartsOn });
       expect(range.start.timeZoneId).toBe(tz);
       expect(range.end.timeZoneId).toBe(tz);
@@ -233,18 +248,18 @@ describe("dateRange invariants", () => {
       // Half-open start..end covers exactly 7 calendar days.
       const dayGap = range.start
         .toPlainDate()
-        .until(range.end.toPlainDate(), { largestUnit: "days" }).days;
+        .until(range.end.toPlainDate(), { largestUnit: 'days' }).days;
       expect(dayGap).toBe(7);
       // Both half-open boundaries are starts of calendar days.
-      expect(range.start.toPlainTime().toString()).toBe("00:00:00");
-      expect(range.end.toPlainTime().toString()).toBe("00:00:00");
+      expect(range.start.toPlainTime().toString()).toBe('00:00:00');
+      expect(range.end.toPlainTime().toString()).toBe('00:00:00');
     },
   );
 
   test.prop([plainDateArb, weekStartArb])(
-    "month range begins on weekStartsOn and covers the whole month",
+    'month range begins on weekStartsOn and covers the whole month',
     (date, weekStartsOn) => {
-      const tz = "UTC";
+      const tz = 'UTC';
       const range = getMonthDateRange(date, tz, { weekStartsOn });
       expect(Temporal.ZonedDateTime.compare(range.start, range.end)).toBeLessThan(0);
       // Calendar bounds start on the configured first day of week.
@@ -258,11 +273,182 @@ describe("dateRange invariants", () => {
   );
 
   test.prop([plainDateArb, weekStartArb])(
-    "buildWeek and getWeekDateRange agree on the week start",
+    'public week and getWeekDateRange agree on the week start',
     (date, weekStartsOn) => {
-      const { weekStart } = buildWeek(date, { weekStartsOn });
-      const range = getWeekDateRange(date, "UTC", { weekStartsOn });
+      const { weekStart } = buildWeekView({
+        calendar: createCalendar({ views: { week: true }, date, weekStartsOn }),
+      });
+      const range = getWeekDateRange(date, 'UTC', { weekStartsOn });
       expect(range.start.toPlainDate().equals(weekStart)).toBe(true);
     },
   );
+});
+
+// Minute-aligned, positive intraday geometry; no calendar units or >24-hour durations.
+const minuteRangeArb = fc
+  .integer({ min: 0, max: 1380 })
+  .chain((start) => fc.tuple(fc.constant(start), fc.integer({ min: 1, max: 1439 - start })));
+const timeAt = (minute: number) =>
+  Temporal.PlainTime.from({ hour: Math.floor(minute / 60), minute: minute % 60 });
+
+describe('public projection contracts', () => {
+  test.prop([
+    plainDateArb,
+    weekStartArb,
+    fc.array(fc.integer({ min: -40, max: 40 }), { maxLength: 30 }),
+  ])(
+    'retains frozen arbitrary records exactly once on supplied visible dates across independent projections',
+    (date, weekStartsOn, offsets) => {
+      const calendar = createCalendar({
+        views: { month: true, week: true, day: true },
+        date,
+        weekStartsOn,
+      });
+      // Guarantee repeated same-day and outside-grid records in every run.
+      const dates = [
+        date,
+        date,
+        date.add({ days: 100 }),
+        ...offsets.map((days) => date.add({ days })),
+      ];
+      const summaries = Object.freeze(
+        dates.map((on, index) =>
+          Object.freeze({ label: `summary-${index}`, on, payload: Object.freeze({ index }) }),
+        ),
+      );
+      const bookings = Object.freeze(
+        dates.map((when, index) => Object.freeze({ number: index, when, enabled: true })),
+      );
+      const month = buildMonthView({ calendar, items: summaries, getDate: (item) => item.on });
+      const week = buildWeekView({ calendar, items: bookings, getDate: (item) => item.when });
+      for (const day of month.weeks.flat()) {
+        const expected = summaries.filter((item) => item.on.equals(day.date));
+        expect(day.items).toEqual(expected);
+        day.items.forEach((item, index) => expect(item).toBe(expected[index]));
+      }
+      for (const day of week.days) {
+        const expected = bookings.filter((item) => item.when.equals(day.date));
+        expect(day.items).toEqual(expected);
+        day.items.forEach((item, index) => expect(item).toBe(expected[index]));
+        expect(day.timeSlots.flatMap((slot) => slot.items)).toEqual([]);
+      }
+      expect(summaries.map((item) => item.on)).toEqual(dates);
+      expect(bookings.map((item) => item.when)).toEqual(dates);
+      expect(
+        buildMonthView({ calendar })
+          .weeks.flat()
+          .every((day) => day.items.length === 0),
+      ).toBe(true);
+      expect(buildWeekView({ calendar }).days.every((day) => day.items.length === 0)).toBe(true);
+      expect(buildDayView({ calendar }).items).toEqual([]);
+    },
+  );
+
+  test.prop([plainDateArb, minuteRangeArb, fc.constantFrom(15, 30, 60, 120)])(
+    'minute-aligned slots cover explicit intraday bounds and assign boundaries only to the next slot',
+    (date, [start, length], duration) => {
+      const end = start + length;
+      const config = {
+        dayStart: timeAt(start),
+        dayEnd: timeAt(end),
+        slotDuration: Temporal.Duration.from({ minutes: duration }),
+      };
+      const calendar = createCalendar({
+        views: { day: config, week: config },
+        date,
+        timeZone: 'UTC',
+      });
+      const minutes = Array.from(
+        { length: Math.ceil(length / duration) },
+        (_, index) => start + index * duration,
+      );
+      const items = Object.freeze(
+        [...minutes, end].map((minute) =>
+          Object.freeze({
+            start: date.toZonedDateTime({ timeZone: 'UTC', plainTime: timeAt(minute) }),
+          }),
+        ),
+      );
+      const options = {
+        calendar,
+        items,
+        getDate: (item: (typeof items)[number]) => item.start.toPlainDate(),
+        getStart: (item: (typeof items)[number]) => item.start,
+      };
+      const day = buildDayView(options);
+      const weekDay = buildWeekView(options).days.find((candidate) => candidate.date.equals(date))!;
+      for (const projection of [day, weekDay]) {
+        expect(projection.items).toEqual(items);
+        expect(projection.timeSlots.map((slot) => slot.time)).toEqual(minutes.map(timeAt));
+        projection.timeSlots.forEach((slot, index) => expect(slot.items).toEqual([items[index]]));
+        const placed = projection.timeSlots.flatMap((slot) => slot.items);
+        expect(placed).toHaveLength(minutes.length);
+        expect(placed.includes(items[items.length - 1])).toBe(false);
+        placed.forEach((item, index) => expect(item).toBe(items[index]));
+      }
+      expect(
+        buildDayView({ calendar, items, getDate: options.getDate }).timeSlots.flatMap(
+          (slot) => slot.items,
+        ),
+      ).toEqual([]);
+    },
+  );
+
+  test.prop([plainDateArb, weekStartArb])(
+    'controller half-open visible ranges match the rendered dates in all three views',
+    (date, weekStartsOn) => {
+      const calendar = createCalendar({
+        views: { month: true, week: true, day: true },
+        date,
+        weekStartsOn,
+        timeZone: 'America/New_York',
+      });
+      for (const view of ['month', 'week', 'day'] as const) {
+        calendar.setView(view);
+        const dates =
+          view === 'month'
+            ? buildMonthView({ calendar })
+                .weeks.flat()
+                .map((day) => day.date)
+            : view === 'week'
+              ? buildWeekView({ calendar }).days.map((day) => day.date)
+              : [buildDayView({ calendar }).date];
+        expect(calendar.visibleRange.start.toPlainDate().equals(dates[0])).toBe(true);
+        expect(
+          calendar.visibleRange.end.toPlainDate().equals(dates[dates.length - 1].add({ days: 1 })),
+        ).toBe(true);
+      }
+    },
+  );
+
+  test.each([
+    ['2000-02-01', 29],
+    ['2024-02-01', 29],
+    ['2100-02-01', 28],
+  ] as const)('covers every February date exactly once for %s', (input, count) => {
+    const date = Temporal.PlainDate.from(input);
+    for (const weekStartsOn of [1, 2, 3, 4, 5, 6, 7] as const) {
+      const days = buildMonthView({
+        calendar: createCalendar({ views: { month: true }, date, weekStartsOn }),
+      })
+        .weeks.flat()
+        .filter((day) => day.isCurrentMonth);
+      expect(days.map((day) => day.date.day)).toEqual(
+        Array.from({ length: count }, (_, index) => index + 1),
+      );
+    }
+  });
+
+  test.each([
+    ['2026-03-08', 23],
+    ['2026-11-01', 25],
+  ] as const)('renders %s as one calendar day spanning %i elapsed hours', (input, hours) => {
+    const date = Temporal.PlainDate.from(input);
+    const calendar = createCalendar({ views: { day: true }, date, timeZone: 'America/New_York' });
+    const day = buildDayView({ calendar });
+    const { start, end } = calendar.visibleRange;
+    expect(start.toPlainDate().equals(day.date)).toBe(true);
+    expect(end.toPlainDate().equals(day.date.add({ days: 1 }))).toBe(true);
+    expect(start.until(end, { largestUnit: 'hours' }).hours).toBe(hours);
+  });
 });

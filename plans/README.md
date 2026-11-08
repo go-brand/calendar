@@ -1,5 +1,47 @@
 # Implementation Plans
 
+## Current direction review — 2026-10-08
+
+The [recursive decision record](2026-10-08-library-direction.md) assesses every finding from the October review against the existing headless, Temporal-first design and the goal of easy, reliable AI-assisted adoption. It records accepted remedies, counterarguments, rejected API expansion, and deferred edge cases. The five plans have now been implemented on `codex/calendar-reliability`; the original decision record remains the rationale for their scope.
+
+| Plan | Outcome | Priority | Effort | Risk | Depends on | Status |
+| --- | --- | --- | --- | --- | --- | --- |
+| [006](006-restore-verification.md) | Compatible tooling, full runtime coverage, docs/release verification | P1 | S | Medium | — | IMPLEMENTED — local Node 20/22 passed; remote CI pending |
+| [007](007-trustworthy-agent-docs.md) | Truthful public guidance and usable, checked example source | P1 | M | Medium | 006 | DONE |
+| [008](008-preserve-react-composition.md) | Bounded core/React interoperability repairs | P2 | M | Medium | 006 | DONE |
+| [009](009-verify-package-contracts.md) | Correct dual-format declarations and packed-consumer contracts | P2 | S/M | Low–medium | 006 | DONE |
+| [010](010-public-behavior-and-learning-checks.md) | Public projection laws; optional bounded learning evaluation | P2 / experiment | M | Low | 006; compare docs around 007 | DONE — deterministic checks; model evaluation not run |
+
+Execution followed 006 first. 007–009 are independently deliverable, but 007 and 009 share the package verifier and must preserve each other's checks. 008 has its own regression and characterization tests; 010 must not delay a proven fix. The learning evaluation is optional and must be reported separately from deterministic verification.
+
+The user requested autonomous recursive selection, so these five bounded plans were selected by evidence and value rather than expanding every review point into a task. The planning pass made no implementation changes. Subsequent execution implemented the five selected plans; no deployment, release, push, or paid evaluation was performed.
+
+### Implementation evidence
+
+- Verification restored with pnpm 11.13.1, frozen installs, generated-document checks, and isolated release-gate tests. Local Node 20/22 verification passes; actual GitHub Actions/Linux execution remains unverified.
+- All seven preview names publish complete source bundles. The consumer verifier compiles 31 exact published snippets and 10 source files against tarballs, checks deliberate invalid cases, and runs 10 example integration checks.
+- Core builders accept the React item-bearing wrapper. External controllers update React consumers, with controlled-state, StrictMode, Suspense transition, subscription cleanup, and hydration regressions.
+- ESM/CommonJS exports select matching declarations. Packed checks explicitly assert TypeScript 5.7.3 and 5.9.3 and use isolated React 18/19 consumers.
+- Public projection laws pass and detected a deliberate exclusive-boundary mutation. Package tests total 189 (162 core, 27 React); docs checks total 25. The [five learning tasks](evaluations/public-calendar-learning.md) are defined; actual model sample size is 0.
+
+Existing host-tool deprecation and website bundle-size advisories remain. These checks do not establish an AI recommendation ranking. Unchanged public APIs, caller-owned timezone normalization, and per-render React controller lifetimes remain intentional.
+
+### Considered and rejected or deferred
+
+- Reject automatic timezone normalization: `TODO.md:31` assigns conversion to the data layer. Document consistent accessors instead.
+- Reject a stable-controller/action rewrite: normal React lifetimes work, and the rewrite risks controlled-state and Suspense semantics.
+- Reject blanket external-store subscriptions: characterize ownership and preserve the hook-owned path; a constant snapshot is required for the no-op branch.
+- Reject public unwrap/registration helpers and recursive prototype traversal to repair the one-layer React wrapper.
+- Reject adding nonexistent formatting/layout/navigation exports to make stale documentation look correct.
+- Reject AI-specific runtime APIs, MCP/A2A services, native/polyfill switching, or a UI kit in this batch.
+- Defer duration-domain validation, the final-nanosecond edge, and live view-order synchronization to small separately justified patches.
+- Defer unused TanStack-store dependency removal until the React integration approach is settled; do not add a store merely to justify the dependencies.
+- Preserve existing consumer support; package-manager runtime requirements alone do not justify dropping Node coverage or CJS.
+
+## Historical plans — June/July 2026
+
+Plans 001–005 below record work completed against earlier APIs. Their DONE status is historical, not a claim that the current v1 implementation still uses those mechanisms or that current documentation is correct. In particular, 002's TanStack subscription implementation was superseded, and the docs consistency claim in 005 does not cover the later v1 documentation drift addressed by 007.
+
 > Historical audit record. For the current API and examples, use the package READMEs and
 > [calendar.gobrand.app/docs](https://calendar.gobrand.app/docs).
 
