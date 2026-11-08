@@ -3,7 +3,7 @@
 - This library exclusively uses the Temporal API for building calendars. No Date objects, no date-fns, no moment.js.
 - **Testing**: Use `pnpm test --run` to run tests once and exit (instead of watch mode). For specific tests: `pnpm test <name> --run`
 - **`packages/core/src/types.ts`** - Calendar types built on the Temporal polyfill declarations
-- **Release process**: Use `pnpm release <patch|minor|major>` to publish new versions. The script runs tests, type checks, builds, bumps version, and pushes to trigger automated npm publishing via GitHub Actions.
+- **Release process**: Use `pnpm release <patch|minor|major>` to publish new versions. The script runs tests, type checks, builds, bumps version, and pushes a tag; CI publishes both packages through npm trusted publishing (OIDC, no npm token; see `PUBLISHING.md`).
   - **IMPORTANT**: After changing package.json dependencies, always run `pnpm install` to update pnpm-lock.yaml before releasing. CI uses frozen lockfile and will fail if lockfile is out of sync.
 - **Minimal API surface**
 - **Zero abstractions**: Direct use of Temporal API primitives.
