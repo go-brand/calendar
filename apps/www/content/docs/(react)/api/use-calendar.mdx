@@ -1,6 +1,6 @@
 ---
 title: useCalendar
-description: Read the item-agnostic calendar controller from context.
+description: Read the calendar from CalendarProvider.
 ---
 
 ```tsx
@@ -12,8 +12,6 @@ function Toolbar() {
 }
 ```
 
-The hook accepts no item generic. Item types belong to `useCalendarView` calls below the provider.
+The component re-renders when the date or view changes. Event types belong to [`useCalendarView`](/docs/api/use-calendar-view), so `useCalendar` takes none.
 
-The hook updates when the supplied controller's date or active view changes, including controllers created by core `createCalendar`. Keep an external controller in state, a ref, or another stable owner; constructing it during every render resets its state. Replacing the provider's controller switches the subscription and releases the previous one.
-
-External controllers use React's external-store subscription model: mutations are synchronous and can show a Suspense fallback even inside a transition. For React-controlled state and transition navigation above Suspense, create the controller with `useCreateCalendar`.
+You can also pass a calendar made with core `createCalendar` to the provider. Create it once, for example in `useState`, not on every render.

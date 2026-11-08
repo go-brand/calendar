@@ -1,9 +1,9 @@
 ---
 title: Your first calendar
-description: Build a navigable month with one hook.
+description: Build a month calendar with navigation in one hook.
 ---
 
-Enable a view with `true`, pass your events, and tell the calendar where each event belongs.
+Turn on a view, pass your events, and say which date each event is on.
 
 ```tsx
 import type { Temporal } from '@js-temporal/polyfill'
@@ -24,7 +24,9 @@ function Calendar({ events }: { events: Event[] }) {
 
   return (
     <section>
+      <button onClick={calendar.previous}>Previous</button>
       <h2>{calendar.title()}</h2>
+      <button onClick={calendar.next}>Next</button>
       {calendar.activeView.weeks.flat().map(day => (
         <div key={day.id}>
           {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
@@ -35,37 +37,26 @@ function Calendar({ events }: { events: Event[] }) {
 }
 ```
 
-That is the whole setup. TypeScript infers the event type, and `calendar.activeView` is a `MonthView` because month is the only enabled view.
+TypeScript infers `Event` from `items`, and `activeView` is a month because month is the only view.
 
 <CalendarPreview name="basic-month" />
 
-The preview is live. Its source uses small website-only components for markup and styles; its calendar state and month data come directly from `useCreateCalendar`.
+The calendar keeps the date and view, moves with `previous()`, `next()`, and `today()`, gives you a localized `title()`, and builds the grid. Your app owns the markup, styles, and data fetching.
 
-## What the library does
+## Events with a start time
 
-- Keeps the current date and active view.
-- Moves with `previous()`, `next()`, and `today()`.
-- Gives you a localized `title()` and timezone-aware `visibleRange`.
-- Builds the month, week, or day data you render.
-
-Your app owns the markup, styles, data fetching, and caching.
-
-## Add week and day views
+If your events have a `Temporal.ZonedDateTime` start, give `getDate` the date part:
 
 ```tsx
 const calendar = useCreateCalendar({
-  views: {
-    month: true,
-    week: true,
-    day: true,
-  },
+  views: { month: true, week: true, day: true },
+  timeZone: 'Europe/Madrid',
   items: events,
-  getDate: event => event.date,
+  getDate: event => event.startsAt.withTimeZone('Europe/Madrid').toPlainDate(),
+  getStart: event => event.startsAt.withTimeZone('Europe/Madrid'),
 })
 ```
 
-An omitted view is unavailable. Use an options object instead of `true` when a timed week or day needs custom hours or slot length.
+`getStart` places events in the week and day time slots. Convert to the calendar's timezone first, so an event at 23:30 UTC lands on the right local day. More in [timezones](/docs/timezones-and-ranges).
 
-[See the complete month/week/day example](/docs/examples/multi-view).
-
-For application integration, see [event timezone mapping](/docs/timezones-and-ranges) and [controller lifetime and controlled state](/docs/controlled-state).
+[See month, week, and day together](/docs/examples/multi-view).

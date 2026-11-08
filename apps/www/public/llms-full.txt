@@ -1,39 +1,37 @@
-# temporal-calendar
+# GoBrand Calendar
 
-> Complete documentation for the Temporal-first Calendar packages.
+> Complete documentation for @gobrand/react-calendar and @gobrand/calendar-core.
 
 # React Calendar
 
-> Build month, week, and day calendars with React and Temporal.
+> Month, week, and day calendars for React, built on Temporal.
 
 Canonical: https://calendar.gobrand.app/docs
 
-React Calendar manages the current date, active view, navigation, and calendar geometry. You render it with your own components and styles.
-
-Start with one view and your events:
+You bring the markup and styles. Calendar handles the date, the view, navigation, the timezone, and where each event goes.
 
 ```tsx
 import type { Temporal } from '@js-temporal/polyfill'
 import { useCreateCalendar } from '@gobrand/react-calendar'
 
-type Event = {
+type Booking = {
   id: string
-  title: string
+  guest: string
   date: Temporal.PlainDate
 }
 
-function Calendar({ events }: { events: Event[] }) {
+function BookingCalendar({ bookings }: { bookings: Booking[] }) {
   const calendar = useCreateCalendar({
     views: { month: true },
-    items: events,
-    getDate: event => event.date,
+    items: bookings,
+    getDate: booking => booking.date,
   })
 
   return calendar.activeView.weeks.map(week => (
     <div key={week[0].id}>
       {week.map(day => (
         <div key={day.id}>
-          {day.date.toString()}: {day.items.length} events
+          {day.date.day}: {day.items.map(booking => booking.guest).join(', ')}
         </div>
       ))}
     </div>
@@ -41,52 +39,42 @@ function Calendar({ events }: { events: Event[] }) {
 }
 ```
 
-Because only `month` is enabled, `activeView` is a month view. Add `week` or `day` when you need them.
+Only `month` is enabled, so `activeView` is a month. Add `week` or `day` when you need them.
 
-[Build your first calendar](/docs/first-calendar) or [open the complete month/week/day example](/docs/examples/multi-view).
+[Build your first calendar](/docs/first-calendar) or [see month, week, and day together](/docs/examples/multi-view).
 
 ---
 
 # Installation
 
-> Get started with GoBrand React Calendar
+> Install GoBrand React Calendar.
 
 Canonical: https://calendar.gobrand.app/docs/installation
 
-## Install
-
 ```bash
 pnpm add @gobrand/react-calendar @js-temporal/polyfill
-# or
-npm install @gobrand/react-calendar @js-temporal/polyfill
 ```
 
-The React package includes the core library - no separate installation needed.
+It includes the core package and its types, and works with React 18 and 19.
 
-## TypeScript
-
-The package is written in TypeScript and includes type definitions. No additional `@types` packages needed.
-
-## Temporal
-
-Import Temporal from the polyfill you installed above:
+Import `Temporal` from the polyfill:
 
 ```typescript
 import { Temporal } from '@js-temporal/polyfill';
 
-const today = Temporal.Now.plainDateISO();
-const meeting = Temporal.ZonedDateTime.from('2025-01-20T14:00:00-05:00[America/New_York]');
+const launch = Temporal.PlainDate.from('2026-07-10');
+const standup = Temporal.ZonedDateTime.from('2026-07-10T09:00[Europe/Madrid]');
 ```
 
 ---
 
 # Your first calendar
 
-> Build a navigable month with one hook.
+> Build a month calendar with navigation in one hook.
 
 Canonical: https://calendar.gobrand.app/docs/first-calendar
 
-Enable a view with `true`, pass your events, and tell the calendar where each event belongs.
+Turn on a view, pass your events, and say which date each event is on.
 
 ```tsx
 import type { Temporal } from '@js-temporal/polyfill'
@@ -107,7 +95,9 @@ function Calendar({ events }: { events: Event[] }) {
 
   return (
     <section>
+      <button onClick={calendar.previous}>Previous</button>
       <h2>{calendar.title()}</h2>
+      <button onClick={calendar.next}>Next</button>
       {calendar.activeView.weeks.flat().map(day => (
         <div key={day.id}>
           {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
@@ -118,40 +108,29 @@ function Calendar({ events }: { events: Event[] }) {
 }
 ```
 
-That is the whole setup. TypeScript infers the event type, and `calendar.activeView` is a `MonthView` because month is the only enabled view.
+TypeScript infers `Event` from `items`, and `activeView` is a month because month is the only view.
 
 [Complete basic-month source](https://calendar.gobrand.app/examples/basic-month.md) (export `BasicMonthExample`).
 
-The preview is live. Its source uses small website-only components for markup and styles; its calendar state and month data come directly from `useCreateCalendar`.
+The calendar keeps the date and view, moves with `previous()`, `next()`, and `today()`, gives you a localized `title()`, and builds the grid. Your app owns the markup, styles, and data fetching.
 
-## What the library does
+## Events with a start time
 
-- Keeps the current date and active view.
-- Moves with `previous()`, `next()`, and `today()`.
-- Gives you a localized `title()` and timezone-aware `visibleRange`.
-- Builds the month, week, or day data you render.
-
-Your app owns the markup, styles, data fetching, and caching.
-
-## Add week and day views
+If your events have a `Temporal.ZonedDateTime` start, give `getDate` the date part:
 
 ```tsx
 const calendar = useCreateCalendar({
-  views: {
-    month: true,
-    week: true,
-    day: true,
-  },
+  views: { month: true, week: true, day: true },
+  timeZone: 'Europe/Madrid',
   items: events,
-  getDate: event => event.date,
+  getDate: event => event.startsAt.withTimeZone('Europe/Madrid').toPlainDate(),
+  getStart: event => event.startsAt.withTimeZone('Europe/Madrid'),
 })
 ```
 
-An omitted view is unavailable. Use an options object instead of `true` when a timed week or day needs custom hours or slot length.
+`getStart` places events in the week and day time slots. Convert to the calendar's timezone first, so an event at 23:30 UTC lands on the right local day. More in [timezones](/docs/timezones-and-ranges).
 
-[See the complete month/week/day example](/docs/examples/multi-view).
-
-For application integration, see [event timezone mapping](/docs/timezones-and-ranges) and [controller lifetime and controlled state](/docs/controlled-state).
+[See month, week, and day together](/docs/examples/multi-view).
 
 ---
 
@@ -251,11 +230,11 @@ Each `useCalendarView` call infers its own item type. A month view can use summa
 
 # Timezones and visible ranges
 
-> Query half-open calendar ranges that remain correct across DST transitions.
+> Show the right day in every timezone and query exactly what is on screen.
 
 Canonical: https://calendar.gobrand.app/docs/timezones-and-ranges
 
-Set the calendar timezone once:
+Set the timezone once:
 
 ```tsx
 const calendar = useCreateCalendar({
@@ -264,18 +243,11 @@ const calendar = useCreateCalendar({
 })
 ```
 
-That timezone drives the initial date, `today()`, `isToday`, navigation ranges, and local-midnight boundaries. Calendar behavior does not fall back to the host timezone after a timezone is supplied.
+It decides the starting date, `today()`, `isToday`, and the visible range. Leave it out to use the device's timezone; set it when rendering on a server or showing someone else's calendar.
 
-## Half-open query contract
+## Query what is on screen
 
-```ts
-type VisibleRange = {
-  start: Temporal.ZonedDateTime
-  end: Temporal.ZonedDateTime
-}
-```
-
-Use `>= start` and `< end`. Adjacent ranges meet without gaps or duplicate boundary records, and the code never has to invent the final nanosecond of a day.
+`visibleRange` covers every date in the current view. Include `start`, exclude `end`:
 
 ```ts
 const { start, end } = calendar.visibleRange
@@ -287,41 +259,38 @@ await db.event.findMany({
 })
 ```
 
-## DST is calendar geometry
+Both are local midnights, so a day that daylight saving makes 23 or 25 hours long is still exactly one day.
 
-A local calendar day may contain 23, 24, or 25 elapsed hours. Calendar constructs each boundary from its own local midnight rather than adding 24 hours to an instant.
+## Put events on the right day
 
-## Event mapping belongs to your data layer
-
-The controller timezone defines geometry. Accessors decide which local date and start time each item belongs to; setting `timeZone` does not convert your items. Normalize an event once, then derive both accessors from that same value:
+The calendar's timezone does not convert your events. Convert each one to that timezone, then read the date and start from the same value:
 
 ```ts
 import { Temporal } from '@js-temporal/polyfill';
 
-const normalizedEvent = {
-  title: 'Late UTC meeting',
-  start: Temporal.Instant.from('2026-07-10T23:30:00Z')
-    .toZonedDateTimeISO('Europe/Madrid'),
+const meeting = {
+  title: 'Sync with Tokyo',
+  start: Temporal.Instant.from('2026-07-10T23:30:00Z').toZonedDateTimeISO('Europe/Madrid'),
 };
-const getDate = (event: typeof normalizedEvent) => event.start.toPlainDate();
-const getStart = (event: typeof normalizedEvent) => event.start;
-// getDate(normalizedEvent).toString() === '2026-07-11'
-// getStart(normalizedEvent).hour === 1
+const getDate = (event: typeof meeting) => event.start.toPlainDate();
+const getStart = (event: typeof meeting) => event.start;
+// getDate(meeting).toString() === '2026-07-11'
+// getStart(meeting).hour === 1
 ```
 
-Pass these accessors with the normalized items to the projection. The UTC date is July 10; the Madrid calendar date is July 11.
+In UTC the meeting is on July 10. In a Madrid calendar it is on July 11 at 01:30, and that is where it shows up.
 
 ---
 
 # Controlled state and routing
 
-> Synchronize calendar date and view with URLs or external application state.
+> Keep the calendar's date and view in the URL or your own state.
 
 Canonical: https://calendar.gobrand.app/docs/controlled-state
 
-Calendar follows standard React controlled and uncontrolled conventions.
+Pass `date` and `view` to control them, like a React input. Use `defaultDate` and `defaultView` to set only the starting values.
 
-| State | Controlled | Uncontrolled initial value |
+| State | Controlled | Starting value only |
 | --- | --- | --- |
 | Date | `date` / `onDateChange` | `defaultDate` |
 | View | `view` / `onViewChange` | `defaultView` |
@@ -336,15 +305,11 @@ const calendar = useCreateCalendar({
 })
 ```
 
-Prop changes are reflected immediately. This matters for browser back/forward navigation: consumers do not need an effect that mutates a controller after render.
+The calendar follows the props right away, so the browser's back and forward buttons just work.
 
-## Geometry changes
+## Use the current calendar
 
-Changing `timeZone`, `weekStartsOn`, `dayStart`, `dayEnd`, or `slotDuration` recreates the underlying controller from the new value signature. The visible range therefore cannot retain initial configuration accidentally.
-
-## Controller and action lifetime
-
-Controller and action identities can change across renders. Read actions from the current controller. Subscriptions must follow that controller and clean up when it changes:
+`useCreateCalendar` can return a new calendar object after a render, for example when the date, view, or timezone changes. Read it and its actions from the current render. To subscribe, depend on it:
 
 ```tsx
 useEffect(() => calendar.subscribe(() => {
@@ -352,13 +317,11 @@ useEffect(() => calendar.subscribe(() => {
 }), [calendar]);
 ```
 
-The callback reads the controller subscribed by that effect. Do not capture the first controller or an action indefinitely.
-
 ---
 
 # useCreateCalendar
 
-> Create a controlled or uncontrolled item-agnostic controller, with optional simple-mode data.
+> Create a calendar in a component, with or without its events.
 
 Canonical: https://calendar.gobrand.app/docs/api/use-create-calendar
 
@@ -373,21 +336,24 @@ const calendar = useCreateCalendar({
 })
 ```
 
-With `items`, the return value includes the inferred `activeView`. Without `items`, it returns the item-agnostic controller used with `CalendarProvider` and `useCalendarView`.
+With `items`, the result also has `activeView`, the current month, week, or day with your events on it. Without `items`, pass the calendar to `CalendarProvider` and build views with [`useCalendarView`](/docs/api/use-calendar-view).
 
-Controlled props are `date`/`onDateChange` and `view`/`onViewChange`; uncontrolled initial props are `defaultDate` and `defaultView`.
+| Option | |
+| --- | --- |
+| `views` | Required. `{ month: true }`, or `{ week: { dayStart, dayEnd, slotDuration } }` for custom hours. |
+| `defaultDate`, `defaultView` | Starting values. |
+| `date`, `onDateChange`, `view`, `onViewChange` | [Controlled state](/docs/controlled-state). |
+| `timeZone` | IANA name. Defaults to the device timezone. |
+| `weekStartsOn` | `1` (Monday) through `7` (Sunday). Defaults to the locale's first day. |
+| `items`, `getDate`, `getStart` | Your events and where each one goes. |
 
-Use the controller returned by the current render. Its identity and action identities are not guaranteed to stay stable; controlled props, navigation, timezone, and view geometry can replace it. Controlled changes remain proposals until the parent supplies the new value.
-
-The item-bearing result can also be passed directly to core `buildMonthView`, `buildWeekView`, and `buildDayView` for configured views. Supply each projection's own items and accessors.
-
-For server rendering and hydration, supply matching explicit date, view, and timezone inputs on the server and client.
+Use the calendar from the current render; it can change between renders. When rendering on the server, pass the same `date`, `view`, and `timeZone` on the server and the client.
 
 ---
 
 # useCalendar
 
-> Read the item-agnostic calendar controller from context.
+> Read the calendar from CalendarProvider.
 
 Canonical: https://calendar.gobrand.app/docs/api/use-calendar
 
@@ -400,57 +366,53 @@ function Toolbar() {
 }
 ```
 
-The hook accepts no item generic. Item types belong to `useCalendarView` calls below the provider.
+The component re-renders when the date or view changes. Event types belong to [`useCalendarView`](/docs/api/use-calendar-view), so `useCalendar` takes none.
 
-The hook updates when the supplied controller's date or active view changes, including controllers created by core `createCalendar`. Keep an external controller in state, a ref, or another stable owner; constructing it during every render resets its state. Replacing the provider's controller switches the subscription and releases the previous one.
-
-External controllers use React's external-store subscription model: mutations are synchronous and can show a Suspense fallback even inside a transition. For React-controlled state and transition navigation above Suspense, create the controller with `useCreateCalendar`.
+You can also pass a calendar made with core `createCalendar` to the provider. Create it once, for example in `useState`, not on every render.
 
 ---
 
 # useCalendarView
 
-> Put events into one view from a shared calendar controller.
+> Put events into one view of a shared calendar.
 
 Canonical: https://calendar.gobrand.app/docs/api/use-calendar-view
 
-`useCalendarView` reads the controller from `CalendarProvider` unless you pass `calendar` directly. TypeScript infers the item type from `items`.
+`useCalendarView` reads the calendar from `CalendarProvider`, or from a `calendar` you pass. TypeScript infers the event type from `items`.
 
 ```tsx
 import type { Temporal } from '@js-temporal/polyfill'
 import { useCalendarView } from '@gobrand/react-calendar'
 
-type Event = {
+type Meeting = {
   id: string
   title: string
   startsAt: Temporal.ZonedDateTime
 }
 
-function WeekContent({ events }: { events: Event[] }) {
+function WeekContent({ meetings }: { meetings: Meeting[] }) {
   const week = useCalendarView({
     view: 'week',
-    items: events,
-    getDate: event => event.startsAt.toPlainDate(),
-    getStart: event => event.startsAt,
+    items: meetings,
+    getDate: meeting => meeting.startsAt.toPlainDate(),
+    getStart: meeting => meeting.startsAt,
   })
 
   return week.days.map(day => (
     <div key={day.id}>
-      {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
+      {day.date.toString()}: {day.items.map(meeting => meeting.title).join(', ')}
     </div>
   ))
 }
 ```
 
-`getDate` is required when you pass `items`. `getStart` is optional. Add it when events should appear in timed slots.
-
-Both provider and explicit `calendar` inputs react to navigation on a core `createCalendar` controller. The requested `view` determines the projection's type: a `view: 'week'` projection stays a week projection when the controller's active view changes. Replacing the controller releases the old subscription.
+`getDate` is required with `items`. Add `getStart` to place events in time slots. The view you ask for is the view you get: `view: 'week'` stays a week even when the calendar switches to month.
 
 ---
 
 # CalendarProvider
 
-> Share one calendar controller with child components.
+> Share one calendar with the components below it.
 
 Canonical: https://calendar.gobrand.app/docs/api/calendar-provider
 
@@ -491,77 +453,108 @@ function VisibleRange() {
 }
 ```
 
-The provider shares calendar state, not event data. Child views can fetch their own records and use their own item types.
+The provider shares the date and view, not events. Each view below it can load its own data.
 
 ---
 
-# Calendar Controller
+# Types
 
-> Item-agnostic calendar state, navigation, and visible query range.
+> The shapes you render, from the calendar to its days and time slots.
 
-Canonical: https://calendar.gobrand.app/docs/types/calendar
+Canonical: https://calendar.gobrand.app/docs/types
 
-`CalendarController<TViews>` exposes `date`, `view`, typed `viewNames`, resolved `views`, `visibleRange`, `title`, `setDate`, `setView`, `next`, `previous`, `today`, and `subscribe`.
+All types are exported from both `@gobrand/react-calendar` and `@gobrand/calendar-core`. `TItem` is your event type, inferred from `items`.
 
-Direct controllers preserve the exact configured-view union. Context exposes the honest built-in `ViewName` boundary because distant consumers cannot infer the provider's exact value.
+```ts
+import type { Temporal } from '@js-temporal/polyfill';
 
----
+type VisibleRange = {
+  start: Temporal.ZonedDateTime; // included
+  end: Temporal.ZonedDateTime; // excluded
+};
 
-# View Models
+type MonthView<TItem> = {
+  name: 'month';
+  month: Temporal.PlainYearMonth;
+  weeks: Array<
+    Array<{
+      id: string;
+      date: Temporal.PlainDate;
+      isCurrentMonth: boolean;
+      isToday: boolean;
+      items: TItem[];
+    }>
+  >;
+};
 
-> Discriminated month, week, and day models with locally inferred items.
+type TimeSlot<TItem> = {
+  id: string;
+  time: Temporal.PlainTime;
+  hour: number;
+  minute: number;
+  items: TItem[];
+};
 
-Canonical: https://calendar.gobrand.app/docs/types/views
+type WeekView<TItem> = {
+  name: 'week';
+  weekStart: Temporal.PlainDate;
+  weekEnd: Temporal.PlainDate;
+  days: Array<{
+    id: string;
+    date: Temporal.PlainDate;
+    isToday: boolean;
+    items: TItem[];
+    timeSlots: TimeSlot<TItem>[];
+  }>;
+};
 
-`MonthView<TItem>`, `WeekView<TItem>`, and `DayView<TItem>` are discriminated by their `name` field. `ActiveView<TViews, TItem>` narrows the union to the configured views.
+type DayView<TItem> = {
+  name: 'day';
+  id: string;
+  date: Temporal.PlainDate;
+  isToday: boolean;
+  items: TItem[];
+  timeSlots: TimeSlot<TItem>[];
+};
+```
 
-The old `view` field remains as a deprecated alias for compatibility. New code should use `name`.
+With more than one view enabled, `activeView` is a union of those views. Check `activeView.name` to render the right one. Each view also has a `view` field with the same value; prefer `name`.
 
-Timed week and day configuration uses `Temporal.PlainTime` for `dayStart`/`dayEnd` and `Temporal.Duration` for `slotDuration`.
-
----
-
-# Range and Configuration Types
-
-> Public types for configured views, geometry, and half-open query ranges.
-
-Canonical: https://calendar.gobrand.app/docs/types/helpers
-
-`VisibleRange` is `{ start, end }`, where both values are `Temporal.ZonedDateTime` instances in the controller timezone. Query with `>= start` and `< end`.
-
-`NonEmptyCalendarViews` enforces at least one of `month`, `week`, or `day`; JavaScript consumers receive the same validation synchronously at runtime.
+`CalendarController` holds `date`, `view`, `viewNames`, `visibleRange`, `title()`, `next()`, `previous()`, `today()`, `setDate()`, `setView()`, and `subscribe()`.
 
 ---
 
 # Month View
 
-> A complete month with navigation and events.
+> A month with navigation and events.
 
 Canonical: https://calendar.gobrand.app/docs/examples/basic-month
 
 [Complete basic-month source](https://calendar.gobrand.app/examples/basic-month.md) (export `BasicMonthExample`).
 
-The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
+Month cells group events by date, so `getDate` is all it needs.
 
-This example needs only `getDate` because month cells group events by calendar date. Timed placement is introduced in the week and day examples.
+The styling comes from small `calendar-ui` components. [Full source as Markdown](/examples/basic-month.md).
 
 ---
 
 # Date Picker
 
-> Select a date in a month without event data or accessors.
+> Pick a date from a month, with no event data.
 
 Canonical: https://calendar.gobrand.app/docs/examples/date-picker
 
 [Complete date-picker source](https://calendar.gobrand.app/examples/date-picker.md) (export `DatePickerExample`).
 
-The controller owns the selected date and navigation. A data-free month projection supplies the dates to render.
+No `items` and no accessors: the month grid alone is enough to pick a date.
+
+The styling comes from small `calendar-ui` components. [Full source as Markdown](/examples/date-picker.md).
 
 ---
 
 # Week View
 
-> Build a simple week or add explicit time slots.
+> A week of events, with or without time slots.
 
 Canonical: https://calendar.gobrand.app/docs/examples/week-view
 
@@ -573,23 +566,25 @@ Events appear on each day.
 
 ## Week with time slots
 
-Timed events appear in an hourly grid.
+Add `getStart` and timed events land in an hourly grid.
 
 [Complete week-slots source](https://calendar.gobrand.app/examples/week-slots.md) (export `WeekSlotsExample`).
 
-Both sources import small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
+The styling comes from small `calendar-ui` components. Full source as Markdown: [simple week](/examples/simple-week.md), [week with time slots](/examples/week-slots.md).
 
 ---
 
 # Day View
 
-> A day timeline with explicit Temporal time slots.
+> One day with hourly time slots.
 
 Canonical: https://calendar.gobrand.app/docs/examples/day-view
 
 [Complete day-view source](https://calendar.gobrand.app/examples/day-view.md) (export `DayViewExample`).
 
-The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
+`getStart` places each event in its time slot.
+
+The styling comes from small `calendar-ui` components. [Full source as Markdown](/examples/day-view.md).
 
 ---
 
@@ -601,97 +596,96 @@ Canonical: https://calendar.gobrand.app/docs/examples/multi-view
 
 [Complete multi-view source](https://calendar.gobrand.app/examples/multi-view.md) (export `MultiViewExample`).
 
-The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
+For events loaded from an API, see [Suspense Query](/docs/examples/suspense-query).
 
-This example uses local events so view switching is the only new concept. See [Suspense Query](/docs/examples/suspense-query) for async data.
+The styling comes from small `calendar-ui` components. [Full source as Markdown](/examples/multi-view.md).
 
 ---
 
 # Suspense Query
 
-> Keep month navigation available while its events load.
+> Keep month navigation usable while its events load.
 
 Canonical: https://calendar.gobrand.app/docs/examples/suspense-query
 
 [Complete suspense-month source](https://calendar.gobrand.app/examples/suspense-month.md) (export `SuspenseMonthExample`).
 
-The controller and toolbar stay above the Suspense boundary. The query and month projection run below it after data is ready.
+The toolbar sits above the Suspense boundary, so it stays usable while the month loads its events.
+
+The styling comes from small `calendar-ui` components. [Full source as Markdown](/examples/suspense-month.md).
 
 ---
 
 # Calendar Core
 
-> Framework-agnostic Temporal controller and pure calendar projections.
+> Month, week, and day calendars without a framework.
 
 Canonical: https://calendar.gobrand.app/docs/core
 
+Create a calendar, then build the view you want to render from your own data.
+
 ```ts
-import { Temporal } from '@js-temporal/polyfill'
-import { createCalendar, buildMonthView } from '@gobrand/calendar-core'
+import { Temporal } from '@js-temporal/polyfill';
+import { buildMonthView, createCalendar } from '@gobrand/calendar-core';
 
-type Event = {
-  id: string
-  title: string
-  date: Temporal.PlainDate
-}
-
-const events: Event[] = [
-  { id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() },
-]
+const bookings = [
+  { id: 'b1', guest: 'Ana', date: Temporal.PlainDate.from('2026-07-10') },
+  { id: 'b2', guest: 'Leo', date: Temporal.PlainDate.from('2026-07-24') },
+];
 
 const calendar = createCalendar({
   views: { month: true },
-})
+  date: Temporal.PlainDate.from('2026-07-10'),
+  timeZone: 'Europe/Madrid',
+  weekStartsOn: 1,
+});
 
-const month = buildMonthView({
-  calendar,
-  items: events,
-  getDate: event => event.date,
-})
+const month = buildMonthView({ calendar, items: bookings, getDate: (booking) => booking.date });
+
+calendar.title('en-US'); // "July 2026"
+month.weeks.length; // 5
+month.weeks[1][4].items.map((booking) => booking.guest); // ["Ana"]
 ```
 
-The calendar starts on today in the device timezone. Pass `date` or `timeZone` only when your app needs to control them.
+Without `date` and `timeZone`, the calendar starts on today in the device's timezone.
+
+Next: [createCalendar](/docs/core/create-calendar), [view projections](/docs/core/projections), and [visible ranges](/docs/core/visible-ranges).
 
 ---
 
 # Installation
 
-> Get started with GoBrand Calendar Core
+> Install GoBrand Calendar Core.
 
 Canonical: https://calendar.gobrand.app/docs/core/installation
 
-## Install
-
 ```bash
-pnpm add @gobrand/calendar-core
-# or
-npm install @gobrand/calendar-core
+pnpm add @gobrand/calendar-core @js-temporal/polyfill
 ```
 
-## TypeScript
+Types are included. Import `Temporal` from the polyfill and pass Temporal values to the calendar:
 
-The package is written in TypeScript and includes type definitions. No additional `@types` packages needed.
-
-## Temporal Polyfill
-
-The Temporal API is included via `@js-temporal/polyfill`. You can import Temporal types directly from the polyfill:
-
-```typescript
+```ts
 import { Temporal } from '@js-temporal/polyfill';
 
-const today = Temporal.Now.plainDateISO();
-const meeting = Temporal.ZonedDateTime.from('2025-01-20T14:00:00-05:00[America/New_York]');
+const launch = Temporal.PlainDate.from('2026-07-10');
+const standup = Temporal.ZonedDateTime.from('2026-07-10T09:00[Europe/Madrid]');
 ```
+
+Using React? Install [`@gobrand/react-calendar`](/docs/installation) instead; it includes the core package.
 
 ---
 
 # createCalendar
 
-> Create an item-agnostic controller from a non-empty view configuration.
+> Create a calendar with its date, view, timezone, and navigation.
 
 Canonical: https://calendar.gobrand.app/docs/core/create-calendar
 
 ```ts
+import { Temporal } from '@js-temporal/polyfill';
+import { createCalendar } from '@gobrand/calendar-core';
+
 const calendar = createCalendar({
   views: {
     month: true,
@@ -702,175 +696,146 @@ const calendar = createCalendar({
     },
   },
   date: Temporal.PlainDate.from('2026-07-10'),
-  timeZone: 'America/Asuncion',
-})
+  timeZone: 'America/New_York',
+  weekStartsOn: 7,
+});
+
+calendar.view; // "month"
+calendar.next();
+calendar.date.toString(); // "2026-08-10"
+calendar.setView('week');
+calendar.title('en-US'); // "Aug 9 - Aug 15, 2026"
 ```
 
-The visible range is always derived from `date`, `view`, timezone, and view configuration. It cannot become stale independently.
+| Option | Default |
+| --- | --- |
+| `views` | Required. Enable a view with `true`, or pass `dayStart`, `dayEnd`, and `slotDuration` for week and day. Leave a view out to disable it. |
+| `date` | Today in `timeZone`. A `Temporal.PlainDate`. |
+| `view` | The first view in `views`. |
+| `timeZone` | The device timezone. An IANA name such as `'Europe/Madrid'`. |
+| `weekStartsOn` | The locale's first day. `1` is Monday through `7` is Sunday. |
 
-`weekStartsOn` follows Temporal's `dayOfWeek` convention: `1` is Monday through
-`7` is Sunday. Omit it to use the locale default.
+The calendar has `date`, `view`, `visibleRange`, `title()`, `next()`, `previous()`, `today()`, `setDate()`, `setView()`, and `subscribe()`.
+
+Inputs of the wrong type throw a `TypeError` that names what you passed, for example `date must be a Temporal.PlainDate, got String`.
 
 ---
 
 # View Projections
 
-> Build month, week, and day models from controller state and local data.
+> Turn the calendar and your data into month, week, or day views.
 
 Canonical: https://calendar.gobrand.app/docs/core/projections
 
-Core exports `buildMonthView`, `buildWeekView`, and `buildDayView`. Each projection infers its own item type, so one controller can support unrelated query results.
+`buildMonthView`, `buildWeekView`, and `buildDayView` place your items on dates. Each call takes its own items, so a month of booking counts and a week of full meetings can share one calendar.
 
 ```ts
-const month = buildMonthView({
-  calendar,
-  items: summaries,
-  getDate: summary => summary.date,
-})
+import { Temporal } from '@js-temporal/polyfill';
+import { buildWeekView, createCalendar } from '@gobrand/calendar-core';
+
+const meetings = [
+  {
+    title: 'Design review',
+    start: Temporal.ZonedDateTime.from('2026-07-08T10:30[Europe/Madrid]'),
+  },
+];
+
+const calendar = createCalendar({
+  views: { week: true },
+  date: Temporal.PlainDate.from('2026-07-08'),
+  timeZone: 'Europe/Madrid',
+  weekStartsOn: 1,
+});
 
 const week = buildWeekView({
   calendar,
-  items: events,
-  getDate: event => event.startsAt.toPlainDate(),
-  getStart: event => event.startsAt,
-})
+  items: meetings,
+  getDate: (meeting) => meeting.start.toPlainDate(),
+  getStart: (meeting) => meeting.start,
+});
+
+week.weekStart.toString(); // "2026-07-06"
+week.days[2].items.length; // 1
+week.days[2].timeSlots[10].items[0].title; // "Design review"
 ```
 
-Calling a projection without `items` returns a data-free grid and needs no accessor or fake item type.
+- `getDate` returns the `Temporal.PlainDate` an item belongs to. It is required when you pass `items`.
+- `getStart` returns a `Temporal.ZonedDateTime` and places the item in a time slot. Add it for week and day views with timed events.
+- Without `items`, you get the empty grid, which is all a date picker needs.
 
-The builders also accept the item-bearing controller returned by React `useCreateCalendar`, without unwrapping it. Pass the current render's controller and the items and accessors for the projection you want to build.
+The calendar's timezone does not convert your items. Convert each event to that timezone first, then derive both accessors from it; see [timezones](/docs/timezones-and-ranges).
 
 ---
 
 # Visible ranges
 
-> Understand Calendar's timezone-aware, half-open query boundary.
+> The start and end to query for the dates on screen.
 
 Canonical: https://calendar.gobrand.app/docs/core/visible-ranges
 
-Every controller derives a `VisibleRange` from its date, active view, timezone, and week configuration:
+`visibleRange` covers every date the current view shows, including the leading and trailing days of a month grid.
 
 ```ts
-const { start, end } = calendar.visibleRange
+import { Temporal } from '@js-temporal/polyfill';
+import { createCalendar } from '@gobrand/calendar-core';
+
+const calendar = createCalendar({
+  views: { month: true },
+  date: Temporal.PlainDate.from('2026-03-15'),
+  timeZone: 'America/New_York',
+  weekStartsOn: 7,
+});
+
+const { start, end } = calendar.visibleRange;
+start.toString(); // "2026-03-01T00:00:00-05:00[America/New_York]"
+end.toString(); // "2026-04-05T00:00:00-04:00[America/New_York]"
 ```
 
-`start` is included. `end` is the local midnight immediately after the visible interval and is excluded.
+Include `start` and exclude `end`:
 
 ```sql
-WHERE starts_at >= :start
-  AND starts_at < :end
+WHERE starts_at >= :start AND starts_at < :end
 ```
 
-Month ranges include the complete leading and trailing weeks rendered by the month projection. Week ranges contain seven local dates. Day ranges span one local calendar date—even when DST makes that date 23 or 25 elapsed hours.
-
-Calendar produces `Temporal.ZonedDateTime` boundaries so callers can preserve the timezone or convert explicitly with `.toInstant()` for storage queries.
+Both are local midnights in the calendar's timezone, so a day that daylight saving makes 23 or 25 hours long is still one day. Use `.toInstant()` when your database stores UTC.
 
 ---
 
 # Utilities
 
-> Weekday labels and direct Temporal recipes for formatting, navigation, and timezone conversion.
+> Weekday labels for calendar headers, and the Temporal one-liners for everything else.
 
 Canonical: https://calendar.gobrand.app/docs/core/utilities
 
-The core package exports five values: `createCalendar`, `buildMonthView`, `buildWeekView`, `buildDayView`, and `getWeekdays`. Use Temporal directly for other date operations.
+## getWeekdays
 
-## Formatting
+Weekday names in the order your calendar shows them. `1` starts on Monday, `7` on Sunday.
 
-### getWeekdays
-
-Get localized weekday names in calendar order. Temporal uses `1` for Monday through `7` for Sunday.
-
-```typescript
+```ts
 import { getWeekdays } from '@gobrand/calendar-core';
 
-getWeekdays(); // Monday start, short English names
-getWeekdays(7); // Sunday start
-getWeekdays(1, 'es-ES');
-getWeekdays(1, 'en-US', 'long');
-getWeekdays(7, 'en-US', 'narrow');
+getWeekdays(); // ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+getWeekdays(7); // ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+getWeekdays(1, 'es-ES', 'long'); // ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+getWeekdays(7, 'en-US', 'narrow'); // ["S", "M", "T", "W", "T", "F", "S"]
 ```
 
-### getMonthName
+Use the calendar's `weekStartsOn` so the header matches the grid.
 
-Format a Temporal month directly; there is no `getMonthName` package export.
+## Everything else is Temporal
 
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
+Calendar has no other helpers. Temporal already does the rest in one line:
 
-const month = Temporal.PlainYearMonth.from('2025-01');
-month.toLocaleString('es-ES', { month: 'long' }); // enero
-```
+| Task | Temporal |
+| --- | --- |
+| Month name | `month.toLocaleString('en-US', { month: 'long' })` |
+| Time label | `time.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' })` |
+| Device timezone | `Temporal.Now.timeZoneId()` |
+| Show a meeting in another timezone | `meeting.withTimeZone('Asia/Tokyo')` |
+| Date and time to a meeting | `date.toZonedDateTime({ timeZone, plainTime: time })` |
+| Next month, last week | `date.add({ months: 1 })`, `date.subtract({ weeks: 1 })` |
 
-### formatTime
-
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
-
-const time = Temporal.PlainTime.from('14:30');
-time.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
-```
-
-## Timezone
-
-### getCurrentTimeZone
-
-Use `Temporal.Now.timeZoneId()` to obtain the system timezone.
-
-### convertToTimezone
-
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
-
-const ny = Temporal.ZonedDateTime.from('2025-01-15T14:00:00-05:00[America/New_York]');
-const tokyo = ny.withTimeZone('Asia/Tokyo');
-// 2025-01-16T04:00:00+09:00[Asia/Tokyo]
-```
-
-### createZonedDateTime
-
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
-
-const date = Temporal.PlainDate.from('2025-01-15');
-const time = Temporal.PlainTime.from('14:30');
-const zoned = date.toZonedDateTime({ timeZone: 'America/New_York', plainTime: time });
-```
-
-## Navigation
-
-Use controller `next()`, `previous()`, and `today()` for the active view. For standalone calculations, Temporal supports explicit units:
-
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
-
-const date = Temporal.PlainDate.from('2025-01-15');
-date.add({ months: 1 });
-date.subtract({ weeks: 1 });
-date.add({ days: 1 });
-```
-
-## Date Ranges
-
-Use the controller's half-open visible range for querying data:
-
-```typescript
-import { createCalendar } from '@gobrand/calendar-core';
-import { Temporal } from '@js-temporal/polyfill';
-
-const calendar = createCalendar({
-  views: { month: true },
-  date: Temporal.PlainDate.from('2025-01-15'),
-  timeZone: 'America/New_York',
-});
-const { start, end } = calendar.visibleRange;
-```
-
-Query `>= start` and `< end`. See [timezones and ranges](/docs/timezones-and-ranges).
-
-## Layout Helpers
-
-Calendar is headless. Week and day projections provide Temporal geometry and items; your rendering code chooses CSS dimensions and event layout. The package does not export CSS positioning helpers. See the [complete week example](/docs/examples/week-view).
+For formatting and arithmetic with date-fns names, see [Tiempo](https://tiempo.gobrand.app).
 
 ---
 

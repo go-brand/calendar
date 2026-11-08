@@ -1,34 +1,32 @@
 ---
 title: React Calendar
-description: Build month, week, and day calendars with React and Temporal.
+description: Month, week, and day calendars for React, built on Temporal.
 ---
 
-React Calendar manages the current date, active view, navigation, and calendar geometry. You render it with your own components and styles.
-
-Start with one view and your events:
+You bring the markup and styles. Calendar handles the date, the view, navigation, the timezone, and where each event goes.
 
 ```tsx
 import type { Temporal } from '@js-temporal/polyfill'
 import { useCreateCalendar } from '@gobrand/react-calendar'
 
-type Event = {
+type Booking = {
   id: string
-  title: string
+  guest: string
   date: Temporal.PlainDate
 }
 
-function Calendar({ events }: { events: Event[] }) {
+function BookingCalendar({ bookings }: { bookings: Booking[] }) {
   const calendar = useCreateCalendar({
     views: { month: true },
-    items: events,
-    getDate: event => event.date,
+    items: bookings,
+    getDate: booking => booking.date,
   })
 
   return calendar.activeView.weeks.map(week => (
     <div key={week[0].id}>
       {week.map(day => (
         <div key={day.id}>
-          {day.date.toString()}: {day.items.length} events
+          {day.date.day}: {day.items.map(booking => booking.guest).join(', ')}
         </div>
       ))}
     </div>
@@ -36,6 +34,6 @@ function Calendar({ events }: { events: Event[] }) {
 }
 ```
 
-Because only `month` is enabled, `activeView` is a month view. Add `week` or `day` when you need them.
+Only `month` is enabled, so `activeView` is a month. Add `week` or `day` when you need them.
 
-[Build your first calendar](/docs/first-calendar) or [open the complete month/week/day example](/docs/examples/multi-view).
+[Build your first calendar](/docs/first-calendar) or [see month, week, and day together](/docs/examples/multi-view).

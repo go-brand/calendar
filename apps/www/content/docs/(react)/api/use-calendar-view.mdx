@@ -1,36 +1,34 @@
 ---
 title: useCalendarView
-description: Put events into one view from a shared calendar controller.
+description: Put events into one view of a shared calendar.
 ---
 
-`useCalendarView` reads the controller from `CalendarProvider` unless you pass `calendar` directly. TypeScript infers the item type from `items`.
+`useCalendarView` reads the calendar from `CalendarProvider`, or from a `calendar` you pass. TypeScript infers the event type from `items`.
 
 ```tsx
 import type { Temporal } from '@js-temporal/polyfill'
 import { useCalendarView } from '@gobrand/react-calendar'
 
-type Event = {
+type Meeting = {
   id: string
   title: string
   startsAt: Temporal.ZonedDateTime
 }
 
-function WeekContent({ events }: { events: Event[] }) {
+function WeekContent({ meetings }: { meetings: Meeting[] }) {
   const week = useCalendarView({
     view: 'week',
-    items: events,
-    getDate: event => event.startsAt.toPlainDate(),
-    getStart: event => event.startsAt,
+    items: meetings,
+    getDate: meeting => meeting.startsAt.toPlainDate(),
+    getStart: meeting => meeting.startsAt,
   })
 
   return week.days.map(day => (
     <div key={day.id}>
-      {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
+      {day.date.toString()}: {day.items.map(meeting => meeting.title).join(', ')}
     </div>
   ))
 }
 ```
 
-`getDate` is required when you pass `items`. `getStart` is optional. Add it when events should appear in timed slots.
-
-Both provider and explicit `calendar` inputs react to navigation on a core `createCalendar` controller. The requested `view` determines the projection's type: a `view: 'week'` projection stays a week projection when the controller's active view changes. Replacing the controller releases the old subscription.
+`getDate` is required with `items`. Add `getStart` to place events in time slots. The view you ask for is the view you get: `view: 'week'` stays a week even when the calendar switches to month.

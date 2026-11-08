@@ -1,31 +1,33 @@
 ---
 title: Calendar Core
-description: Framework-agnostic Temporal controller and pure calendar projections.
+description: Month, week, and day calendars without a framework.
 ---
 
+Create a calendar, then build the view you want to render from your own data.
+
 ```ts
-import { Temporal } from '@js-temporal/polyfill'
-import { createCalendar, buildMonthView } from '@gobrand/calendar-core'
+import { Temporal } from '@js-temporal/polyfill';
+import { buildMonthView, createCalendar } from '@gobrand/calendar-core';
 
-type Event = {
-  id: string
-  title: string
-  date: Temporal.PlainDate
-}
-
-const events: Event[] = [
-  { id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() },
-]
+const bookings = [
+  { id: 'b1', guest: 'Ana', date: Temporal.PlainDate.from('2026-07-10') },
+  { id: 'b2', guest: 'Leo', date: Temporal.PlainDate.from('2026-07-24') },
+];
 
 const calendar = createCalendar({
   views: { month: true },
-})
+  date: Temporal.PlainDate.from('2026-07-10'),
+  timeZone: 'Europe/Madrid',
+  weekStartsOn: 1,
+});
 
-const month = buildMonthView({
-  calendar,
-  items: events,
-  getDate: event => event.date,
-})
+const month = buildMonthView({ calendar, items: bookings, getDate: (booking) => booking.date });
+
+calendar.title('en-US'); // "July 2026"
+month.weeks.length; // 5
+month.weeks[1][4].items.map((booking) => booking.guest); // ["Ana"]
 ```
 
-The calendar starts on today in the device timezone. Pass `date` or `timeZone` only when your app needs to control them.
+Without `date` and `timeZone`, the calendar starts on today in the device's timezone.
+
+Next: [createCalendar](/docs/core/create-calendar), [view projections](/docs/core/projections), and [visible ranges](/docs/core/visible-ranges).

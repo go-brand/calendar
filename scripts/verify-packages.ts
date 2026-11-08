@@ -104,7 +104,7 @@ try {
   const timezoneIndex = snippetInventory.findIndex((snippet) => snippet.harness === 'timezone');
   writeFileSync(
     join(consumerDirectory, 'timezone-recipe.ts'),
-    `export { normalizedEvent, getDate, getStart } from './snippets/${timezoneIndex}';\n`,
+    `export { meeting, getDate, getStart } from './snippets/${timezoneIndex}';\n`,
   );
   writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   writeFileSync(

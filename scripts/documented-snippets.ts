@@ -84,7 +84,7 @@ const harnesses: Record<string, { before: string; after: string }> = {
       'const db = { event: { async findMany(query: { where: { startsAt: { gte: Temporal.Instant; lt: Temporal.Instant } } }) { return query; } } };\n',
     after: '\nexport {};\n',
   },
-  timezone: { before: '', after: '\nexport { normalizedEvent, getDate, getStart };\n' },
+  timezone: { before: '', after: '\nexport { meeting, getDate, getStart };\n' },
 };
 export function snippetSource(snippet: Snippet): { bytes: string; source: string } {
   const bytes = typescriptFences(readFileSync(snippet.file, 'utf8'))[snippet.fence];

@@ -1,4 +1,4 @@
-- This is temporal-calendar, a lightweight utility library to build calendars using the Temporal API.
+- This is GoBrand Calendar (`@gobrand/calendar-core`, `@gobrand/react-calendar`): headless month, week, and day calendars built on the Temporal API.
 - Tech stack: TypeScript, Vitest for testing, tsup for building, published as npm package.
 - This library exclusively uses the Temporal API for building calendars. No Date objects, no date-fns, no moment.js.
 - **Testing**: Use `pnpm test --run` to run tests once and exit (instead of watch mode). For specific tests: `pnpm test <name> --run`

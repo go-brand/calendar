@@ -11,9 +11,7 @@
   <url><loc>https://calendar.gobrand.app/docs/api/use-calendar</loc></url>
   <url><loc>https://calendar.gobrand.app/docs/api/use-calendar-view</loc></url>
   <url><loc>https://calendar.gobrand.app/docs/api/calendar-provider</loc></url>
-  <url><loc>https://calendar.gobrand.app/docs/types/calendar</loc></url>
-  <url><loc>https://calendar.gobrand.app/docs/types/views</loc></url>
-  <url><loc>https://calendar.gobrand.app/docs/types/helpers</loc></url>
+  <url><loc>https://calendar.gobrand.app/docs/types</loc></url>
   <url><loc>https://calendar.gobrand.app/docs/examples/basic-month</loc></url>
   <url><loc>https://calendar.gobrand.app/docs/examples/date-picker</loc></url>
   <url><loc>https://calendar.gobrand.app/docs/examples/week-view</loc></url>

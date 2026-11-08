@@ -1,8 +1,0 @@
----
-title: Range and Configuration Types
-description: Public types for configured views, geometry, and half-open query ranges.
----
-
-`VisibleRange` is `{ start, end }`, where both values are `Temporal.ZonedDateTime` instances in the controller timezone. Query with `>= start` and `< end`.
-
-`NonEmptyCalendarViews` enforces at least one of `month`, `week`, or `day`; JavaScript consumers receive the same validation synchronously at runtime.

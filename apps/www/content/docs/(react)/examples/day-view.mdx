@@ -1,8 +1,10 @@
 ---
 title: Day View
-description: A day timeline with explicit Temporal time slots.
+description: One day with hourly time slots.
 ---
 
 <CalendarPreview name="day-view" />
 
-The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
+`getStart` places each event in its time slot.
+
+The styling comes from small `calendar-ui` components. [Full source as Markdown](/examples/day-view.md).

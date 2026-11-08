@@ -1,25 +1,42 @@
 ---
 title: View Projections
-description: Build month, week, and day models from controller state and local data.
+description: Turn the calendar and your data into month, week, or day views.
 ---
 
-Core exports `buildMonthView`, `buildWeekView`, and `buildDayView`. Each projection infers its own item type, so one controller can support unrelated query results.
+`buildMonthView`, `buildWeekView`, and `buildDayView` place your items on dates. Each call takes its own items, so a month of booking counts and a week of full meetings can share one calendar.
 
 ```ts
-const month = buildMonthView({
-  calendar,
-  items: summaries,
-  getDate: summary => summary.date,
-})
+import { Temporal } from '@js-temporal/polyfill';
+import { buildWeekView, createCalendar } from '@gobrand/calendar-core';
+
+const meetings = [
+  {
+    title: 'Design review',
+    start: Temporal.ZonedDateTime.from('2026-07-08T10:30[Europe/Madrid]'),
+  },
+];
+
+const calendar = createCalendar({
+  views: { week: true },
+  date: Temporal.PlainDate.from('2026-07-08'),
+  timeZone: 'Europe/Madrid',
+  weekStartsOn: 1,
+});
 
 const week = buildWeekView({
   calendar,
-  items: events,
-  getDate: event => event.startsAt.toPlainDate(),
-  getStart: event => event.startsAt,
-})
+  items: meetings,
+  getDate: (meeting) => meeting.start.toPlainDate(),
+  getStart: (meeting) => meeting.start,
+});
+
+week.weekStart.toString(); // "2026-07-06"
+week.days[2].items.length; // 1
+week.days[2].timeSlots[10].items[0].title; // "Design review"
 ```
 
-Calling a projection without `items` returns a data-free grid and needs no accessor or fake item type.
+- `getDate` returns the `Temporal.PlainDate` an item belongs to. It is required when you pass `items`.
+- `getStart` returns a `Temporal.ZonedDateTime` and places the item in a time slot. Add it for week and day views with timed events.
+- Without `items`, you get the empty grid, which is all a date picker needs.
 
-The builders also accept the item-bearing controller returned by React `useCreateCalendar`, without unwrapping it. Pass the current render's controller and the items and accessors for the projection you want to build.
+The calendar's timezone does not convert your items. Convert each event to that timezone first, then derive both accessors from it; see [timezones](/docs/timezones-and-ranges).

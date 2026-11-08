@@ -8,7 +8,7 @@ import { MultiViewExample } from './examples/multi-view';
 import { SimpleWeekExample, WeekSlotsExample } from './examples/week-view';
 import { DayViewExample } from './examples/day-view';
 import { StandaloneSuspenseMonth } from './examples/suspense-standalone';
-import { normalizedEvent, getDate, getStart } from './timezone-recipe';
+import { meeting, getDate, getStart } from './timezone-recipe';
 
 afterEach(cleanup);
 
@@ -70,10 +70,10 @@ test('standalone Suspense has a QueryClient provider and resolves events with us
 });
 
 test('the exact documented timezone recipe crosses UTC midnight consistently', () => {
-  expect(getDate(normalizedEvent).toString()).toBe('2026-07-11');
-  expect(getStart(normalizedEvent).hour).toBe(1);
-  expect(getStart(normalizedEvent).toPlainDate().equals(getDate(normalizedEvent))).toBe(true);
+  expect(getDate(meeting).toString()).toBe('2026-07-11');
+  expect(getStart(meeting).hour).toBe(1);
+  expect(getStart(meeting).toPlainDate().equals(getDate(meeting))).toBe(true);
   expect(
-    getStart(normalizedEvent).toInstant().equals(Temporal.Instant.from('2026-07-10T23:30:00Z')),
+    getStart(meeting).toInstant().equals(Temporal.Instant.from('2026-07-10T23:30:00Z')),
   ).toBe(true);
 });

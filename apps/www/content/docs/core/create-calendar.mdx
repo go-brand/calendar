@@ -1,9 +1,12 @@
 ---
 title: createCalendar
-description: Create an item-agnostic controller from a non-empty view configuration.
+description: Create a calendar with its date, view, timezone, and navigation.
 ---
 
 ```ts
+import { Temporal } from '@js-temporal/polyfill';
+import { createCalendar } from '@gobrand/calendar-core';
+
 const calendar = createCalendar({
   views: {
     month: true,
@@ -14,11 +17,25 @@ const calendar = createCalendar({
     },
   },
   date: Temporal.PlainDate.from('2026-07-10'),
-  timeZone: 'America/Asuncion',
-})
+  timeZone: 'America/New_York',
+  weekStartsOn: 7,
+});
+
+calendar.view; // "month"
+calendar.next();
+calendar.date.toString(); // "2026-08-10"
+calendar.setView('week');
+calendar.title('en-US'); // "Aug 9 - Aug 15, 2026"
 ```
 
-The visible range is always derived from `date`, `view`, timezone, and view configuration. It cannot become stale independently.
+| Option | Default |
+| --- | --- |
+| `views` | Required. Enable a view with `true`, or pass `dayStart`, `dayEnd`, and `slotDuration` for week and day. Leave a view out to disable it. |
+| `date` | Today in `timeZone`. A `Temporal.PlainDate`. |
+| `view` | The first view in `views`. |
+| `timeZone` | The device timezone. An IANA name such as `'Europe/Madrid'`. |
+| `weekStartsOn` | The locale's first day. `1` is Monday through `7` is Sunday. |
 
-`weekStartsOn` follows Temporal's `dayOfWeek` convention: `1` is Monday through
-`7` is Sunday. Omit it to use the locale default.
+The calendar has `date`, `view`, `visibleRange`, `title()`, `next()`, `previous()`, `today()`, `setDate()`, `setView()`, and `subscribe()`.
+
+Inputs of the wrong type throw a `TypeError` that names what you passed, for example `date must be a Temporal.PlainDate, got String`.

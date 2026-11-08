@@ -1,103 +1,34 @@
 ---
 title: Utilities
-description: Weekday labels and direct Temporal recipes for formatting, navigation, and timezone conversion.
+description: Weekday labels for calendar headers, and the Temporal one-liners for everything else.
 ---
 
-The core package exports five values: `createCalendar`, `buildMonthView`, `buildWeekView`, `buildDayView`, and `getWeekdays`. Use Temporal directly for other date operations.
+## getWeekdays
 
-## Formatting
+Weekday names in the order your calendar shows them. `1` starts on Monday, `7` on Sunday.
 
-### getWeekdays
-
-Get localized weekday names in calendar order. Temporal uses `1` for Monday through `7` for Sunday.
-
-```typescript
+```ts
 import { getWeekdays } from '@gobrand/calendar-core';
 
-getWeekdays(); // Monday start, short English names
-getWeekdays(7); // Sunday start
-getWeekdays(1, 'es-ES');
-getWeekdays(1, 'en-US', 'long');
-getWeekdays(7, 'en-US', 'narrow');
+getWeekdays(); // ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+getWeekdays(7); // ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+getWeekdays(1, 'es-ES', 'long'); // ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+getWeekdays(7, 'en-US', 'narrow'); // ["S", "M", "T", "W", "T", "F", "S"]
 ```
 
-### getMonthName
+Use the calendar's `weekStartsOn` so the header matches the grid.
 
-Format a Temporal month directly; there is no `getMonthName` package export.
+## Everything else is Temporal
 
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
+Calendar has no other helpers. Temporal already does the rest in one line:
 
-const month = Temporal.PlainYearMonth.from('2025-01');
-month.toLocaleString('es-ES', { month: 'long' }); // enero
-```
+| Task | Temporal |
+| --- | --- |
+| Month name | `month.toLocaleString('en-US', { month: 'long' })` |
+| Time label | `time.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' })` |
+| Device timezone | `Temporal.Now.timeZoneId()` |
+| Show a meeting in another timezone | `meeting.withTimeZone('Asia/Tokyo')` |
+| Date and time to a meeting | `date.toZonedDateTime({ timeZone, plainTime: time })` |
+| Next month, last week | `date.add({ months: 1 })`, `date.subtract({ weeks: 1 })` |
 
-### formatTime
-
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
-
-const time = Temporal.PlainTime.from('14:30');
-time.toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit' });
-```
-
-## Timezone
-
-### getCurrentTimeZone
-
-Use `Temporal.Now.timeZoneId()` to obtain the system timezone.
-
-### convertToTimezone
-
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
-
-const ny = Temporal.ZonedDateTime.from('2025-01-15T14:00:00-05:00[America/New_York]');
-const tokyo = ny.withTimeZone('Asia/Tokyo');
-// 2025-01-16T04:00:00+09:00[Asia/Tokyo]
-```
-
-### createZonedDateTime
-
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
-
-const date = Temporal.PlainDate.from('2025-01-15');
-const time = Temporal.PlainTime.from('14:30');
-const zoned = date.toZonedDateTime({ timeZone: 'America/New_York', plainTime: time });
-```
-
-## Navigation
-
-Use controller `next()`, `previous()`, and `today()` for the active view. For standalone calculations, Temporal supports explicit units:
-
-```typescript
-import { Temporal } from '@js-temporal/polyfill';
-
-const date = Temporal.PlainDate.from('2025-01-15');
-date.add({ months: 1 });
-date.subtract({ weeks: 1 });
-date.add({ days: 1 });
-```
-
-## Date Ranges
-
-Use the controller's half-open visible range for querying data:
-
-```typescript
-import { createCalendar } from '@gobrand/calendar-core';
-import { Temporal } from '@js-temporal/polyfill';
-
-const calendar = createCalendar({
-  views: { month: true },
-  date: Temporal.PlainDate.from('2025-01-15'),
-  timeZone: 'America/New_York',
-});
-const { start, end } = calendar.visibleRange;
-```
-
-Query `>= start` and `< end`. See [timezones and ranges](/docs/timezones-and-ranges).
-
-## Layout Helpers
-
-Calendar is headless. Week and day projections provide Temporal geometry and items; your rendering code chooses CSS dimensions and event layout. The package does not export CSS positioning helpers. See the [complete week example](/docs/examples/week-view).
+For formatting and arithmetic with date-fns names, see [Tiempo](https://tiempo.gobrand.app).

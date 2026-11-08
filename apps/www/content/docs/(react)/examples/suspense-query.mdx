@@ -1,8 +1,10 @@
 ---
 title: Suspense Query
-description: Keep month navigation available while its events load.
+description: Keep month navigation usable while its events load.
 ---
 
 <CalendarPreview name="suspense-month" />
 
-The controller and toolbar stay above the Suspense boundary. The query and month projection run below it after data is ready.
+The toolbar sits above the Suspense boundary, so it stays usable while the month loads its events.
+
+The styling comes from small `calendar-ui` components. [Full source as Markdown](/examples/suspense-month.md).
