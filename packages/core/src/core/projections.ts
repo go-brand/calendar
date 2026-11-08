@@ -11,6 +11,7 @@ import type {
   WeekDay,
   WeekView,
 } from '../types';
+import { expectTemporal } from '../utils/expectTemporal';
 import { getCalendarMetadata } from './calendar';
 
 type ProjectionOptions<TViews extends NonEmptyCalendarViews, TItem> = {
@@ -42,7 +43,9 @@ function itemsByDate<TItem>(
   if (!getDate) return grouped;
 
   for (const item of items) {
-    const key = getDate(item).toString();
+    const date = getDate(item);
+    expectTemporal(date, 'PlainDate', 'getDate result');
+    const key = date.toString();
     const dateItems = grouped.get(key);
     if (dateItems) dateItems.push(item);
     else grouped.set(key, [item]);
@@ -75,7 +78,9 @@ function buildTimeSlots<TItem>(
       wrapped || Temporal.PlainTime.compare(candidateEnd, dayEnd) > 0 ? dayEnd : candidateEnd;
     const slotItems = getStart
       ? items.filter((item) => {
-          const itemTime = getStart(item).toPlainTime();
+          const start = getStart(item);
+          expectTemporal(start, 'ZonedDateTime', 'getStart result');
+          const itemTime = start.toPlainTime();
           return (
             Temporal.PlainTime.compare(itemTime, slotStart) >= 0 &&
             Temporal.PlainTime.compare(itemTime, slotEnd) < 0

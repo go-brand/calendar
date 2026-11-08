@@ -12,6 +12,7 @@ import type {
   Weekday,
 } from '../types';
 import { getDayDateRange, getMonthDateRange, getWeekDateRange } from '../utils/dateRanges';
+import { expectTemporal, expectWeekday } from '../utils/expectTemporal';
 
 type ControllerMetadata = {
   timeZone: string;
@@ -31,6 +32,9 @@ function localeWeekStart(): Weekday {
 }
 
 function validateTimedView(name: 'week' | 'day', config: TimedViewConfig) {
+  if (config.dayStart) expectTemporal(config.dayStart, 'PlainTime', `${name} dayStart`);
+  if (config.dayEnd) expectTemporal(config.dayEnd, 'PlainTime', `${name} dayEnd`);
+  if (config.slotDuration) expectTemporal(config.slotDuration, 'Duration', `${name} slotDuration`);
   if (config.slotDuration && config.slotDuration.sign <= 0) {
     throw new Error(`${name} slotDuration must be positive`);
   }
@@ -108,6 +112,9 @@ export function createCalendar<const TViews extends NonEmptyCalendarViews>(
   const requestedView = options.view ?? options.defaultView ?? configuredViews[0];
   assertViewConfigured(views, requestedView);
 
+  if (options.date) expectTemporal(options.date, 'PlainDate', 'date');
+  if (options.weekStartsOn !== undefined) expectWeekday(options.weekStartsOn);
+
   const timeZone = options.timeZone ?? Temporal.Now.timeZoneId();
   const weekStartsOn = options.weekStartsOn ?? localeWeekStart();
   let date = options.date ?? Temporal.Now.zonedDateTimeISO(timeZone).toPlainDate();
@@ -169,6 +176,7 @@ export function createCalendar<const TViews extends NonEmptyCalendarViews>(
       });
     },
     setDate(nextDate) {
+      expectTemporal(nextDate, 'PlainDate', 'setDate argument');
       if (date.equals(nextDate)) return;
       date = nextDate;
       notify();

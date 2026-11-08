@@ -1,5 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill';
 import type { Weekday } from '../types';
+import { expectWeekday } from './expectTemporal';
 
 /**
  * Returns an array of weekday names starting from the specified day.
@@ -14,6 +15,7 @@ export function getWeekdays(
   locale: string | string[] = 'en-US',
   format: 'short' | 'long' | 'narrow' = 'short'
 ): string[] {
+  expectWeekday(weekStartsOn);
   const monday = Temporal.PlainDate.from('2023-01-02');
   const days: string[] = [];
 
