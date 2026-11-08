@@ -45,7 +45,7 @@ test('generates llms-full and links it from llms.txt', () => {
   const full = text('apps/www/public/llms-full.txt');
 
   assert.match(llms, new RegExp(`\\[Complete documentation\\]\\(${siteUrl}/llms-full\\.txt\\)`));
-  assert.match(full, /^# temporal-calendar/m);
+  assert.match(full, /^# GoBrand Calendar/m);
   assert.match(full, new RegExp(`Canonical: ${siteUrl}/docs/first-calendar`));
 });
 

@@ -1,6 +1,6 @@
 ---
 title: useCreateCalendar
-description: Create a controlled or uncontrolled item-agnostic controller, with optional simple-mode data.
+description: Create a calendar in a component, with or without its events.
 ---
 
 ```tsx
@@ -14,12 +14,15 @@ const calendar = useCreateCalendar({
 })
 ```
 
-With `items`, the return value includes the inferred `activeView`. Without `items`, it returns the item-agnostic controller used with `CalendarProvider` and `useCalendarView`.
+With `items`, the result also has `activeView`, the current month, week, or day with your events on it. Without `items`, pass the calendar to `CalendarProvider` and build views with [`useCalendarView`](/docs/api/use-calendar-view).
 
-Controlled props are `date`/`onDateChange` and `view`/`onViewChange`; uncontrolled initial props are `defaultDate` and `defaultView`.
+| Option | |
+| --- | --- |
+| `views` | Required. `{ month: true }`, or `{ week: { dayStart, dayEnd, slotDuration } }` for custom hours. |
+| `defaultDate`, `defaultView` | Starting values. |
+| `date`, `onDateChange`, `view`, `onViewChange` | [Controlled state](/docs/controlled-state). |
+| `timeZone` | IANA name. Defaults to the device timezone. |
+| `weekStartsOn` | `1` (Monday) through `7` (Sunday). Defaults to the locale's first day. |
+| `items`, `getDate`, `getStart` | Your events and where each one goes. |
 
-Use the controller returned by the current render. Its identity and action identities are not guaranteed to stay stable; controlled props, navigation, timezone, and view geometry can replace it. Controlled changes remain proposals until the parent supplies the new value.
-
-The item-bearing result can also be passed directly to core `buildMonthView`, `buildWeekView`, and `buildDayView` for configured views. Supply each projection's own items and accessors.
-
-For server rendering and hydration, supply matching explicit date, view, and timezone inputs on the server and client.
+Use the calendar from the current render; it can change between renders. When rendering on the server, pass the same `date`, `view`, and `timeZone` on the server and the client.

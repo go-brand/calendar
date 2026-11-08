@@ -1,0 +1,63 @@
+---
+title: Types
+description: The shapes you render, from the calendar to its days and time slots.
+---
+
+All types are exported from both `@gobrand/react-calendar` and `@gobrand/calendar-core`. `TItem` is your event type, inferred from `items`.
+
+```ts
+import type { Temporal } from '@js-temporal/polyfill';
+
+type VisibleRange = {
+  start: Temporal.ZonedDateTime; // included
+  end: Temporal.ZonedDateTime; // excluded
+};
+
+type MonthView<TItem> = {
+  name: 'month';
+  month: Temporal.PlainYearMonth;
+  weeks: Array<
+    Array<{
+      id: string;
+      date: Temporal.PlainDate;
+      isCurrentMonth: boolean;
+      isToday: boolean;
+      items: TItem[];
+    }>
+  >;
+};
+
+type TimeSlot<TItem> = {
+  id: string;
+  time: Temporal.PlainTime;
+  hour: number;
+  minute: number;
+  items: TItem[];
+};
+
+type WeekView<TItem> = {
+  name: 'week';
+  weekStart: Temporal.PlainDate;
+  weekEnd: Temporal.PlainDate;
+  days: Array<{
+    id: string;
+    date: Temporal.PlainDate;
+    isToday: boolean;
+    items: TItem[];
+    timeSlots: TimeSlot<TItem>[];
+  }>;
+};
+
+type DayView<TItem> = {
+  name: 'day';
+  id: string;
+  date: Temporal.PlainDate;
+  isToday: boolean;
+  items: TItem[];
+  timeSlots: TimeSlot<TItem>[];
+};
+```
+
+With more than one view enabled, `activeView` is a union of those views. Check `activeView.name` to render the right one. Each view also has a `view` field with the same value; prefer `name`.
+
+`CalendarController` holds `date`, `view`, `viewNames`, `visibleRange`, `title()`, `next()`, `previous()`, `today()`, `setDate()`, `setView()`, and `subscribe()`.

@@ -1,10 +1,10 @@
 ---
 title: Month View
-description: A complete month with navigation and events.
+description: A month with navigation and events.
 ---
 
 <CalendarPreview name="basic-month" />
 
-The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
+Month cells group events by date, so `getDate` is all it needs.
 
-This example needs only `getDate` because month cells group events by calendar date. Timed placement is introduced in the week and day examples.
+The styling comes from small `calendar-ui` components. [Full source as Markdown](/examples/basic-month.md).

@@ -99,25 +99,25 @@
     "file": "apps/www/content/docs/(react)/timezones-and-ranges.mdx",
     "fence": 1,
     "classification": "contextual",
-    "harness": "temporal-types"
-  },
-  {
-    "file": "apps/www/content/docs/(react)/timezones-and-ranges.mdx",
-    "fence": 2,
-    "classification": "contextual",
     "harness": "query"
   },
   {
     "file": "apps/www/content/docs/(react)/timezones-and-ranges.mdx",
-    "fence": 3,
+    "fence": 2,
     "classification": "complete",
     "harness": "timezone"
   },
   {
+    "file": "apps/www/content/docs/(react)/types.mdx",
+    "fence": 0,
+    "classification": "complete",
+    "harness": "complete"
+  },
+  {
     "file": "apps/www/content/docs/core/create-calendar.mdx",
     "fence": 0,
-    "classification": "contextual",
-    "harness": "create-core"
+    "classification": "complete",
+    "harness": "complete"
   },
   {
     "file": "apps/www/content/docs/core/index.mdx",
@@ -134,55 +134,19 @@
   {
     "file": "apps/www/content/docs/core/projections.mdx",
     "fence": 0,
-    "classification": "contextual",
-    "harness": "projections"
+    "classification": "complete",
+    "harness": "complete"
   },
   {
     "file": "apps/www/content/docs/core/utilities.mdx",
     "fence": 0,
-    "classification": "complete",
-    "harness": "complete"
-  },
-  {
-    "file": "apps/www/content/docs/core/utilities.mdx",
-    "fence": 1,
-    "classification": "complete",
-    "harness": "complete"
-  },
-  {
-    "file": "apps/www/content/docs/core/utilities.mdx",
-    "fence": 2,
-    "classification": "complete",
-    "harness": "complete"
-  },
-  {
-    "file": "apps/www/content/docs/core/utilities.mdx",
-    "fence": 3,
-    "classification": "complete",
-    "harness": "complete"
-  },
-  {
-    "file": "apps/www/content/docs/core/utilities.mdx",
-    "fence": 4,
-    "classification": "complete",
-    "harness": "complete"
-  },
-  {
-    "file": "apps/www/content/docs/core/utilities.mdx",
-    "fence": 5,
-    "classification": "complete",
-    "harness": "complete"
-  },
-  {
-    "file": "apps/www/content/docs/core/utilities.mdx",
-    "fence": 6,
     "classification": "complete",
     "harness": "complete"
   },
   {
     "file": "apps/www/content/docs/core/visible-ranges.mdx",
     "fence": 0,
-    "classification": "contextual",
-    "harness": "core-controller"
+    "classification": "complete",
+    "harness": "complete"
   }
 ]

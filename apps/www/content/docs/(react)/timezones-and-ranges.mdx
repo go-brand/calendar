@@ -1,9 +1,9 @@
 ---
 title: Timezones and visible ranges
-description: Query half-open calendar ranges that remain correct across DST transitions.
+description: Show the right day in every timezone and query exactly what is on screen.
 ---
 
-Set the calendar timezone once:
+Set the timezone once:
 
 ```tsx
 const calendar = useCreateCalendar({
@@ -12,18 +12,11 @@ const calendar = useCreateCalendar({
 })
 ```
 
-That timezone drives the initial date, `today()`, `isToday`, navigation ranges, and local-midnight boundaries. Calendar behavior does not fall back to the host timezone after a timezone is supplied.
+It decides the starting date, `today()`, `isToday`, and the visible range. Leave it out to use the device's timezone; set it when rendering on a server or showing someone else's calendar.
 
-## Half-open query contract
+## Query what is on screen
 
-```ts
-type VisibleRange = {
-  start: Temporal.ZonedDateTime
-  end: Temporal.ZonedDateTime
-}
-```
-
-Use `>= start` and `< end`. Adjacent ranges meet without gaps or duplicate boundary records, and the code never has to invent the final nanosecond of a day.
+`visibleRange` covers every date in the current view. Include `start`, exclude `end`:
 
 ```ts
 const { start, end } = calendar.visibleRange
@@ -35,26 +28,23 @@ await db.event.findMany({
 })
 ```
 
-## DST is calendar geometry
+Both are local midnights, so a day that daylight saving makes 23 or 25 hours long is still exactly one day.
 
-A local calendar day may contain 23, 24, or 25 elapsed hours. Calendar constructs each boundary from its own local midnight rather than adding 24 hours to an instant.
+## Put events on the right day
 
-## Event mapping belongs to your data layer
-
-The controller timezone defines geometry. Accessors decide which local date and start time each item belongs to; setting `timeZone` does not convert your items. Normalize an event once, then derive both accessors from that same value:
+The calendar's timezone does not convert your events. Convert each one to that timezone, then read the date and start from the same value:
 
 ```ts
 import { Temporal } from '@js-temporal/polyfill';
 
-const normalizedEvent = {
-  title: 'Late UTC meeting',
-  start: Temporal.Instant.from('2026-07-10T23:30:00Z')
-    .toZonedDateTimeISO('Europe/Madrid'),
+const meeting = {
+  title: 'Sync with Tokyo',
+  start: Temporal.Instant.from('2026-07-10T23:30:00Z').toZonedDateTimeISO('Europe/Madrid'),
 };
-const getDate = (event: typeof normalizedEvent) => event.start.toPlainDate();
-const getStart = (event: typeof normalizedEvent) => event.start;
-// getDate(normalizedEvent).toString() === '2026-07-11'
-// getStart(normalizedEvent).hour === 1
+const getDate = (event: typeof meeting) => event.start.toPlainDate();
+const getStart = (event: typeof meeting) => event.start;
+// getDate(meeting).toString() === '2026-07-11'
+// getStart(meeting).hour === 1
 ```
 
-Pass these accessors with the normalized items to the projection. The UTC date is July 10; the Madrid calendar date is July 11.
+In UTC the meeting is on July 10. In a Madrid calendar it is on July 11 at 01:30, and that is where it shows up.

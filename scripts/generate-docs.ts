@@ -172,11 +172,11 @@ function generateLlmsTxt(docs: DocFile[]): void {
   console.log('Generating llms.txt...');
 
   const lines: string[] = [
-    '# temporal-calendar',
+    '# GoBrand Calendar',
     '',
-    '> A lightweight utility library for building calendar UIs with the Temporal API.',
+    '> Headless month, week, and day calendars built on Temporal. `@gobrand/react-calendar` for React, `@gobrand/calendar-core` for anything else.',
     '',
-    'temporal-calendar provides type-safe calendar building blocks using the modern Temporal API. It supports month, week, and day views with timezone awareness, DST-safe operations, an item-agnostic controller, and locally inferred view projections.',
+    'You render the markup. Calendar keeps the date and view, navigates, builds each grid in an explicit timezone, places your events by date and start time, and gives the half-open range to query.',
     '',
     '## Complete reference',
     '',
@@ -185,7 +185,7 @@ function generateLlmsTxt(docs: DocFile[]): void {
     '',
     '## Docs',
     '',
-    `- [Introduction](${BASE_URL}): Overview of temporal-calendar and key features`,
+    `- [Introduction](${BASE_URL}): What Calendar does, with a first example`,
     `- [Core Installation](${BASE_URL}/core/installation): Getting started with @gobrand/calendar-core`,
     `- [React Installation](${BASE_URL}/installation): Getting started with @gobrand/react-calendar`,
     '',
@@ -238,20 +238,31 @@ function generateSkillMd(docs: DocFile[]): string {
   const lines: string[] = [
     '---',
     'name: calendar',
-    'description: Use when building calendar UIs with the Temporal API. Provides month, week, and day views with timezone awareness, DST-safe operations, and React hooks for state management.',
+    'description: Use when building a month, week, or day calendar, a date picker, or a scheduling view in React or TypeScript with @gobrand/react-calendar or @gobrand/calendar-core. Covers events on the right day across timezones, time slots, navigation, URL state, and querying the visible range.',
     '---',
     '',
-    '# temporal-calendar - Calendar Building Blocks',
+    '# GoBrand Calendar',
     '',
-    'Lightweight utility library for building calendar UIs with the Temporal API.',
+    'Headless month, week, and day calendars built on Temporal. You render the markup; Calendar keeps the date and view, navigates, builds each grid, and places your events.',
     '',
     '```bash',
-    '# Core (framework-agnostic)',
-    'npm install @gobrand/calendar-core @js-temporal/polyfill',
-    '',
     '# React',
-    'npm install @gobrand/react-calendar @js-temporal/polyfill',
+    'pnpm add @gobrand/react-calendar @js-temporal/polyfill',
+    '',
+    '# Anything else',
+    'pnpm add @gobrand/calendar-core @js-temporal/polyfill',
     '```',
+    '',
+    '## Rules',
+    '',
+    '- `getDate` returns the `Temporal.PlainDate` an event is on. For a timed event, convert it to the calendar timezone first: `event.start.withTimeZone(timeZone).toPlainDate()`.',
+    '- `getStart` returns a `Temporal.ZonedDateTime` in the calendar timezone. Derive it from the same value as `getDate`.',
+    "- The calendar timezone does not convert events. Set `timeZone` explicitly for server rendering or for anyone else's calendar.",
+    '- Query with `visibleRange`: `>= start` and `< end`.',
+    '- `weekStartsOn` is `1` (Monday) through `7` (Sunday), not `0` for Sunday.',
+    '- Enable a view with `true`; leave it out to disable it. Week and day take `dayStart`, `dayEnd` (`Temporal.PlainTime`) and `slotDuration` (`Temporal.Duration`).',
+    '- Wrong Temporal types throw a `TypeError` that names the type received. Convert, do not cast.',
+    '- Use the calendar from the current render; subscribe in an effect that depends on `[calendar]`.',
     '',
     '## Quick start',
     '',
@@ -266,7 +277,7 @@ function generateSkillMd(docs: DocFile[]): string {
     '}',
     '',
     'const events: Event[] = [',
-    "  { id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() },",
+    "  { id: 'launch', title: 'Product launch', date: Temporal.PlainDate.from('2026-07-10') },",
     ']',
     '',
     'function Calendar() {',
@@ -326,67 +337,16 @@ function generateSkillMd(docs: DocFile[]): string {
     lines.push('');
   }
 
-  // Add a concise map of the public types without duplicating their declarations.
-  lines.push('## Key Types');
+  lines.push('## Types');
   lines.push('');
   lines.push(
-    '- `CalendarController<TViews>` contains the current date and view, typed `viewNames`, resolved view configuration, visible range, title, navigation methods, setters, and `subscribe`.',
+    '- With `items`, `useCreateCalendar` also returns `activeView`. One configured view narrows it to that view; several give a union discriminated by `name`.',
   );
   lines.push(
-    '- `VisibleRange` contains `start` and `end` as `Temporal.ZonedDateTime` values in the controller timezone.',
+    '- `useCalendar()` takes no event type. Infer events in each `useCalendarView({ view, items, getDate })` call.',
   );
   lines.push(
-    '- `MonthView<TItem>`, `WeekView<TItem>`, and `DayView<TItem>` are discriminated by their `name` field.',
-  );
-  lines.push('- `NonEmptyCalendarViews` requires at least one of `month`, `week`, or `day`.');
-  lines.push('');
-  lines.push('## Inference rules');
-  lines.push('');
-  lines.push(
-    '- `useCreateCalendar` with `items` and `getDate` returns the controller plus `activeView`; without items it returns the item-agnostic controller.',
-  );
-  lines.push(
-    '- A single configured view narrows `activeView` to that view; multiple views produce only the configured discriminated union.',
-  );
-  lines.push(
-    '- `useCalendar()` accepts no item generic. Infer items in each literal `useCalendarView({ view, items, getDate })` call.',
-  );
-  lines.push('');
-  lines.push('## View configuration');
-  lines.push('');
-  lines.push('- Use `month: true`, `week: true`, or `day: true` for default geometry.');
-  lines.push(
-    '- Supply an object only for custom week/day geometry such as `dayStart`, `dayEnd`, or `slotDuration`.',
-  );
-  lines.push(
-    '- Omit a key to make that view unavailable. `false` is intentionally rejected so key presence always means configured.',
-  );
-  lines.push('');
-  lines.push('## Controller lifetime and event mapping');
-  lines.push('');
-  lines.push(
-    'Controller and action identities can change across renders. Subscribe in an effect with `[calendar]` and return the unsubscribe function.',
-  );
-  lines.push(
-    'The controller timezone sets calendar geometry; event accessors own conversion. Derive getDate and getStart from the same normalized ZonedDateTime.',
-  );
-  lines.push(
-    `[Timezone conversion recipe](${BASE_URL}/timezones-and-ranges). [Controller lifetime](${BASE_URL}/controlled-state).`,
-  );
-  lines.push('');
-  lines.push('## Initialization and timezone');
-  lines.push('');
-  lines.push(
-    '- `timeZone` accepts an IANA timezone string and defaults to `Temporal.Now.timeZoneId()`. The visible range, `today()`, and `isToday` all use that zone.',
-  );
-  lines.push(
-    '- Use `defaultDate` and `defaultView` for uncontrolled initial state. The date defaults to today in the calendar timezone; the view defaults to the first configured view.',
-  );
-  lines.push(
-    '- Use `date` with `onDateChange`, or `view` with `onViewChange`, for controlled state. A controlled view must be configured in `views`.',
-  );
-  lines.push(
-    '- Core `createCalendar` uses `date` and `view` directly, with `defaultView` as its uncontrolled-style initial-view alias.',
+    '- `VisibleRange` is `{ start, end }`, both `Temporal.ZonedDateTime` in the calendar timezone.',
   );
   lines.push('');
 
@@ -439,9 +399,9 @@ function generateAgentMarkdown(docs: DocFile[]): Readonly<Record<string, string>
   }
   const markdownByPath: Record<string, string> = {
     '/': [
-      '# temporal-calendar',
+      '# GoBrand Calendar',
       '',
-      '> Temporal-first building blocks for month, week, and day calendar interfaces.',
+      '> Headless month, week, and day calendars built on Temporal.',
       '',
       `Canonical: ${SITE_URL}/`,
       '',
@@ -477,9 +437,9 @@ function generateLlmsFull(markdownByPath: Readonly<Record<string, string>>): voi
     .filter(([route]) => route.startsWith('/docs'))
     .map(([, markdown]) => markdown.trim());
   const content = [
-    '# temporal-calendar',
+    '# GoBrand Calendar',
     '',
-    '> Complete documentation for the Temporal-first Calendar packages.',
+    '> Complete documentation for @gobrand/react-calendar and @gobrand/calendar-core.',
     '',
     ...docs.flatMap((markdown) => [markdown, '', '---', '']),
     '# Example sources',

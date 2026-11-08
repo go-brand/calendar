@@ -1,6 +1,6 @@
 ---
 title: CalendarProvider
-description: Share one calendar controller with child components.
+description: Share one calendar with the components below it.
 ---
 
 ```tsx
@@ -40,4 +40,4 @@ function VisibleRange() {
 }
 ```
 
-The provider shares calendar state, not event data. Child views can fetch their own records and use their own item types.
+The provider shares the date and view, not events. Each view below it can load its own data.
