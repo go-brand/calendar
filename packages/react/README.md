@@ -1,63 +1,63 @@
-# React Calendar
+# @gobrand/react-calendar
 
-Build month, week, and day calendars with Temporal. The package manages calendar state and gives
-you the dates and events to render. You provide the markup and styles.
+**The headless Temporal calendar for React.**
+
+Build timezone-safe month, week, and day calendars with your own markup, styles, and drag-and-drop library. Full TypeScript inference, WAI-ARIA keyboard navigation, overlap layout math, and an optional zero-polyfill `/native` export.
 
 ```bash
 pnpm add @gobrand/react-calendar @js-temporal/polyfill
 ```
 
+> Using native `globalThis.Temporal`? Import from `@gobrand/react-calendar/native` to ship zero polyfill code.
+
 ## Quick start
 
 ```tsx
-import { Temporal } from '@js-temporal/polyfill'
-import { useCreateCalendar } from '@gobrand/react-calendar'
+import { Temporal } from '@js-temporal/polyfill';
+import { useCalendarGrid, useCreateCalendar } from '@gobrand/react-calendar';
 
-type Event = {
-  id: string
-  title: string
-  date: Temporal.PlainDate
-}
+type Event = { id: string; title: string; date: Temporal.PlainDate };
 
-const events: Event[] = [
-  { id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() },
-]
-
-function Calendar() {
+function Calendar({ events }: { events: Event[] }) {
   const calendar = useCreateCalendar({
     views: { month: true },
     items: events,
-    getDate: event => event.date,
-  })
-  const month = calendar.activeView
+    getDate: (event) => event.date,
+  });
+  const { getGridProps, getDayCellProps } = useCalendarGrid({ calendar });
 
   return (
     <section>
-      <button onClick={calendar.previous}>Previous</button>
-      <button onClick={calendar.today}>Today</button>
-      <button onClick={calendar.next}>Next</button>
-      <h2>{calendar.title()}</h2>
+      <header>
+        <button onClick={calendar.previous}>Prev</button>
+        <button onClick={calendar.today}>Today</button>
+        <button onClick={calendar.next}>Next</button>
+        <h2>{calendar.title()}</h2>
+      </header>
 
-      {month.weeks.flat().map(day => (
-        <div key={day.id}>
-          {day.date.toString()}: {day.items.map(event => event.title).join(', ')}
-        </div>
-      ))}
+      <div {...getGridProps()}>
+        {calendar.activeView.weeks.map((week, i) => (
+          <div key={i} role="row">
+            {week.map((day) => (
+              <button key={day.id} {...getDayCellProps(day.date)}>
+                {day.date.day} ({day.items.length})
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
     </section>
-  )
+  );
 }
 ```
 
-[See the complete styled month example](https://calendar.gobrand.app/docs/examples/basic-month).
+## What's included
 
-Add week or day views when you need them. Timed views can also receive a `getStart` accessor for
-placing events into time slots. [See the multi-view example](https://calendar.gobrand.app/docs/examples/multi-view).
+- **Hooks & composition** — `useCreateCalendar`, `CalendarProvider`, `useCalendar`, `useCalendarView` (works cleanly with React Suspense).
+- **Accessible keyboard grid** — `useCalendarGrid` provides `role="grid"` / `gridcell`, roving `tabIndex`, and arrow/`Home`/`End`/`PageUp`/`PageDown` navigation.
+- **Headless layout & DnD helpers** — Re-exports `layoutTimedEvents`, `layoutMultiDayEvents`, `getTimePosition`, `snapTimeFromPosition`, `moveEvent`, and `resizeEvent` from `@gobrand/calendar-core`.
+- **Native Temporal export** — `@gobrand/react-calendar/native` uses `globalThis.Temporal` with zero polyfill imports.
 
-## Using Suspense
-
-If a view fetches its own data, put the controller and controls above the Suspense boundary. Then
-call `useCalendarView` after the data is ready. [See the complete Suspense example](https://calendar.gobrand.app/docs/data-and-suspense).
-
-React 18 and 19 are supported. [Read the documentation](https://calendar.gobrand.app/docs).
+React 18 and 19 supported. [Read the documentation](https://calendar.gobrand.app/docs) · [Agent docs (`llms.txt`)](https://calendar.gobrand.app/llms.txt)
 
 MIT © [Ruben Costa](https://x.com/PonziChad) / [Go Brand](https://gobrand.app)

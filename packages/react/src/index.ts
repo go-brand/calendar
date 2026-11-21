@@ -1,6 +1,5 @@
 'use client';
 
-import { Temporal } from '@js-temporal/polyfill';
 import {
   buildDayView,
   buildMonthView,
@@ -27,12 +26,24 @@ import {
   createContext,
   createElement,
   useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useReducer,
+  useRef,
   useState,
 } from 'react';
-import type { ReactNode } from 'react';
+import type {
+  FocusEvent,
+  FocusEventHandler,
+  KeyboardEvent,
+  KeyboardEventHandler,
+  MouseEvent,
+  MouseEventHandler,
+  ReactNode,
+} from 'react';
+import type { Temporal } from '@js-temporal/polyfill';
+import { Temporal as temporal } from './temporal-runtime';
 
 export * from '@gobrand/calendar-core';
 
@@ -143,11 +154,11 @@ export function useCreateCalendar<const TViews extends NonEmptyCalendarViews, TI
     views,
     weekStartsOn,
   } = options;
-  const timeZone = options.timeZone ?? Temporal.Now.timeZoneId();
+  const timeZone = options.timeZone ?? temporal.Now.timeZoneId();
   const configuredViews = Object.keys(views) as ConfiguredView<TViews>[];
   const initialView = defaultView ?? configuredViews[0];
   const [uncontrolledDate, setUncontrolledDate] = useState(
-    () => defaultDate ?? Temporal.Now.zonedDateTimeISO(timeZone).toPlainDate(),
+    () => defaultDate ?? temporal.Now.zonedDateTimeISO(timeZone).toPlainDate(),
   );
   const [uncontrolledView, setUncontrolledView] = useState(initialView);
   const [revision, forceControlledReset] = useReducer((value: number) => value + 1, 0);
@@ -275,4 +286,224 @@ export function useCalendarView<TName extends ViewName, TItem>(
     TName,
     TItem
   >;
+}
+
+export type UseCalendarGridOptions = {
+  calendar?: AnyCalendarController;
+  focusedDate?: Temporal.PlainDate;
+  onFocusedDateChange?: (date: Temporal.PlainDate) => void;
+  selectedDate?: Temporal.PlainDate;
+  onSelectDate?: (date: Temporal.PlainDate) => void;
+};
+
+export type CalendarGridProps<TProps extends Record<string, unknown> = Record<string, unknown>> =
+  Omit<TProps, 'role' | 'aria-label' | 'onKeyDown'> & {
+    role: 'grid';
+    'aria-label': string;
+    onKeyDown: KeyboardEventHandler<HTMLElement>;
+  };
+
+export type CalendarDayCellProps<TProps extends Record<string, unknown> = Record<string, unknown>> =
+  Omit<
+    TProps,
+    'role' | 'tabIndex' | 'aria-selected' | 'aria-current' | 'data-date' | 'onFocus' | 'onClick'
+  > & {
+    role: 'gridcell';
+    tabIndex: 0 | -1;
+    'aria-selected': boolean;
+    'aria-current': 'date' | undefined;
+    'data-date': string;
+    onFocus: FocusEventHandler<HTMLElement>;
+    onClick: MouseEventHandler<HTMLElement>;
+  };
+
+export type CalendarGridResult = {
+  focusedDate: Temporal.PlainDate;
+  setFocusedDate: (date: Temporal.PlainDate) => void;
+  getGridProps: <TProps extends Record<string, unknown> = Record<string, unknown>>(
+    props?: TProps,
+  ) => CalendarGridProps<TProps>;
+  getDayCellProps: <TProps extends Record<string, unknown> = Record<string, unknown>>(
+    date: Temporal.PlainDate,
+    props?: TProps,
+  ) => CalendarDayCellProps<TProps>;
+};
+
+export function useCalendarGrid(options: UseCalendarGridOptions = {}): CalendarGridResult {
+  const contextCalendar = useContext(CalendarContext);
+  const calendar = options.calendar ? unwrapCalendar(options.calendar) : contextCalendar;
+  if (!calendar) {
+    throw new Error('useCalendarGrid must be used within CalendarProvider or receive a calendar');
+  }
+
+  const {
+    focusedDate: controlledFocused,
+    onFocusedDateChange,
+    selectedDate,
+    onSelectDate,
+  } = options;
+
+  const [uncontrolledFocused, setUncontrolledFocused] = useState<Temporal.PlainDate>(
+    () => controlledFocused ?? calendar.date,
+  );
+  const focusedDate = controlledFocused ?? uncontrolledFocused;
+  const pendingFocusRef = useRef<{ container: HTMLElement; date: string } | null>(null);
+
+  const updateFocusedDate = (nextDate: Temporal.PlainDate) => {
+    if (controlledFocused === undefined) {
+      setUncontrolledFocused(nextDate);
+    }
+    onFocusedDateChange?.(nextDate);
+  };
+
+  const focusedSignature = focusedDate.toString();
+  const calendarDateSignature = calendar.date.toString();
+
+  useEffect(() => {
+    const pending = pendingFocusRef.current;
+    if (!pending || pending.date !== focusedSignature) return;
+    pendingFocusRef.current = null;
+    const cell = pending.container.querySelector<HTMLElement>(`[data-date="${pending.date}"]`);
+    cell?.focus();
+  }, [focusedSignature, calendarDateSignature]);
+
+  const timeZone = calendar.visibleRange.start.timeZoneId;
+  const today = temporal.Now.zonedDateTimeISO(timeZone).toPlainDate();
+
+  const shouldNavigateTo = (nextDate: Temporal.PlainDate, forceNavigate: boolean) => {
+    if (forceNavigate) return true;
+    if (calendar.view === 'month') {
+      return nextDate.month !== calendar.date.month || nextDate.year !== calendar.date.year;
+    }
+    const rangeStart = calendar.visibleRange.start.toPlainDate();
+    const rangeEnd = calendar.visibleRange.end.toPlainDate();
+    return (
+      temporal.PlainDate.compare(nextDate, rangeStart) < 0 ||
+      temporal.PlainDate.compare(nextDate, rangeEnd) >= 0
+    );
+  };
+
+  const getGridProps = <TProps extends Record<string, unknown> = Record<string, unknown>>(
+    props?: TProps,
+  ): CalendarGridProps<TProps> => {
+    const userOnKeyDown = props?.onKeyDown as KeyboardEventHandler<HTMLElement> | undefined;
+    const userAriaLabel = props?.['aria-label'] as string | undefined;
+
+    const onKeyDown: KeyboardEventHandler<HTMLElement> = (event: KeyboardEvent<HTMLElement>) => {
+      userOnKeyDown?.(event);
+      if (event.defaultPrevented) return;
+
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onSelectDate?.(focusedDate);
+        return;
+      }
+
+      let nextDate: Temporal.PlainDate | null = null;
+      let forceNavigate = false;
+
+      switch (event.key) {
+        case 'ArrowLeft':
+          nextDate = focusedDate.subtract({ days: 1 });
+          break;
+        case 'ArrowRight':
+          nextDate = focusedDate.add({ days: 1 });
+          break;
+        case 'ArrowUp':
+          nextDate =
+            calendar.view === 'month'
+              ? focusedDate.subtract({ weeks: 1 })
+              : focusedDate.subtract({ days: 1 });
+          break;
+        case 'ArrowDown':
+          nextDate =
+            calendar.view === 'month'
+              ? focusedDate.add({ weeks: 1 })
+              : focusedDate.add({ days: 1 });
+          break;
+        case 'Home': {
+          const weekStartsOn = calendar.visibleRange.start.toPlainDate().dayOfWeek;
+          const offset = (focusedDate.dayOfWeek - weekStartsOn + 7) % 7;
+          nextDate = focusedDate.subtract({ days: offset });
+          break;
+        }
+        case 'End': {
+          const weekStartsOn = calendar.visibleRange.start.toPlainDate().dayOfWeek;
+          const offset = (focusedDate.dayOfWeek - weekStartsOn + 7) % 7;
+          nextDate = focusedDate.subtract({ days: offset }).add({ days: 6 });
+          break;
+        }
+        case 'PageUp':
+          nextDate = event.shiftKey
+            ? focusedDate.subtract({ years: 1 })
+            : focusedDate.subtract({ months: 1 });
+          forceNavigate = true;
+          break;
+        case 'PageDown':
+          nextDate = event.shiftKey
+            ? focusedDate.add({ years: 1 })
+            : focusedDate.add({ months: 1 });
+          forceNavigate = true;
+          break;
+        default:
+          return;
+      }
+
+      event.preventDefault();
+      pendingFocusRef.current = { container: event.currentTarget, date: nextDate.toString() };
+      updateFocusedDate(nextDate);
+      if (shouldNavigateTo(nextDate, forceNavigate)) {
+        calendar.setDate(nextDate);
+      }
+    };
+
+    return {
+      ...(props as TProps),
+      role: 'grid',
+      'aria-label': userAriaLabel ?? calendar.title(),
+      onKeyDown,
+    };
+  };
+
+  const getDayCellProps = <TProps extends Record<string, unknown> = Record<string, unknown>>(
+    date: Temporal.PlainDate,
+    props?: TProps,
+  ): CalendarDayCellProps<TProps> => {
+    const userOnFocus = props?.onFocus as FocusEventHandler<HTMLElement> | undefined;
+    const userOnClick = props?.onClick as MouseEventHandler<HTMLElement> | undefined;
+    const isFocused = date.equals(focusedDate);
+    const isSelected = selectedDate ? date.equals(selectedDate) : false;
+    const isToday = date.equals(today);
+
+    const onFocus: FocusEventHandler<HTMLElement> = (event: FocusEvent<HTMLElement>) => {
+      if (!date.equals(focusedDate)) {
+        updateFocusedDate(date);
+      }
+      userOnFocus?.(event);
+    };
+
+    const onClick: MouseEventHandler<HTMLElement> = (event: MouseEvent<HTMLElement>) => {
+      updateFocusedDate(date);
+      onSelectDate?.(date);
+      userOnClick?.(event);
+    };
+
+    return {
+      ...(props as TProps),
+      role: 'gridcell',
+      tabIndex: isFocused ? 0 : -1,
+      'aria-selected': isSelected,
+      'aria-current': isToday ? 'date' : undefined,
+      'data-date': date.toString(),
+      onFocus,
+      onClick,
+    };
+  };
+
+  return {
+    focusedDate,
+    setFocusedDate: updateFocusedDate,
+    getGridProps,
+    getDayCellProps,
+  };
 }

@@ -1,4 +1,4 @@
-import { Temporal } from '@js-temporal/polyfill';
+import { Temporal } from '../temporal';
 import type {
   CalendarController,
   CalendarOptions,
@@ -79,7 +79,8 @@ function rangeFor(
 }
 
 export function getCalendarMetadata(calendar: CalendarController): ControllerMetadata {
-  const metadata = controllerMetadata.get(calendar);
+  const metadata =
+    controllerMetadata.get(calendar) ?? controllerMetadata.get(Object.getPrototypeOf(calendar));
   if (!metadata) throw new Error('Unknown calendar controller');
   return metadata;
 }

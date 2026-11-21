@@ -158,6 +158,41 @@ export type ProjectionData<TItem> =
       getStart?: undefined;
     };
 
+export type TimedLayoutOptions<TItem> = {
+  date: Temporal.PlainDate;
+  getStart: (item: TItem) => Temporal.ZonedDateTime;
+  getEnd: (item: TItem) => Temporal.ZonedDateTime;
+  dayStart?: Temporal.PlainTime;
+  dayEnd?: Temporal.PlainTime;
+  timeZone?: string;
+};
+
+export type TimedEventLayout<TItem> = {
+  item: TItem;
+  start: Temporal.ZonedDateTime;
+  end: Temporal.ZonedDateTime;
+  top: number;
+  height: number;
+  column: number;
+  columns: number;
+};
+
+export type MultiDayLayoutOptions<TItem> = {
+  start: Temporal.PlainDate;
+  end: Temporal.PlainDate;
+  getStart: (item: TItem) => Temporal.PlainDate;
+  getEnd: (item: TItem) => Temporal.PlainDate;
+};
+
+export type MultiDayEventLayout<TItem> = {
+  item: TItem;
+  startCol: number;
+  span: number;
+  row: number;
+  continuesBefore: boolean;
+  continuesAfter: boolean;
+};
+
 // Internal legacy shapes remain available to the pre-v1 pure-function tests.
 // They are intentionally not re-exported from the package entrypoint.
 export type CalendarAccessor<TItem> = {

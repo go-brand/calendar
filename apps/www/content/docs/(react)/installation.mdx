@@ -17,9 +17,17 @@ The React package includes the core library - no separate installation needed.
 
 The package is written in TypeScript and includes type definitions. No additional `@types` packages needed.
 
+## Native Temporal (`/native`)
+
+If your target runtime provides `globalThis.Temporal` natively, import from `@gobrand/react-calendar/native` to omit `@js-temporal/polyfill` from your bundle:
+
+```typescript
+import { useCreateCalendar, useCalendarGrid } from '@gobrand/react-calendar/native';
+```
+
 ## Temporal
 
-Import Temporal from the polyfill you installed above:
+When using the default polyfilled entrypoint, import `Temporal` from `@js-temporal/polyfill`:
 
 ```typescript
 import { Temporal } from '@js-temporal/polyfill';

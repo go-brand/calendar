@@ -28,6 +28,7 @@ temporal-calendar provides type-safe calendar building blocks using the modern T
 - [useCreateCalendar](https://calendar.gobrand.app/docs/api/use-create-calendar): Create a controlled or uncontrolled item-agnostic controller, with optional simple-mode data.
 - [useCalendar](https://calendar.gobrand.app/docs/api/use-calendar): Read the item-agnostic calendar controller from context.
 - [useCalendarView](https://calendar.gobrand.app/docs/api/use-calendar-view): Put events into one view from a shared calendar controller.
+- [useCalendarGrid](https://calendar.gobrand.app/docs/api/use-calendar-grid): Headless WAI-ARIA grid and keyboard navigation prop-getters
 - [CalendarProvider](https://calendar.gobrand.app/docs/api/calendar-provider): Share one calendar controller with child components.
 
 ### Types
@@ -51,4 +52,4 @@ temporal-calendar provides type-safe calendar building blocks using the modern T
 - [createCalendar](https://calendar.gobrand.app/docs/core/create-calendar): Create an item-agnostic controller from a non-empty view configuration.
 - [View Projections](https://calendar.gobrand.app/docs/core/projections): Build month, week, and day models from controller state and local data.
 - [Visible ranges](https://calendar.gobrand.app/docs/core/visible-ranges): Understand Calendar's timezone-aware, half-open query boundary.
-- [Utilities](https://calendar.gobrand.app/docs/core/utilities): Formatting, navigation, and timezone helpers
+- [Layout & Utilities](https://calendar.gobrand.app/docs/core/utilities): Headless overlap layout, multi-day spanning bars, DnD time math, and localized weekdays

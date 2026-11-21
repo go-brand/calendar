@@ -15,6 +15,14 @@ npm install @gobrand/calendar-core
 
 The package is written in TypeScript and includes type definitions. No additional `@types` packages needed.
 
+## Native Temporal (`/native`)
+
+If your target runtime provides `globalThis.Temporal` natively, import from `@gobrand/calendar-core/native` to ship zero polyfill code:
+
+```typescript
+import { createCalendar, buildMonthView } from '@gobrand/calendar-core/native';
+```
+
 ## Temporal Polyfill
 
 The Temporal API is included via `@js-temporal/polyfill`. You can import Temporal types directly from the polyfill:

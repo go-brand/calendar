@@ -65,7 +65,25 @@ try {
     [
       '--input-type=module',
       '--eval',
-      "import('@gobrand/react-calendar').then((value) => { if (typeof value.useCreateCalendar !== 'function') process.exit(1) })",
+      "import('@gobrand/react-calendar').then((value) => { if (typeof value.useCreateCalendar !== 'function' || typeof value.useCalendarGrid !== 'function') process.exit(1) })",
+    ],
+    consumerDirectory,
+  );
+  run(
+    'node',
+    [
+      '--input-type=module',
+      '--eval',
+      "import('@gobrand/calendar-core/native').then((value) => { if (typeof value.createCalendar !== 'function' || typeof value.layoutTimedEvents !== 'function') process.exit(1) })",
+    ],
+    consumerDirectory,
+  );
+  run(
+    'node',
+    [
+      '--input-type=module',
+      '--eval',
+      "import('@gobrand/react-calendar/native').then((value) => { if (typeof value.useCreateCalendar !== 'function' || typeof value.useCalendarGrid !== 'function') process.exit(1) })",
     ],
     consumerDirectory,
   );
@@ -73,14 +91,28 @@ try {
     'node',
     [
       '--eval',
-      "const value = require('@gobrand/calendar-core'); if (typeof value.createCalendar !== 'function') process.exit(1)",
+      "const value = require('@gobrand/calendar-core'); if (typeof value.createCalendar !== 'function' || typeof value.layoutTimedEvents !== 'function') process.exit(1)",
     ],
     consumerDirectory,
   );
 
-  const reactEsm = readFileSync(join(root, 'packages/react/dist/index.js'), 'utf8');
-  if (!/^["']use client["'];/.test(reactEsm)) {
-    throw new Error('React ESM output is missing the use client directive');
+  for (const reactFile of ['packages/react/dist/index.js', 'packages/react/dist/native.js']) {
+    const reactEsm = readFileSync(join(root, reactFile), 'utf8');
+    if (!/^["']use client["'];/.test(reactEsm)) {
+      throw new Error(`${reactFile} is missing the use client directive`);
+    }
+  }
+
+  for (const nativeFile of [
+    'packages/core/dist/native.js',
+    'packages/core/dist/native.cjs',
+    'packages/react/dist/native.js',
+    'packages/react/dist/native.cjs',
+  ]) {
+    const content = readFileSync(join(root, nativeFile), 'utf8');
+    if (content.includes('@js-temporal/polyfill')) {
+      throw new Error(`${nativeFile} must not reference @js-temporal/polyfill`);
+    }
   }
 
   for (const tarball of [coreTarball, reactTarball]) {

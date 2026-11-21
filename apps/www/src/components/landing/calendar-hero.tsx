@@ -23,11 +23,11 @@ export function CalendarHero() {
   return (
     <section className="landing-hero">
       <div className="landing-intro">
-        <p className="landing-kicker">Temporal-first calendar engine</p>
+        <p className="landing-kicker">Headless Temporal calendar</p>
         <h1>Build calendars without timezone bugs.</h1>
         <p className="landing-description">
-          Headless month, week, and day views with explicit timezone, range, and projection
-          contracts.
+          Headless month, week, and day views with overlap layout, multi-day bars, WAI-ARIA
+          keyboard navigation, and a zero-polyfill <code>/native</code> export.
         </p>
 
         <div className="landing-actions">

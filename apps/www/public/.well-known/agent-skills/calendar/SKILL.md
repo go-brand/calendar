@@ -74,6 +74,7 @@ When each view fetches its own data, keep the controller above the Suspense boun
 | `useCreateCalendar()` | Create a controlled or uncontrolled item-agnostic controller, with optional simple-mode data. |
 | `useCalendar()` | Read the item-agnostic calendar controller from context. |
 | `useCalendarView()` | Put events into one view from a shared calendar controller. |
+| `useCalendarGrid()` | Headless WAI-ARIA grid and keyboard navigation prop-getters |
 | `CalendarProvider` | Share one calendar controller with child components. |
 | `Calendar Controller` | Item-agnostic calendar state, navigation, and visible query range. |
 | `View Models` | Discriminated month, week, and day models with locally inferred items. |
@@ -93,7 +94,7 @@ When each view fetches its own data, keep the controller above the Suspense boun
 | `createCalendar()` | Create an item-agnostic controller from a non-empty view configuration. |
 | `View Projections` | Build month, week, and day models from controller state and local data. |
 | `Visible ranges` | Understand Calendar's timezone-aware, half-open query boundary. |
-| `Utilities` | Formatting, navigation, and timezone helpers |
+| `Layout & Utilities` | Headless overlap layout, multi-day spanning bars, DnD time math, and localized weekdays |
 
 ## Key Types
 

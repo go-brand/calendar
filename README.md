@@ -4,13 +4,14 @@
 [![CI](https://github.com/go-brand/calendar/actions/workflows/ci.yml/badge.svg)](https://github.com/go-brand/calendar/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Headless month, week, and day calendars built directly on the Temporal API.
+**The headless Temporal calendar for TypeScript and React.**
 
-[Read the documentation](https://calendar.gobrand.app/docs).
+Month, week, and day views without `Date` bugs, CSS lock-in, or event schema lock-in. Bring your own markup, styling, and drag-and-drop library.
 
-- `@gobrand/react-calendar` provides React state, context, and view hooks.
-- `@gobrand/calendar-core` provides the framework-independent controller and projections.
-- Both packages use Temporal values, preserve configured-view types, and accept your event type through direct callbacks.
+- **Zero `Date` bugs** — Built exclusively on Temporal with explicit timezones, DST-safe math, and half-open visible ranges.
+- **Headless, not bare** — Includes overlapping event collision layout, multi-day spanning bars, pointer time-snapping, and WAI-ARIA keyboard grid navigation.
+- **Zero-polyfill `/native`** — Import from `/native` to use `globalThis.Temporal` directly with zero polyfill weight.
+- **Built for humans and coding agents** — Small, typed API surface with [llms.txt](https://calendar.gobrand.app/llms.txt) and an installable Agent Skill (`npx skills add go-brand/calendar`).
 
 ## Install
 
@@ -18,15 +19,18 @@ Headless month, week, and day calendars built directly on the Temporal API.
 # React
 pnpm add @gobrand/react-calendar @js-temporal/polyfill
 
-# Core only
+# Core only (framework-agnostic)
 pnpm add @gobrand/calendar-core @js-temporal/polyfill
 ```
 
+Using native `globalThis.Temporal`? Import from `@gobrand/react-calendar/native` or `@gobrand/calendar-core/native` — no polyfill required.
+
 ## Start here
 
-- [Build a React calendar](https://calendar.gobrand.app/docs/first-calendar)
-- [Use Calendar Core](https://calendar.gobrand.app/docs/core)
-- [Browse runnable examples](https://calendar.gobrand.app/docs/examples/multi-view)
+- [Documentation](https://calendar.gobrand.app/docs)
+- [Build your first React calendar](https://calendar.gobrand.app/docs/first-calendar)
+- [Core API & layout helpers](https://calendar.gobrand.app/docs/core)
+- [Agent docs (`llms.txt`)](https://calendar.gobrand.app/llms.txt)
 
 ## License
 

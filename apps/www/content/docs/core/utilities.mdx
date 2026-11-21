@@ -1,7 +1,91 @@
 ---
-title: Utilities
-description: Formatting, navigation, and timezone helpers
+title: Layout & Utilities
+description: Headless overlap layout, multi-day spanning bars, DnD time math, and localized weekdays
 ---
+
+## Layout Helpers
+
+Pure Temporal geometry helpers for timed grids, multi-day headers, and custom drag-and-drop integrations. All helpers are headless and return normalized ratios or Temporal values so you stay in full control of markup and styling.
+
+### layoutTimedEvents
+
+Computes DST-safe normalized vertical geometry (`top`, `height` in `[0, 1]`) and side-by-side column indices (`column`, `columns`) for overlapping timed events on a given day.
+
+```typescript
+import { Temporal } from '@js-temporal/polyfill';
+import { layoutTimedEvents } from '@gobrand/calendar-core';
+
+const laid = layoutTimedEvents(events, {
+  date: Temporal.PlainDate.from('2026-07-10'),
+  getStart: (event) => event.start,
+  getEnd: (event) => event.end,
+  dayStart: Temporal.PlainTime.from('08:00'),
+  dayEnd: Temporal.PlainTime.from('18:00'),
+});
+
+// Position with CSS percentages:
+// top: `${entry.top * 100}%`
+// height: `${entry.height * 100}%`
+// left: `${(entry.column / entry.columns) * 100}%`
+// width: `${(1 / entry.columns) * 100}%`
+```
+
+### layoutMultiDayEvents
+
+Computes spanning bar positions (`startCol`, `span`), greedy vertical `row` tracks, and continuation flags (`continuesBefore`, `continuesAfter`) for multi-day events across a month row or week header.
+
+```typescript
+import { layoutMultiDayEvents } from '@gobrand/calendar-core';
+
+const bars = layoutMultiDayEvents(events, {
+  start: week[0].date,
+  end: week[6].date,
+  getStart: (event) => event.startDate,
+  getEnd: (event) => event.endDate,
+});
+```
+
+## DnD & Time Positioning
+
+Use these helpers with `@dnd-kit/core`, Pragmatic Drag and Drop, or plain pointer events without shipping a drag-and-drop library inside your calendar engine.
+
+### getTimePosition & snapTimeFromPosition
+
+Map between `Temporal.PlainTime` / `ZonedDateTime` and normalized `[0, 1]` ratios for current-time indicators and pointer drop snapping:
+
+```typescript
+import { Temporal } from '@js-temporal/polyfill';
+import { getTimePosition, snapTimeFromPosition } from '@gobrand/calendar-core';
+
+const config = {
+  dayStart: Temporal.PlainTime.from('08:00'),
+  dayEnd: Temporal.PlainTime.from('18:00'),
+  slotDuration: Temporal.Duration.from({ minutes: 30 }),
+};
+
+// Current-time indicator line (values outside [0, 1] are outside business hours)
+const nowPos = getTimePosition(Temporal.Now.zonedDateTimeISO('UTC'), config);
+
+// Snap a pointer Y offset to the nearest 30-minute slot
+const snapped = snapTimeFromPosition((clientY - rect.top) / rect.height, config);
+```
+
+### moveEvent & resizeEvent
+
+Update event boundaries cleanly while preserving exact elapsed duration (DST-safe via BigInt nanoseconds) and preventing inverted ranges:
+
+```typescript
+import { Temporal } from '@js-temporal/polyfill';
+import { moveEvent, resizeEvent } from '@gobrand/calendar-core';
+
+const moved = moveEvent(event.start, event.end, targetStart);
+const resized = resizeEvent(
+  event.start,
+  event.end,
+  nextEnd,
+  Temporal.Duration.from({ minutes: 30 }),
+);
+```
 
 ## Formatting
 
@@ -31,155 +115,8 @@ getWeekdays(7, 'en-US', 'narrow'); // Single letter
 **Signature:**
 ```typescript
 function getWeekdays(
-  weekStartsOn?: 1 | 2 | 3 | 4 | 5 | 6 | 7, // Temporal: 1 (Monday) through 7 (Sunday)
-  locale?: string | string[],                // Default: 'en-US'. Array for fallback locales
-  format?: 'long' | 'short' | 'narrow'       // Default: 'short'
+  weekStartsOn?: 1 | 2 | 3 | 4 | 5 | 6 | 7,
+  locale?: string | string[],
+  format?: 'long' | 'short' | 'narrow'
 ): string[];
-```
-
-### getMonthName
-
-Get localized month name from a `PlainYearMonth`.
-
-```typescript
-import { getMonthName } from '@gobrand/calendar-core';
-import { Temporal } from '@js-temporal/polyfill';
-
-const month = Temporal.PlainYearMonth.from('2025-01');
-
-getMonthName(month);          // "January"
-getMonthName(month, 'es-ES'); // "enero"
-getMonthName(month, 'ja-JP'); // "1月"
-```
-
-### formatTime
-
-Format a `PlainTime` for display.
-
-```typescript
-import { formatTime } from '@gobrand/calendar-core';
-import { Temporal } from '@js-temporal/polyfill';
-
-const time = Temporal.PlainTime.from('14:30');
-
-formatTime(time);          // "2:30 PM"
-formatTime(time, 'en-GB'); // "14:30"
-```
-
-## Timezone
-
-### getCurrentTimeZone
-
-Get the system's IANA timezone.
-
-```typescript
-import { getCurrentTimeZone } from '@gobrand/calendar-core';
-
-getCurrentTimeZone(); // "America/New_York"
-```
-
-### convertToTimezone
-
-Convert a `ZonedDateTime` to a different timezone.
-
-```typescript
-import { convertToTimezone } from '@gobrand/calendar-core';
-
-const ny = Temporal.ZonedDateTime.from('2025-01-15T14:00:00-05:00[America/New_York]');
-const tokyo = convertToTimezone(ny, 'Asia/Tokyo');
-// 2025-01-16T04:00:00+09:00[Asia/Tokyo]
-```
-
-### createZonedDateTime
-
-Create a `ZonedDateTime` from date and time components.
-
-```typescript
-import { createZonedDateTime } from '@gobrand/calendar-core';
-
-const date = Temporal.PlainDate.from('2025-01-15');
-const time = Temporal.PlainTime.from('14:30');
-const zdt = createZonedDateTime(date, time, 'America/New_York');
-// 2025-01-15T14:30:00-05:00[America/New_York]
-```
-
-## Navigation
-
-Standalone navigation functions for use outside `createCalendar`:
-
-```typescript
-import {
-  nextMonth,
-  previousMonth,
-  nextWeek,
-  previousWeek,
-  nextDay,
-  previousDay,
-} from '@gobrand/calendar-core';
-
-// Month navigation
-const jan = Temporal.PlainYearMonth.from('2025-01');
-nextMonth(jan);     // 2025-02
-previousMonth(jan); // 2024-12
-
-// Week navigation
-const date = Temporal.PlainDate.from('2025-01-15');
-nextWeek(date);     // 2025-01-22
-previousWeek(date); // 2025-01-08
-
-// Day navigation
-nextDay(date);      // 2025-01-16
-previousDay(date);  // 2025-01-14
-```
-
-## Date Ranges
-
-Get date ranges for the current period. Useful for data fetching.
-
-```typescript
-import {
-  getMonthRange,
-  getWeekRange,
-  getDayRange,
-} from '@gobrand/calendar-core';
-
-// Ranges are aligned to week boundaries
-const monthRange = getMonthRange('America/New_York', 1); // Monday start
-// { start: PlainDate, end: PlainDate }
-
-const weekRange = getWeekRange('America/New_York', 1);
-const dayRange = getDayRange('America/New_York');
-```
-
-## Layout Helpers
-
-For rendering events in time-based views:
-
-### getEventPosition
-
-Calculate CSS position for an event block.
-
-```typescript
-import { getEventPosition } from '@gobrand/calendar-core';
-
-const position = getEventPosition(
-  eventStart,   // ZonedDateTime
-  eventEnd,     // ZonedDateTime
-  8,            // Day starts at 8 AM
-  60            // 60px per hour
-);
-// { top: 60, height: 90 }
-// Event starts 1 hour after 8 AM (top: 60px)
-// Event is 1.5 hours long (height: 90px)
-```
-
-### getTimeSlotHeight
-
-Calculate height for time slots.
-
-```typescript
-import { getTimeSlotHeight } from '@gobrand/calendar-core';
-
-getTimeSlotHeight(30, 60);  // 30px (half-hour slot at 60px/hour)
-getTimeSlotHeight(15, 60);  // 15px (quarter-hour slot)
 ```

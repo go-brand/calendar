@@ -12,9 +12,24 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./native": {
+      "import": {
+        "types": "./dist/native.d.ts",
+        "default": "./dist/native.js"
+      },
+      "require": {
+        "types": "./dist/native.d.cts",
+        "default": "./dist/native.cjs"
+      }
     }
   },
   "files": [
@@ -33,13 +48,12 @@
   },
   "homepage": "https://calendar.gobrand.app",
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "build": "tsup",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@js-temporal/polyfill": "^0.5.1",
-    "@tanstack/store": "^0.11.0"
+    "@js-temporal/polyfill": "^0.5.1"
   },
   "devDependencies": {
     "@fast-check/vitest": "^0.4.1",

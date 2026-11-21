@@ -1,0 +1,47 @@
+---
+title: useCalendarGrid
+description: Headless WAI-ARIA grid and keyboard navigation prop-getters
+---
+
+`useCalendarGrid` adds WAI-ARIA `role="grid"` / `gridcell` attributes, roving `tabIndex`, and keyboard navigation (`ArrowLeft`, `ArrowRight`, `ArrowUp`, `ArrowDown`, `Home`, `End`, `PageUp`, `PageDown`, `Shift+PageUp`, `Shift+PageDown`, `Enter`, `Space`) without prescribing markup or styles.
+
+```tsx
+import { useCalendarGrid, useCreateCalendar } from '@gobrand/react-calendar';
+
+function AccessibleMonth() {
+  const calendar = useCreateCalendar({ views: { month: true } });
+  const { getGridProps, getDayCellProps } = useCalendarGrid({
+    calendar,
+    onSelectDate: (date) => console.log('Selected:', date.toString()),
+  });
+
+  return (
+    <div {...getGridProps()}>
+      {calendar.activeView.weeks.map((week, rowIndex) => (
+        <div key={rowIndex} role="row">
+          {week.map((day) => (
+            <button key={day.id} type="button" {...getDayCellProps(day.date)}>
+              {day.date.day}
+            </button>
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Context support
+
+Inside `<CalendarProvider>`, `calendar` is optional:
+
+```tsx
+const { getGridProps, getDayCellProps } = useCalendarGrid({ onSelectDate });
+```
+
+## Options
+
+- `calendar` — Optional calendar controller (reads from `CalendarProvider` when omitted).
+- `focusedDate` / `onFocusedDateChange` — Optional controlled focus state.
+- `selectedDate` — Marks the matching cell with `aria-selected="true"`.
+- `onSelectDate` — Called on cell click or `Enter` / `Space` key press.

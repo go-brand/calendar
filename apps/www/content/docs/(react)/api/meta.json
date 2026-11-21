@@ -4,6 +4,7 @@
     "use-create-calendar",
     "use-calendar",
     "use-calendar-view",
+    "use-calendar-grid",
     "calendar-provider"
   ]
 }
