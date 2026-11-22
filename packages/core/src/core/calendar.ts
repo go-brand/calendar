@@ -129,6 +129,12 @@ export function createCalendar<const TViews extends NonEmptyCalendarViews>(
     get views() {
       return views;
     },
+    get timeZone() {
+      return timeZone;
+    },
+    get weekStartsOn() {
+      return weekStartsOn;
+    },
     get visibleRange() {
       return rangeFor(view, date, timeZone, weekStartsOn);
     },

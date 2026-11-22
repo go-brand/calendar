@@ -1,7 +1,8 @@
 {
   "name": "@gobrand/react-calendar",
   "version": "1.0.0",
-  "description": "React hooks and components for building calendars using the Temporal API",
+  "description": "Headless Temporal calendar for React — month, week & day hooks, WAI-ARIA keyboard grid, overlap layout, DnD math, and zero-polyfill /native.",
+  "sideEffects": false,
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -75,13 +76,16 @@
   },
   "keywords": [
     "react",
-    "hooks",
+    "react-calendar",
+    "headless-calendar",
     "temporal",
-    "calendar",
-    "date",
-    "datetime",
-    "time",
     "temporal-api",
-    "react-hooks"
+    "calendar",
+    "wai-aria",
+    "accessibility",
+    "timezone",
+    "dst",
+    "hooks",
+    "typescript"
   ]
 }

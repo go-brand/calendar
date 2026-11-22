@@ -90,6 +90,17 @@ describe('calendar v1 controller', () => {
     expect(calendar.title('en-US')).toBe('July 2026');
   });
 
+  it('exposes resolved timeZone and weekStartsOn on the controller', () => {
+    const calendar = createCalendar({
+      views: { month: true },
+      timeZone: 'America/New_York',
+      weekStartsOn: 7,
+    });
+
+    expect(calendar.timeZone).toBe('America/New_York');
+    expect(calendar.weekStartsOn).toBe(7);
+  });
+
   it('rejects invalid JavaScript configuration synchronously', () => {
     expect(() => createCalendar({ views: {} } as never)).toThrow(
       'Calendar requires at least one configured view',

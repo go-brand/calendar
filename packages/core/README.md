@@ -1,6 +1,6 @@
 # @gobrand/calendar-core
 
-**The headless Temporal calendar engine for TypeScript.**
+**The headless Temporal calendar engine for TypeScript (~5 KB gzipped, `sideEffects: false`).**
 
 Framework-agnostic month, week, and day projections, overlapping event layout, multi-day spanning bars, and DnD-ready time math — built exclusively on the Temporal API.
 

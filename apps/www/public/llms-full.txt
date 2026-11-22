@@ -1,6 +1,6 @@
-# temporal-calendar
+# GoBrand Calendar
 
-> Complete documentation for the Temporal-first Calendar packages.
+> Complete documentation and runnable TSX examples for @gobrand/calendar-core and @gobrand/react-calendar.
 
 # React Calendar
 
@@ -128,7 +128,61 @@ function Calendar({ events }: { events: Event[] }) {
 
 That is the whole setup. TypeScript infers the event type, and `calendar.activeView` is a `MonthView` because month is the only enabled view.
 
-<CalendarPreview name="basic-month" />
+```tsx
+'use client';
+
+import { useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, events } from './mock-data';
+
+export function BasicMonthExample() {
+  const calendar = useCreateCalendar({
+    views: { month: true },
+    items: events,
+    getDate: accessor.getDate,
+  });
+  const month = calendar.activeView;
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous month"
+        nextLabel="Next month"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <CalendarGrid>
+        {month.weeks.map((week) => (
+          <CalendarRow key={week[0].id}>
+            {week.map((day) => (
+              <CalendarCell
+                key={day.id}
+                date={day.date}
+                current={day.isCurrentMonth}
+                today={day.isToday}
+              >
+                {day.items.map((event) => (
+                  <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+                ))}
+              </CalendarCell>
+            ))}
+          </CalendarRow>
+        ))}
+      </CalendarGrid>
+    </Calendar>
+  );
+}
+```
 
 The preview is live. Its source uses small website-only components for markup and styles; its calendar state and month data come directly from `useCreateCalendar`.
 
@@ -251,7 +305,93 @@ The example assumes your app already has TanStack Query's `QueryClientProvider`.
 
 Each `useCalendarView` call infers its own item type. A month view can use summaries while a timed week view uses full event records. The shared controller does not need to know either type.
 
-<CalendarPreview name="suspense-month" />
+```tsx
+'use client';
+
+import { Suspense } from 'react';
+import {
+  CalendarProvider,
+  useCalendar,
+  useCalendarView,
+  useCreateCalendar,
+} from '@gobrand/react-calendar';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import {
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, fetchEvents } from './mock-data';
+
+export function SuspenseMonthExample() {
+  const calendar = useCreateCalendar({ views: { month: true } });
+
+  return (
+    <CalendarProvider calendar={calendar}>
+      <MonthCalendar />
+    </CalendarProvider>
+  );
+}
+
+function MonthCalendar() {
+  const calendar = useCalendar();
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous month"
+        nextLabel="Next month"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <Suspense fallback={<div>Loading events…</div>}>
+        <MonthContent />
+      </Suspense>
+    </Calendar>
+  );
+}
+
+function MonthContent() {
+  const calendar = useCalendar();
+  const { start, end } = calendar.visibleRange;
+  const { data: events } = useSuspenseQuery({
+    queryKey: ['events', start.toString(), end.toString()],
+    queryFn: () => fetchEvents(start, end),
+  });
+  const month = useCalendarView({
+    view: 'month',
+    items: events,
+    getDate: accessor.getDate,
+  });
+
+  return (
+    <CalendarGrid>
+      {month.weeks.map((week) => (
+        <CalendarRow key={week[0].id}>
+          {week.map((day) => (
+            <CalendarCell
+              key={day.id}
+              date={day.date}
+              current={day.isCurrentMonth}
+              today={day.isToday}
+            >
+              {day.items.map((event) => (
+                <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+              ))}
+            </CalendarCell>
+          ))}
+        </CalendarRow>
+      ))}
+    </CalendarGrid>
+  );
+}
+```
 
 ---
 
@@ -552,7 +692,61 @@ Canonical: https://calendar.gobrand.app/docs/types/helpers
 
 Canonical: https://calendar.gobrand.app/docs/examples/basic-month
 
-<CalendarPreview name="basic-month" />
+```tsx
+'use client';
+
+import { useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, events } from './mock-data';
+
+export function BasicMonthExample() {
+  const calendar = useCreateCalendar({
+    views: { month: true },
+    items: events,
+    getDate: accessor.getDate,
+  });
+  const month = calendar.activeView;
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous month"
+        nextLabel="Next month"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <CalendarGrid>
+        {month.weeks.map((week) => (
+          <CalendarRow key={week[0].id}>
+            {week.map((day) => (
+              <CalendarCell
+                key={day.id}
+                date={day.date}
+                current={day.isCurrentMonth}
+                today={day.isToday}
+              >
+                {day.items.map((event) => (
+                  <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+                ))}
+              </CalendarCell>
+            ))}
+          </CalendarRow>
+        ))}
+      </CalendarGrid>
+    </Calendar>
+  );
+}
+```
 
 The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
 
@@ -566,7 +760,60 @@ This example needs only `getDate` because month cells group events by calendar d
 
 Canonical: https://calendar.gobrand.app/docs/examples/date-picker
 
-<CalendarPreview name="date-picker" />
+```tsx
+'use client';
+
+import { useCalendarView, useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Button,
+  Calendar,
+  CalendarCell,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+
+export function DatePickerExample() {
+  const calendar = useCreateCalendar({ views: { month: true } });
+  const month = useCalendarView({ calendar, view: 'month' });
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous month"
+        nextLabel="Next month"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <CalendarGrid>
+        {month.weeks.map((week) => (
+          <CalendarRow key={week[0].id}>
+            {week.map((day) => (
+              <CalendarCell
+                key={day.id}
+                date={day.date}
+                current={day.isCurrentMonth}
+                today={day.isToday}
+              >
+                <Button
+                  active={day.date.equals(calendar.date)}
+                  aria-label={`Select ${day.date.toString()}`}
+                  onClick={() => calendar.setDate(day.date)}
+                >
+                  Select
+                </Button>
+              </CalendarCell>
+            ))}
+          </CalendarRow>
+        ))}
+      </CalendarGrid>
+    </Calendar>
+  );
+}
+```
 
 The controller owns the selected date and navigation. A data-free month projection supplies the dates to render.
 
@@ -582,13 +829,213 @@ Canonical: https://calendar.gobrand.app/docs/examples/week-view
 
 Events appear on each day.
 
-<CalendarPreview name="simple-week" />
+```tsx
+'use client';
+
+import { Temporal } from '@js-temporal/polyfill';
+import { useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarTimeCell,
+  CalendarTimeGrid,
+  CalendarTimeGridRow,
+  CalendarToolbar,
+  CalendarWeekHeader,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, events } from './mock-data';
+
+export function SimpleWeekExample() {
+  const calendar = useCreateCalendar({
+    views: { week: true },
+    items: events,
+    getDate: accessor.getDate,
+  });
+  const week = calendar.activeView;
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous week"
+        nextLabel="Next week"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <CalendarGrid>
+        <CalendarRow>
+          {week.days.map((day) => (
+            <CalendarCell key={day.id} date={day.date} today={day.isToday}>
+              {day.items.map((event) => (
+                <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+              ))}
+            </CalendarCell>
+          ))}
+        </CalendarRow>
+      </CalendarGrid>
+    </Calendar>
+  );
+}
+
+export function WeekSlotsExample() {
+  const calendar = useCreateCalendar({
+    views: {
+      week: {
+        dayStart: Temporal.PlainTime.from('00:00'),
+        dayEnd: Temporal.PlainTime.from('23:59:59.999999999'),
+        slotDuration: Temporal.Duration.from({ hours: 1 }),
+      },
+    },
+    items: events,
+    getDate: accessor.getDate,
+    getStart: accessor.getStart,
+  });
+  const week = calendar.activeView;
+  const timeSlots = week.days[0]?.timeSlots ?? [];
+
+  return (
+    <Calendar size="wide">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous week"
+        nextLabel="Next week"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarTimeGrid header={<CalendarWeekHeader days={week.days} />}>
+        {timeSlots.map((slot, slotIndex) => (
+          <CalendarTimeGridRow
+            key={slot.id}
+            label={slot.time.toLocaleString('en', { hour: 'numeric' })}
+          >
+            {week.days.map((day) => {
+              const daySlot = day.timeSlots[slotIndex];
+              return (
+                <CalendarTimeCell key={day.id}>
+                  {daySlot?.items.map((event) => (
+                    <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+                  ))}
+                </CalendarTimeCell>
+              );
+            })}
+          </CalendarTimeGridRow>
+        ))}
+      </CalendarTimeGrid>
+    </Calendar>
+  );
+}
+```
 
 ## Week with time slots
 
 Timed events appear in an hourly grid.
 
-<CalendarPreview name="week-slots" />
+```tsx
+'use client';
+
+import { Temporal } from '@js-temporal/polyfill';
+import { useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarTimeCell,
+  CalendarTimeGrid,
+  CalendarTimeGridRow,
+  CalendarToolbar,
+  CalendarWeekHeader,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, events } from './mock-data';
+
+export function SimpleWeekExample() {
+  const calendar = useCreateCalendar({
+    views: { week: true },
+    items: events,
+    getDate: accessor.getDate,
+  });
+  const week = calendar.activeView;
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous week"
+        nextLabel="Next week"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <CalendarGrid>
+        <CalendarRow>
+          {week.days.map((day) => (
+            <CalendarCell key={day.id} date={day.date} today={day.isToday}>
+              {day.items.map((event) => (
+                <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+              ))}
+            </CalendarCell>
+          ))}
+        </CalendarRow>
+      </CalendarGrid>
+    </Calendar>
+  );
+}
+
+export function WeekSlotsExample() {
+  const calendar = useCreateCalendar({
+    views: {
+      week: {
+        dayStart: Temporal.PlainTime.from('00:00'),
+        dayEnd: Temporal.PlainTime.from('23:59:59.999999999'),
+        slotDuration: Temporal.Duration.from({ hours: 1 }),
+      },
+    },
+    items: events,
+    getDate: accessor.getDate,
+    getStart: accessor.getStart,
+  });
+  const week = calendar.activeView;
+  const timeSlots = week.days[0]?.timeSlots ?? [];
+
+  return (
+    <Calendar size="wide">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous week"
+        nextLabel="Next week"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarTimeGrid header={<CalendarWeekHeader days={week.days} />}>
+        {timeSlots.map((slot, slotIndex) => (
+          <CalendarTimeGridRow
+            key={slot.id}
+            label={slot.time.toLocaleString('en', { hour: 'numeric' })}
+          >
+            {week.days.map((day) => {
+              const daySlot = day.timeSlots[slotIndex];
+              return (
+                <CalendarTimeCell key={day.id}>
+                  {daySlot?.items.map((event) => (
+                    <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+                  ))}
+                </CalendarTimeCell>
+              );
+            })}
+          </CalendarTimeGridRow>
+        ))}
+      </CalendarTimeGrid>
+    </Calendar>
+  );
+}
+```
 
 Both sources import small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
 
@@ -600,7 +1047,60 @@ Both sources import small website-only components from `./calendar-ui` for marku
 
 Canonical: https://calendar.gobrand.app/docs/examples/day-view
 
-<CalendarPreview name="day-view" />
+```tsx
+'use client';
+
+import { Temporal } from '@js-temporal/polyfill';
+import { useCreateCalendar } from '@gobrand/react-calendar';
+import {
+  Calendar,
+  CalendarEvent,
+  CalendarTimeline,
+  CalendarTimeRow,
+  CalendarToolbar,
+} from './calendar-ui';
+import { accessor, events } from './mock-data';
+
+export function DayViewExample() {
+  const calendar = useCreateCalendar({
+    views: {
+      day: {
+        dayStart: Temporal.PlainTime.from('00:00'),
+        dayEnd: Temporal.PlainTime.from('23:59:59.999999999'),
+        slotDuration: Temporal.Duration.from({ hours: 1 }),
+      },
+    },
+    items: events,
+    getDate: accessor.getDate,
+    getStart: accessor.getStart,
+  });
+  const day = calendar.activeView;
+
+  return (
+    <Calendar size="day">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous day"
+        nextLabel="Next day"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarTimeline>
+        {day.timeSlots.map((slot) => (
+          <CalendarTimeRow
+            key={slot.id}
+            label={slot.time.toLocaleString('en-US', { timeStyle: 'short' })}
+          >
+            {slot.items.map((event) => (
+              <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+            ))}
+          </CalendarTimeRow>
+        ))}
+      </CalendarTimeline>
+    </Calendar>
+  );
+}
+```
 
 The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
 
@@ -612,7 +1112,111 @@ The source imports small website-only components from `./calendar-ui` for markup
 
 Canonical: https://calendar.gobrand.app/docs/examples/multi-view
 
-<CalendarPreview name="multi-view" />
+```tsx
+'use client';
+
+import {
+  type DayView,
+  type MonthView,
+  type WeekView,
+  useCreateCalendar,
+} from '@gobrand/react-calendar';
+import {
+  Button,
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, events, type Event } from './mock-data';
+
+export function MultiViewExample() {
+  const calendar = useCreateCalendar({
+    views: { month: true, week: true, day: true },
+    items: events,
+    getDate: accessor.getDate,
+  });
+  const view = calendar.activeView;
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous date range"
+        nextLabel="Next date range"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      >
+        {calendar.viewNames.map((name) => (
+          <Button key={name} active={calendar.view === name} onClick={() => calendar.setView(name)}>
+            {name[0].toUpperCase() + name.slice(1)}
+          </Button>
+        ))}
+      </CalendarToolbar>
+      {calendar.view !== 'day' && (
+        <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      )}
+      {view.name === 'month' && <MonthCalendar month={view} />}
+      {view.name === 'week' && <WeekCalendar week={view} />}
+      {view.name === 'day' && <DayCalendar day={view} />}
+    </Calendar>
+  );
+}
+
+function MonthCalendar({ month }: { month: MonthView<Event> }) {
+  return (
+    <CalendarGrid>
+      {month.weeks.map((week) => (
+        <CalendarRow key={week[0].id}>
+          {week.map((day) => (
+            <CalendarCell
+              key={day.id}
+              date={day.date}
+              current={day.isCurrentMonth}
+              today={day.isToday}
+            >
+              {day.items.map((event) => (
+                <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+              ))}
+            </CalendarCell>
+          ))}
+        </CalendarRow>
+      ))}
+    </CalendarGrid>
+  );
+}
+
+function WeekCalendar({ week }: { week: WeekView<Event> }) {
+  return (
+    <CalendarGrid>
+      <CalendarRow>
+        {week.days.map((day) => (
+          <CalendarCell key={day.id} date={day.date} today={day.isToday}>
+            {day.items.map((event) => (
+              <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+            ))}
+          </CalendarCell>
+        ))}
+      </CalendarRow>
+    </CalendarGrid>
+  );
+}
+
+function DayCalendar({ day }: { day: DayView<Event> }) {
+  return (
+    <CalendarGrid>
+      <CalendarCell date={day.date} today={day.isToday}>
+        {day.items.length > 0
+          ? day.items.map((event) => <CalendarEvent key={event.id}>{event.title}</CalendarEvent>)
+          : 'No events'}
+      </CalendarCell>
+    </CalendarGrid>
+  );
+}
+```
 
 The source imports small website-only components from `./calendar-ui` for markup and styles. All calendar state and projection calls come from `@gobrand/react-calendar`.
 
@@ -626,7 +1230,93 @@ This example uses local events so view switching is the only new concept. See [S
 
 Canonical: https://calendar.gobrand.app/docs/examples/suspense-query
 
-<CalendarPreview name="suspense-month" />
+```tsx
+'use client';
+
+import { Suspense } from 'react';
+import {
+  CalendarProvider,
+  useCalendar,
+  useCalendarView,
+  useCreateCalendar,
+} from '@gobrand/react-calendar';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import {
+  Calendar,
+  CalendarCell,
+  CalendarEvent,
+  CalendarGrid,
+  CalendarRow,
+  CalendarToolbar,
+  CalendarWeekdays,
+} from './calendar-ui';
+import { accessor, fetchEvents } from './mock-data';
+
+export function SuspenseMonthExample() {
+  const calendar = useCreateCalendar({ views: { month: true } });
+
+  return (
+    <CalendarProvider calendar={calendar}>
+      <MonthCalendar />
+    </CalendarProvider>
+  );
+}
+
+function MonthCalendar() {
+  const calendar = useCalendar();
+
+  return (
+    <Calendar size="month">
+      <CalendarToolbar
+        title={calendar.title()}
+        previousLabel="Previous month"
+        nextLabel="Next month"
+        onPrevious={calendar.previous}
+        onNext={calendar.next}
+      />
+      <CalendarWeekdays start={calendar.visibleRange.start.toPlainDate()} />
+      <Suspense fallback={<div>Loading events…</div>}>
+        <MonthContent />
+      </Suspense>
+    </Calendar>
+  );
+}
+
+function MonthContent() {
+  const calendar = useCalendar();
+  const { start, end } = calendar.visibleRange;
+  const { data: events } = useSuspenseQuery({
+    queryKey: ['events', start.toString(), end.toString()],
+    queryFn: () => fetchEvents(start, end),
+  });
+  const month = useCalendarView({
+    view: 'month',
+    items: events,
+    getDate: accessor.getDate,
+  });
+
+  return (
+    <CalendarGrid>
+      {month.weeks.map((week) => (
+        <CalendarRow key={week[0].id}>
+          {week.map((day) => (
+            <CalendarCell
+              key={day.id}
+              date={day.date}
+              current={day.isCurrentMonth}
+              today={day.isToday}
+            >
+              {day.items.map((event) => (
+                <CalendarEvent key={event.id}>{event.title}</CalendarEvent>
+              ))}
+            </CalendarCell>
+          ))}
+        </CalendarRow>
+      ))}
+    </CalendarGrid>
+  );
+}
+```
 
 The controller and toolbar stay above the Suspense boundary. The query and month projection run below it after data is ready.
 

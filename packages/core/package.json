@@ -1,7 +1,8 @@
 {
   "name": "@gobrand/calendar-core",
   "version": "1.0.0",
-  "description": "Lightweight utility library for building calendars using the Temporal API",
+  "description": "Headless Temporal calendar engine for TypeScript — month, week & day views, overlap layout, multi-day bars, DnD math, and zero-polyfill /native.",
+  "sideEffects": false,
   "private": false,
   "publishConfig": {
     "access": "public"
@@ -66,12 +67,16 @@
   "keywords": [
     "temporal",
     "calendar",
-    "date",
-    "datetime",
-    "time",
+    "headless-calendar",
     "temporal-api",
+    "timezone",
+    "dst",
+    "overlap-layout",
+    "multi-day",
+    "dnd",
+    "typescript",
     "month",
     "week",
-    "year"
+    "day"
   ]
 }

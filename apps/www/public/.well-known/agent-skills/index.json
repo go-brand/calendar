@@ -6,7 +6,7 @@
       "type": "skill-md",
       "description": "Build Temporal-first month, week, and day calendar interfaces with @gobrand/calendar-core and @gobrand/react-calendar.",
       "url": "/.well-known/agent-skills/calendar/SKILL.md",
-      "digest": "sha256:b3a47f58a3bf7e5086f91e02b0960c5089a349e0d8143f4489dd070da171c51b"
+      "digest": "sha256:0a65126f452b22eca2a0e28b2196a4ec0376c370a535c23aa548256243dcdbd3"
     }
   ]
 }

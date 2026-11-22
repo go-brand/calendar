@@ -52,6 +52,8 @@ export type ContextCalendarController = {
   readonly view: ViewName;
   readonly viewNames: readonly ViewName[];
   readonly views: Readonly<Partial<ResolvedViewConfig>>;
+  readonly timeZone: string;
+  readonly weekStartsOn: Weekday;
   readonly visibleRange: VisibleRange;
   title(
     locales?: Temporal.LocalesArgument,
@@ -367,8 +369,7 @@ export function useCalendarGrid(options: UseCalendarGridOptions = {}): CalendarG
     cell?.focus();
   }, [focusedSignature, calendarDateSignature]);
 
-  const timeZone = calendar.visibleRange.start.timeZoneId;
-  const today = temporal.Now.zonedDateTimeISO(timeZone).toPlainDate();
+  const today = temporal.Now.zonedDateTimeISO(calendar.timeZone).toPlainDate();
 
   const shouldNavigateTo = (nextDate: Temporal.PlainDate, forceNavigate: boolean) => {
     if (forceNavigate) return true;
@@ -422,14 +423,12 @@ export function useCalendarGrid(options: UseCalendarGridOptions = {}): CalendarG
               : focusedDate.add({ days: 1 });
           break;
         case 'Home': {
-          const weekStartsOn = calendar.visibleRange.start.toPlainDate().dayOfWeek;
-          const offset = (focusedDate.dayOfWeek - weekStartsOn + 7) % 7;
+          const offset = (focusedDate.dayOfWeek - calendar.weekStartsOn + 7) % 7;
           nextDate = focusedDate.subtract({ days: offset });
           break;
         }
         case 'End': {
-          const weekStartsOn = calendar.visibleRange.start.toPlainDate().dayOfWeek;
-          const offset = (focusedDate.dayOfWeek - weekStartsOn + 7) % 7;
+          const offset = (focusedDate.dayOfWeek - calendar.weekStartsOn + 7) % 7;
           nextDate = focusedDate.subtract({ days: offset }).add({ days: 6 });
           break;
         }

@@ -1,19 +1,19 @@
-# temporal-calendar
+# GoBrand Calendar
 
-> A lightweight utility library for building calendar UIs with the Temporal API.
+> The headless Temporal calendar for TypeScript and React (~5 KB gzipped core, ~2.7 KB React, sideEffects: false).
 
-temporal-calendar provides type-safe calendar building blocks using the modern Temporal API. It supports month, week, and day views with timezone awareness, DST-safe operations, an item-agnostic controller, and locally inferred view projections.
+GoBrand Calendar builds timezone-safe month, week, and day calendars directly on the Temporal API with zero Date objects, zero CSS lock-in, and zero event schema lock-in. Includes overlapping event collision layout, multi-day spanning bars, DnD time-snapping math, WAI-ARIA keyboard grid navigation (`useCalendarGrid`), and zero-polyfill `/native` entrypoints (`@gobrand/calendar-core/native`, `@gobrand/react-calendar/native`).
 
 ## Complete reference
 
-- [Complete documentation](https://calendar.gobrand.app/llms-full.txt): All Calendar documentation in one Markdown document
+- [Complete documentation](https://calendar.gobrand.app/llms-full.txt): All Calendar documentation and full TSX examples in one Markdown document
 - [Calendar agent skill](https://calendar.gobrand.app/.well-known/agent-skills/calendar/SKILL.md): Reusable instructions for agents building Calendar interfaces
 
 ## Docs
 
-- [Introduction](https://calendar.gobrand.app/docs): Overview of temporal-calendar and key features
-- [Core Installation](https://calendar.gobrand.app/docs/core/installation): Getting started with @gobrand/calendar-core
-- [React Installation](https://calendar.gobrand.app/docs/installation): Getting started with @gobrand/react-calendar
+- [Introduction](https://calendar.gobrand.app/docs): Overview of GoBrand Calendar and key features
+- [Core Installation](https://calendar.gobrand.app/docs/core/installation): Getting started with @gobrand/calendar-core and /native
+- [React Installation](https://calendar.gobrand.app/docs/installation): Getting started with @gobrand/react-calendar and /native
 
 ## React
 

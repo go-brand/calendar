@@ -55,6 +55,8 @@ export type CalendarController<TViews extends NonEmptyCalendarViews = NonEmptyCa
   readonly view: ConfiguredView<TViews>;
   readonly viewNames: readonly ConfiguredView<TViews>[];
   readonly views: ResolvedCalendarViews<TViews>;
+  readonly timeZone: string;
+  readonly weekStartsOn: Weekday;
   readonly visibleRange: VisibleRange;
   title(
     locales?: Temporal.LocalesArgument,

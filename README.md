@@ -8,10 +8,10 @@
 
 Month, week, and day views without `Date` bugs, CSS lock-in, or event schema lock-in. Bring your own markup, styling, and drag-and-drop library.
 
+- **Tiny & tree-shakeable** — ~5 KB gzipped core, ~2.7 KB gzipped React, `sideEffects: false`, and zero-polyfill `/native` entrypoints.
 - **Zero `Date` bugs** — Built exclusively on Temporal with explicit timezones, DST-safe math, and half-open visible ranges.
 - **Headless, not bare** — Includes overlapping event collision layout, multi-day spanning bars, pointer time-snapping, and WAI-ARIA keyboard grid navigation.
-- **Zero-polyfill `/native`** — Import from `/native` to use `globalThis.Temporal` directly with zero polyfill weight.
-- **Built for humans and coding agents** — Small, typed API surface with [llms.txt](https://calendar.gobrand.app/llms.txt) and an installable Agent Skill (`npx skills add go-brand/calendar`).
+- **Built for humans and coding agents** — Small, typed API surface with [llms.txt](https://calendar.gobrand.app/llms.txt), full runnable TSX examples in [llms-full.txt](https://calendar.gobrand.app/llms-full.txt), and an installable Agent Skill (`npx skills add go-brand/calendar`).
 
 ## Install
 

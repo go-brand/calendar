@@ -14,6 +14,16 @@ import * as path from 'node:path';
 import { createHash } from 'node:crypto';
 
 const DOCS_DIR = 'apps/www/content/docs';
+const EXAMPLES_DIR = 'apps/www/src/components/examples';
+const EXAMPLE_FILES: Readonly<Record<string, string>> = {
+  'basic-month': 'basic-month.tsx',
+  'date-picker': 'date-picker.tsx',
+  'simple-week': 'week-view.tsx',
+  'week-slots': 'week-view.tsx',
+  'day-view': 'day-view.tsx',
+  'multi-view': 'multi-view.tsx',
+  'suspense-month': 'suspense-month.tsx',
+};
 const LLMS_TXT_PATH = 'apps/www/public/llms.txt';
 const LLMS_FULL_TXT_PATH = 'apps/www/public/llms-full.txt';
 const ROBOTS_TXT_PATH = 'apps/www/public/robots.txt';
@@ -68,6 +78,17 @@ function parseMdxFrontmatter(content: string): Record<string, string> {
 
 function stripMdxFrontmatter(content: string): string {
   return content.replace(/^---\n[\s\S]*?\n---\n?/, '').trim();
+}
+
+function expandCalendarPreviews(body: string): string {
+  return body.replace(/<CalendarPreview\s+name="([^"]+)"\s*\/>/g, (match, name: string) => {
+    const file = EXAMPLE_FILES[name];
+    if (!file) return match;
+    const filePath = path.join(EXAMPLES_DIR, file);
+    if (!fs.existsSync(filePath)) return match;
+    const source = fs.readFileSync(filePath, 'utf-8').trim();
+    return ['```tsx', source, '```'].join('\n');
+  });
 }
 
 /**
@@ -171,22 +192,22 @@ function generateLlmsTxt(docs: DocFile[]): void {
   console.log('Generating llms.txt...');
 
   const lines: string[] = [
-    '# temporal-calendar',
+    '# GoBrand Calendar',
     '',
-    '> A lightweight utility library for building calendar UIs with the Temporal API.',
+    '> The headless Temporal calendar for TypeScript and React (~5 KB gzipped core, ~2.7 KB React, sideEffects: false).',
     '',
-    'temporal-calendar provides type-safe calendar building blocks using the modern Temporal API. It supports month, week, and day views with timezone awareness, DST-safe operations, an item-agnostic controller, and locally inferred view projections.',
+    'GoBrand Calendar builds timezone-safe month, week, and day calendars directly on the Temporal API with zero Date objects, zero CSS lock-in, and zero event schema lock-in. Includes overlapping event collision layout, multi-day spanning bars, DnD time-snapping math, WAI-ARIA keyboard grid navigation (`useCalendarGrid`), and zero-polyfill `/native` entrypoints (`@gobrand/calendar-core/native`, `@gobrand/react-calendar/native`).',
     '',
     '## Complete reference',
     '',
-    `- [Complete documentation](${SITE_URL}/llms-full.txt): All Calendar documentation in one Markdown document`,
+    `- [Complete documentation](${SITE_URL}/llms-full.txt): All Calendar documentation and full TSX examples in one Markdown document`,
     `- [Calendar agent skill](${SITE_URL}/.well-known/agent-skills/calendar/SKILL.md): Reusable instructions for agents building Calendar interfaces`,
     '',
     '## Docs',
     '',
-    `- [Introduction](${BASE_URL}): Overview of temporal-calendar and key features`,
-    `- [Core Installation](${BASE_URL}/core/installation): Getting started with @gobrand/calendar-core`,
-    `- [React Installation](${BASE_URL}/installation): Getting started with @gobrand/react-calendar`,
+    `- [Introduction](${BASE_URL}): Overview of GoBrand Calendar and key features`,
+    `- [Core Installation](${BASE_URL}/core/installation): Getting started with @gobrand/calendar-core and /native`,
+    `- [React Installation](${BASE_URL}/installation): Getting started with @gobrand/react-calendar and /native`,
     '',
   ];
 
@@ -237,26 +258,28 @@ function generateSkillMd(docs: DocFile[]): string {
   const lines: string[] = [
     '---',
     'name: calendar',
-    'description: Use when building calendar UIs with the Temporal API. Provides month, week, and day views with timezone awareness, DST-safe operations, and React hooks for state management.',
+    'description: Use when building calendar UIs with the Temporal API in TypeScript or React. Provides headless month, week, and day views, overlap and multi-day layout math, DnD time-snapping helpers, WAI-ARIA keyboard grid navigation, and zero-polyfill /native entrypoints.',
     '---',
     '',
-    '# temporal-calendar - Calendar Building Blocks',
+    '# GoBrand Calendar',
     '',
-    'Lightweight utility library for building calendar UIs with the Temporal API.',
+    'The headless Temporal calendar for TypeScript and React (~5 KB gzipped core, ~2.7 KB React, `sideEffects: false`). Zero `Date` bugs, zero CSS lock-in, zero event schema lock-in.',
     '',
     '```bash',
-    '# Core (framework-agnostic)',
-    'npm install @gobrand/calendar-core @js-temporal/polyfill',
-    '',
     '# React',
-    'npm install @gobrand/react-calendar @js-temporal/polyfill',
+    'pnpm add @gobrand/react-calendar @js-temporal/polyfill',
+    '',
+    '# Core (framework-agnostic)',
+    'pnpm add @gobrand/calendar-core @js-temporal/polyfill',
     '```',
+    '',
+    'If `globalThis.Temporal` is available natively, import from `@gobrand/react-calendar/native` or `@gobrand/calendar-core/native` to ship zero polyfill code.',
     '',
     '## Quick start',
     '',
     '```tsx',
     "import { Temporal } from '@js-temporal/polyfill'",
-    "import { useCreateCalendar } from '@gobrand/react-calendar'",
+    "import { useCalendarGrid, useCreateCalendar } from '@gobrand/react-calendar'",
     '',
     'type Event = {',
     '  id: string',
@@ -264,16 +287,13 @@ function generateSkillMd(docs: DocFile[]): string {
     '  date: Temporal.PlainDate',
     '}',
     '',
-    'const events: Event[] = [',
-    "  { id: 'launch', title: 'Launch', date: Temporal.Now.plainDateISO() },",
-    ']',
-    '',
-    'function Calendar() {',
+    'function Calendar({ events }: { events: Event[] }) {',
     '  const calendar = useCreateCalendar({',
     '    views: { month: true },',
     '    items: events,',
     '    getDate: event => event.date,',
     '  })',
+    '  const { getGridProps, getDayCellProps } = useCalendarGrid({ calendar })',
     '  const month = calendar.activeView',
     '',
     '  return (',
@@ -283,15 +303,51 @@ function generateSkillMd(docs: DocFile[]): string {
     '      <button onClick={calendar.next}>Next</button>',
     '      <h2>{calendar.title()}</h2>',
     '',
-    '      {month.weeks.flat().map(day => (',
-    '        <div key={day.id}>',
-    "          {day.date.toString()}: {day.items.map(event => event.title).join(', ')}",
-    '        </div>',
-    '      ))}',
+    '      <div {...getGridProps()}>',
+    '        {month.weeks.map((week, row) => (',
+    '          <div key={row} role="row">',
+    '            {week.map(day => (',
+    '              <button key={day.id} type="button" {...getDayCellProps(day.date)}>',
+    '                {day.date.day} ({day.items.length})',
+    '              </button>',
+    '            ))}',
+    '          </div>',
+    '        ))}',
+    '      </div>',
     '    </section>',
     '  )',
     '}',
     '```',
+    '',
+    '## Public API',
+    '',
+    '### `@gobrand/calendar-core` (and `@gobrand/calendar-core/native`)',
+    '',
+    '| Export | Purpose |',
+    '|--------|---------|',
+    '| `createCalendar(options)` | Create an item-agnostic controller (`date`, `view`, `viewNames`, `views`, `timeZone`, `weekStartsOn`, `visibleRange`, `title`, navigation, `subscribe`). |',
+    '| `buildMonthView({ calendar, items?, getDate? })` | Project arbitrary records onto a month grid. |',
+    '| `buildWeekView({ calendar, items?, getDate?, getStart? })` | Project records onto a 7-day week and optional time slots. |',
+    '| `buildDayView({ calendar, items?, getDate?, getStart? })` | Project records onto a single day and time slots. |',
+    '| `layoutTimedEvents(items, options)` | DST-safe normalized `top`/`height` and overlapping `column`/`columns` geometry. |',
+    '| `layoutMultiDayEvents(items, options)` | Multi-day spanning bar `startCol`, `span`, `row`, `continuesBefore`, `continuesAfter`. |',
+    '| `getTimePosition(time, config?)` | Normalized `[0, 1]` position for current-time indicators. |',
+    '| `snapTimeFromPosition(ratio, config?)` | Snap a pointer ratio to the nearest `Temporal.PlainTime` slot. |',
+    '| `moveEvent(start, end, targetStart)` | Duration-preserving move (BigInt nanosecond exact) for DnD. |',
+    '| `resizeEvent(start, end, nextEnd, minDuration?)` | Min-duration-safe resize for DnD. |',
+    '| `getWeekdays(weekStartsOn?, locale?, format?)` | Localized 7-day header labels. |',
+    '',
+    '### `@gobrand/react-calendar` (and `@gobrand/react-calendar/native`)',
+    '',
+    'Re-exports everything from `@gobrand/calendar-core` plus:',
+    '',
+    '| Export | Purpose |',
+    '|--------|---------|',
+    '| `useCreateCalendar(options)` | Controlled or uncontrolled controller hook, with optional simple-mode `items` + `activeView`. |',
+    '| `CalendarProvider` | Share a controller with child views (keep controls mounted above Suspense). |',
+    '| `useCalendar()` | Read the controller from `CalendarProvider`. |',
+    '| `useCalendarView({ view, calendar?, items?, getDate?, getStart? })` | Project view-local data (ideal below React Suspense). |',
+    '| `useCalendarGrid(options?)` | WAI-ARIA `getGridProps()` and `getDayCellProps(date)` with roving `tabIndex` and keyboard navigation. |',
     '',
     '## Using Suspense',
     '',
@@ -301,7 +357,7 @@ function generateSkillMd(docs: DocFile[]): string {
     '',
   ];
 
-  // Group by category
+  // Group by category for truthful documentation links
   const byCategory = new Map<string, DocFile[]>();
   for (const doc of docs) {
     const existing = byCategory.get(doc.category) || [];
@@ -309,19 +365,18 @@ function generateSkillMd(docs: DocFile[]): string {
     byCategory.set(doc.category, existing);
   }
 
-  // Generate tables
+  lines.push('## Documentation');
+  lines.push('');
+
   for (const [category, categoryDocs] of byCategory) {
-    lines.push(`## ${category}`);
+    lines.push(`### ${category}`);
     lines.push('');
-    lines.push('| Function | Description |');
-    lines.push('|----------|-------------|');
+    lines.push('| Page | Description |');
+    lines.push('|------|-------------|');
 
     for (const doc of categoryDocs) {
-      const displayName =
-        doc.title.includes('use') || doc.title.includes('create')
-          ? `\`${doc.title}()\``
-          : `\`${doc.title}\``;
-      lines.push(`| ${displayName} | ${doc.description} |`);
+      const url = `${BASE_URL}/${doc.urlPath}`;
+      lines.push(`| [${doc.title}](${url}) | ${doc.description} |`);
     }
 
     lines.push('');
@@ -403,16 +458,16 @@ function markdownForDoc(doc: DocFile): string {
     lines.push(`> ${doc.description}`, '');
   }
 
-  lines.push(`Canonical: ${SITE_URL}${route}`, '', doc.body, '');
+  lines.push(`Canonical: ${SITE_URL}${route}`, '', expandCalendarPreviews(doc.body), '');
   return lines.join('\n');
 }
 
 function generateAgentMarkdown(docs: DocFile[]): Readonly<Record<string, string>> {
   const markdownByPath: Record<string, string> = {
     '/': [
-      '# temporal-calendar',
+      '# GoBrand Calendar',
       '',
-      '> Temporal-first building blocks for month, week, and day calendar interfaces.',
+      '> The headless Temporal calendar for TypeScript and React (~5 KB gzipped core, ~2.7 KB React, sideEffects: false).',
       '',
       `Canonical: ${SITE_URL}/`,
       '',
@@ -420,7 +475,7 @@ function generateAgentMarkdown(docs: DocFile[]): Readonly<Record<string, string>
       '',
       'Install the Calendar Agent Skill with `npx skills add go-brand/calendar`.',
       '',
-      'React installation: `pnpm add @gobrand/react-calendar @js-temporal/polyfill`.',
+      'React installation: `pnpm add @gobrand/react-calendar @js-temporal/polyfill` (or import `@gobrand/react-calendar/native` for zero polyfill).',
       '',
       `Human documentation: ${SITE_URL}/docs.`,
       '',
@@ -448,9 +503,9 @@ function generateLlmsFull(markdownByPath: Readonly<Record<string, string>>): voi
     .filter(([route]) => route.startsWith('/docs'))
     .map(([, markdown]) => markdown.trim());
   const content = [
-    '# temporal-calendar',
+    '# GoBrand Calendar',
     '',
-    '> Complete documentation for the Temporal-first Calendar packages.',
+    '> Complete documentation and runnable TSX examples for @gobrand/calendar-core and @gobrand/react-calendar.',
     '',
     ...docs.flatMap((markdown) => [markdown, '', '---', '']),
   ].join('\n');

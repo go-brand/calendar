@@ -1,6 +1,6 @@
 # @gobrand/react-calendar
 
-**The headless Temporal calendar for React.**
+**The headless Temporal calendar for React (~2.7 KB gzipped, `sideEffects: false`).**
 
 Build timezone-safe month, week, and day calendars with your own markup, styles, and drag-and-drop library. Full TypeScript inference, WAI-ARIA keyboard navigation, overlap layout math, and an optional zero-polyfill `/native` export.
 
