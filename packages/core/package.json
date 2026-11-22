@@ -1,6 +1,6 @@
 {
   "name": "@gobrand/calendar-core",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Headless Temporal calendar engine for TypeScript — month, week & day views, overlap layout, multi-day bars, DnD math, and zero-polyfill /native.",
   "sideEffects": false,
   "private": false,
